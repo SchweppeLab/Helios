@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.34301.259
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIAPI", "UIAPI.csproj", "{2821857E-07BC-4615-AADD-D8DE9C21C66E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spy-IAPI", "Spy-IAPI\Spy-IAPI.csproj", "{D6DE813E-DB6A-49F5-9A12-F8E7DBE56E38}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2821857E-07BC-4615-AADD-D8DE9C21C66E} = {2821857E-07BC-4615-AADD-D8DE9C21C66E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{2821857E-07BC-4615-AADD-D8DE9C21C66E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2821857E-07BC-4615-AADD-D8DE9C21C66E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2821857E-07BC-4615-AADD-D8DE9C21C66E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6DE813E-DB6A-49F5-9A12-F8E7DBE56E38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6DE813E-DB6A-49F5-9A12-F8E7DBE56E38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6DE813E-DB6A-49F5-9A12-F8E7DBE56E38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6DE813E-DB6A-49F5-9A12-F8E7DBE56E38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
