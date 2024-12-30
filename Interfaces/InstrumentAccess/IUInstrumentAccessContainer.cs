@@ -73,8 +73,8 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
     class UInstrumentAccessContainerExploris : IUInstrumentAccessContainer
     {
-        exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
-        bool check = false;
+        private exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
+        private bool check = false;
         public event EventHandler<EventArgs> ServiceConnectionChanged;
         public event EventHandler<MessageEventArgs> MessagesArrived;
         public bool ServiceConnected { get; protected set; }
@@ -173,8 +173,8 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
     class UInstrumentAccessContainerFusion : IUInstrumentAccessContainer
     {
-        fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
-        bool check = false;
+        private fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
+        private bool check = false;
         public event EventHandler<EventArgs> ServiceConnectionChanged;
         public event EventHandler<MessageEventArgs> MessagesArrived;
         public bool ServiceConnected { get; protected set; }
