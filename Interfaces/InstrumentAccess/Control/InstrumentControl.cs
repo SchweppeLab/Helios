@@ -12,7 +12,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control
     /// <summary>
     /// This interface wraps the extensions to IControl by Exploris and Fusion based instruments.
     /// </summary>    
-    public interface IInstControl
+    public interface IUControl
     {
         /// <summary>
         /// Get access to the acquisition interface.
@@ -21,22 +21,22 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control
         UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
     }
 
-    class InstControlExploris : IInstControl
+    class UExplorisControl : IUControl
     {
         exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl control;
         public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
-        public InstControlExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
+        public UExplorisControl(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
         {
             control = ia.Control;
             //Acquisition = InstAcquisitionFactory.Get(control);
             Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionExploris(control);
         }
     }
-    class InstControlFusion : IInstControl
+    class UFusionControl : IUControl
     {
         fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl control;
         public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
-        public InstControlFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
+        public UFusionControl(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
         {
             control = ia.Control;
             //Acquisition = InstAcquisitionFactory.Get(control);

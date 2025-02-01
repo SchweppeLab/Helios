@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer;
+using Thermo.Interfaces.SpectrumFormat_V1;
 
 namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
 {
-    public interface IUMsScan : IDisposable
+    public interface IUMsScan : IMsScan, IDisposable
     {
         IDictionary<string,string> Header { get; }
         Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess StatusLog { get; }
@@ -23,8 +25,14 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
         public Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess StatusLog { get; }
         public Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess Trailer { get; }
         public Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess TuneData { get; }
+    public string DetectorName { get; }
+    public int? NoiseCount { get; }
+    public IEnumerable<INoiseNode> NoiseBand { get; }
+    public int? CentroidCount { get; }
+    public IEnumerable<ICentroid> Centroids { get; }
+    public IChargeEnvelope[] ChargeEnvelopes { get; }
 
-        public UMsScanExploris(exploris.Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
+    public UMsScanExploris(exploris.Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
         {
             Header = m.Header;
             StatusLog = (Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess)m.StatusLog;
@@ -55,7 +63,14 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
         public Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess Trailer { get; }
         public Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess TuneData { get; }
 
-        public UMsScanFusion(Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
+    public string DetectorName { get; }
+    public int? NoiseCount { get; }
+    public IEnumerable<INoiseNode> NoiseBand { get; }
+    public int? CentroidCount { get; }
+    public IEnumerable<ICentroid> Centroids { get; }
+    public IChargeEnvelope[] ChargeEnvelopes { get; }
+
+    public UMsScanFusion(Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
         {
             Header = m.Header;
             StatusLog = m.StatusLog;

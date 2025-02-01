@@ -1,19 +1,29 @@
+using System;
+using System.Runtime.InteropServices;
 using System.Text;
+using ScottPlot;
+using ScottPlot.Plottables;
 using UIAPI.Interfaces;
 using UIAPI.Interfaces.InstrumentAccess;
 using UIAPI.Interfaces.InstrumentAccess.Control;
 using UIAPI.Interfaces.InstrumentAccess.Control.Acquisition;
 using UIAPI.Interfaces.InstrumentAccess.MsScanContainer;
 
+
 namespace Spy_IAPI
 {
+  //public static IntPtr FindWindow(string windowName)
+  //{
+  //  var hWnd = FindWindow(windowName, null);
+  //  return hWnd;
+  //}
 
-  public partial class Form1 : Form
+  public partial class SpyIAPI : Form
   {
 
     private IUInstrumentAccessContainer? msIAC;
     private IUInstrumentAccess? msIA;
-    private IInstControl? msControl;
+    private IUControl? msControl;
     private IInstAcquisition? msAcquisition;
     private IInstMsScanContainer? msMSSC;
 
@@ -21,10 +31,42 @@ namespace Spy_IAPI
     bool connected = false;
     bool listener = false;
 
-    public Form1()
+    readonly Scatter plotSpec;
+    private long lastTicks = 0;
+    private volatile bool refreshSpectrum = false;
+    //private VMsStats stats = new VMsStats();
+
+    private int curSimCount = 0;
+    private double curSimRT = 0;
+    private TimeSpan allSimTime = TimeSpan.Zero;
+    readonly System.Windows.Forms.Timer UpdatePlotTimer = new() { Interval = 100, Enabled = true };
+
+    bool bTemp = false;
+
+    public SpyIAPI()
     {
       InitializeComponent();
+
+      Coordinates[] co = { new (0, 0) };
+      plotSpec = plotSpectrum.Plot.Add.Scatter(co);
+      plotSpec.MarkerSize = 1;
+      plotSpectrum.Plot.Axes.SetupMultiplierNotation(plotSpectrum.Plot.Axes.Left);
+      plotSpectrum.Plot.YLabel("Intensity");
+      plotSpectrum.Refresh();
+
       UpdateConnection();
+      Log(RuntimeInformation.FrameworkDescription);
+
+      UpdatePlotTimer.Tick += (s, e) =>
+      {
+        if (refreshSpectrum)
+        {
+          plotSpectrum.Refresh();
+          refreshSpectrum = false;
+        }
+      };
+
+      lastTicks = DateTime.Now.Ticks;
     }
 
     private void buttonConnect_Click(object sender, EventArgs e)
@@ -58,10 +100,12 @@ namespace Spy_IAPI
       {
         try
         {
+          Log("Attempting to connect to instrument or VMS.");
+
           msIAC = InstrumentAccessContainerFactory.Get();
           if (msIAC == null)
           {
-            Log("Failed to connect to instrument.");
+            Log("Failed to connect to instrument or VMS.");
           }
           else
           {
@@ -71,6 +115,7 @@ namespace Spy_IAPI
               msIAC.ServiceConnectionChanged += ServiceConnectionChanged;
               msIAC.MessagesArrived += MessagesArrived;
               msIAC.StartOnlineAccess();
+              Log("StartOnlineAccess() happened.");
             }
             catch (Exception exx)
             {
@@ -152,7 +197,74 @@ namespace Spy_IAPI
 
     private void MsScanArrived(object? sender, IMSEventArgs e)
     {
-      //richTextBox1.AppendText("MSSC_MsScanArrived." + System.Environment.NewLine);
+      //Log("MSSC_MsScanArrived: ");
+      using (IUMsScan msScan = e.GetScan())
+      {
+        if (!bTemp)
+        {
+          bTemp = true;
+          foreach(string s in msScan.Trailer.ItemNames)
+          {
+            Log(s);
+          }
+        }
+        //string str = "Scan ";
+        //string? tmp;
+        //msScan.Header.TryGetValue("ScanNumber", out tmp);
+        //if (tmp != null) str += tmp;
+        //str += " MsLevel: ";
+        //msScan.Header.TryGetValue("MSOrder", out tmp);
+        //if (tmp != null) str += tmp;
+        //Log(str);
+
+        long curTicks = DateTime.Now.Ticks;
+        long tickDif = curTicks - lastTicks;
+        if (tickDif > 1e6)
+        {
+          double rt = 0;
+          int scanNumber = 0;
+          string scanFilter = "";
+          string? tmp;
+          msScan.Header.TryGetValue("ScanNumber", out tmp);
+          if (tmp != null) scanNumber = Convert.ToInt32(tmp);
+          msScan.Header.TryGetValue("RetentionTime", out tmp);
+          if (tmp != null) rt = Convert.ToDouble(tmp);
+          msScan.Header.TryGetValue("Filter", out tmp);
+          if (tmp != null) scanFilter = tmp;
+
+          double[] x = new double[msScan.Centroids.Count()];
+          double[] y = new double[msScan.Centroids.Count()];
+          int a = 0;
+          foreach (var centroid in msScan.Centroids)
+          {
+            x[a] = centroid.Mz;
+            y[a] = centroid.Intensity;
+            a++;
+          }
+          lock (plotSpectrum.Plot.Sync)
+          {
+            plotSpectrum.Plot.Clear();
+            if (msScan.CentroidCount != null)
+            {
+              var bar = plotSpectrum.Plot.Add.Bars(x, y);
+            }
+            else
+            {
+              var scat = plotSpectrum.Plot.Add.Scatter(x, y);
+              scat.MarkerSize = 1;
+            }
+
+            plotSpectrum.Plot.Axes.AutoScale();
+          }
+
+          lblScanFilter.Text = scanFilter;
+          lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString();
+          refreshSpectrum = true;
+          lastTicks = curTicks;
+        }
+
+      }
+      return;
       using (IUMsScan msScan = e.GetScan())
       {
         string? tmp;
@@ -242,7 +354,7 @@ namespace Spy_IAPI
     /// </summary>
     private void UpdateConnection()
     {
-      connectionIndicator.ForeColor = connected ? Color.Red : Color.Green;
+      connectionIndicator.ForeColor = connected ? System.Drawing.Color.Red : System.Drawing.Color.Green;
       buttonConnect.Text = connected ? "Disconnect" : "Connect";
       buttonConnect.Enabled = true;  //maybe disallow connection button while listener is activated?
 
@@ -260,9 +372,20 @@ namespace Spy_IAPI
     /// </summary>
     private void UpdateListener()
     {
-      listenIndicator.ForeColor = listener ? Color.Red : Color.Green;
+      listenIndicator.ForeColor = listener ? System.Drawing.Color.Red : System.Drawing.Color.Green;
       buttonListen.Enabled = connected ? true : false;
     }
 
+    private void buttonListen_Click(object sender, EventArgs e)
+    {
+      if (!listener)
+      {
+        msControl = msIA.Control;
+        msMSSC = msIA.GetMsScanContainer(0);
+        msMSSC.MsScanArrived += MsScanArrived;
+
+        listener = true;
+      }
+    }
   }
 }

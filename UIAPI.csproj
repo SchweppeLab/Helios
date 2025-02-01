@@ -39,6 +39,13 @@
       <HintPath>..\..\Other\IAPI\lib\tribrid\Fusion.API-1.0.dll</HintPath>
       <Aliases>fusion</Aliases>
     </Reference>
+    <Reference Include="Pipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Pipes\Pipes\bin\Release\net8.0\Pipes.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjectMIDAS">
+      <HintPath>..\ProjectMIDAS\ProjectMIDAS\bin\x64\Release\net8.0\ProjectMIDAS.dll</HintPath>
+    </Reference>
     <Reference Include="Spectrum-1.0, Version=1.1.0.1, Culture=neutral, PublicKeyToken=c03bf447005257eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Other\IAPI\lib\Spectrum-1.0.dll</HintPath>
@@ -76,13 +83,19 @@
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\AOEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\SCEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\UIAPIState.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\VMSControl.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccessContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccess.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\InstrumentAcquisition.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentControl.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\VMSScan.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\VMSMSEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IInstrumentMsScanContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\MSEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\UIAPIMsScan.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\VMSMsScanContainer.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\VMSInstrumentAccess.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\VMSInstrumentAccessContainer.cs" />
     <Compile Include="Interfaces\Interfaces.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUIAPIMessage.cs" />
     <Compile Include="UIAPI.cs" />

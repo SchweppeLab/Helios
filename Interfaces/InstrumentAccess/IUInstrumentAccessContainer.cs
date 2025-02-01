@@ -272,26 +272,29 @@ namespace UIAPI.Interfaces.InstrumentAccess
         }
     }
 
+  /// <summary>
+  /// Factory class that attempts to first connect to a Fusion instrument. Failing
+  /// that, it attempts to connect to an Exploris instrument.
+  /// </summary>
+  static public class InstrumentAccessContainerFactory
+  {
     /// <summary>
-    /// Factory class that attempts to first connect to a Fusion instrument. Failing
-    /// that, it attempts to connect to an Exploris instrument.
+    /// Get an instance of the instrument.
     /// </summary>
-    static public class InstrumentAccessContainerFactory
+    /// <returns>UIAPI.Interfaces.IInstrument object</returns>
+    static public IUInstrumentAccessContainer Get()
     {
-        /// <summary>
-        /// Get an instance of the instrument.
-        /// </summary>
-        /// <returns>UIAPI.Interfaces.IInstrument object</returns>
-        static public IUInstrumentAccessContainer Get()
-        {
-            UInstrumentAccessContainerFusion fusion = new UInstrumentAccessContainerFusion();
-            if (fusion.Check()) return fusion;
+      UInstrumentAccessContainerFusion fusion = new UInstrumentAccessContainerFusion();
+      if (fusion.Check()) return fusion;
 
-            UInstrumentAccessContainerExploris exploris = new UInstrumentAccessContainerExploris();
-            if (exploris.Check()) return exploris;
+      UInstrumentAccessContainerExploris exploris = new UInstrumentAccessContainerExploris();
+      if (exploris.Check()) return exploris;
 
-            return null;
+      UInstrumentAccessContainerVM vm = new UInstrumentAccessContainerVM();
+      if (vm.Check()) return vm;
 
-        }
+      return null;
+
     }
+  }
 }

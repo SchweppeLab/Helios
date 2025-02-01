@@ -21,7 +21,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// Get access to the interface covering all control functionality of an instrument.<br/>
         /// This property is accessible offline.
         /// </summary>
-        UIAPI.Interfaces.InstrumentAccess.Control.IInstControl Control { get; }
+        UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
 
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -67,7 +67,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     class UInstrumentAccessExploris : IUInstrumentAccess
     {
         exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess instAcc;
-        public UIAPI.Interfaces.InstrumentAccess.Control.IInstControl Control { get; }
+        public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
         public string[] DetectorClasses { get; }
@@ -84,7 +84,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
             instAcc.ConnectionChanged += ConnectionChangedExploris;
             //instAcc.ContactClosureChanged += ContactClosureChangedFusion; //not implemented in Exploris
             //Control = InstControlFactory.Get(instAcc);
-            Control = new UIAPI.Interfaces.InstrumentAccess.Control.InstControlExploris(instAcc);
+            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UExplorisControl(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
             DetectorClasses = instAcc.DetectorClasses;
@@ -145,7 +145,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     class UInstrumentAccessFusion : IUInstrumentAccess
     {
         fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess instAcc;
-        public UIAPI.Interfaces.InstrumentAccess.Control.IInstControl Control { get; }
+        public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
         public string[] DetectorClasses { get; }
@@ -162,7 +162,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
             instAcc.ConnectionChanged += ConnectionChangedFusion;
             instAcc.ContactClosureChanged += ContactClosureChangedFusion;
             //Control = InstControlFactory.Get(instAcc);
-            Control = new UIAPI.Interfaces.InstrumentAccess.Control.InstControlFusion(instAcc);
+            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UFusionControl(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
             DetectorClasses = instAcc.DetectorClasses;

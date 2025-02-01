@@ -11,7 +11,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ScottPlot" Version="5.0.54" />
+    <PackageReference Include="ScottPlot.WinForms" Version="5.0.54" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\UIAPI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="API-2.0">
+      <HintPath>..\..\..\Other\IAPI\lib\API-2.0.dll</HintPath>
+    </Reference>
+    <Reference Include="Pipes">
+      <HintPath>..\..\Pipes\Pipes\bin\Release\net8.0\Pipes.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjectMIDAS">
+      <HintPath>..\..\ProjectMIDAS\ProjectMIDAS\bin\x64\Release\net8.0\ProjectMIDAS.dll</HintPath>
+    </Reference>
+    <Reference Include="Spectrum-1.0">
+      <HintPath>..\..\..\Other\IAPI\lib\Spectrum-1.0.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

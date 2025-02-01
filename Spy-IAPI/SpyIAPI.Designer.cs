@@ -1,6 +1,6 @@
 ﻿namespace Spy_IAPI
 {
-  partial class Form1
+  partial class SpyIAPI
   {
     /// <summary>
     ///  Required designer variable.
@@ -28,17 +28,21 @@
     /// </summary>
     private void InitializeComponent()
     {
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SpyIAPI));
       splitContainer1 = new SplitContainer();
       splitContainer2 = new SplitContainer();
       buttonListen = new Button();
       listenIndicator = new Button();
       buttonConnect = new Button();
       connectionIndicator = new Button();
+      splitContainer3 = new SplitContainer();
+      plotSpectrum = new ScottPlot.WinForms.FormsPlot();
+      lblScanFilter = new Label();
+      lblScanInfo = new Label();
+      rtbLog = new RichTextBox();
       toolStrip1 = new ToolStrip();
       toolStripButton1 = new ToolStripButton();
       statusStrip1 = new StatusStrip();
-      rtbLog = new RichTextBox();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
       splitContainer1.Panel1.SuspendLayout();
       splitContainer1.Panel2.SuspendLayout();
@@ -46,6 +50,10 @@
       ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
       splitContainer2.Panel1.SuspendLayout();
       splitContainer2.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
+      splitContainer3.Panel1.SuspendLayout();
+      splitContainer3.Panel2.SuspendLayout();
+      splitContainer3.SuspendLayout();
       toolStrip1.SuspendLayout();
       SuspendLayout();
       // 
@@ -63,7 +71,7 @@
       // 
       // splitContainer1.Panel2
       // 
-      splitContainer1.Panel2.Controls.Add(rtbLog);
+      splitContainer1.Panel2.Controls.Add(splitContainer3);
       splitContainer1.Size = new Size(784, 481);
       splitContainer1.SplitterDistance = 240;
       splitContainer1.SplitterWidth = 2;
@@ -97,6 +105,7 @@
       buttonListen.TabIndex = 3;
       buttonListen.Text = "Listen";
       buttonListen.UseVisualStyleBackColor = true;
+      buttonListen.Click += buttonListen_Click;
       // 
       // listenIndicator
       // 
@@ -126,6 +135,62 @@
       connectionIndicator.Size = new Size(236, 16);
       connectionIndicator.TabIndex = 0;
       connectionIndicator.UseVisualStyleBackColor = false;
+      // 
+      // splitContainer3
+      // 
+      splitContainer3.Dock = DockStyle.Fill;
+      splitContainer3.Location = new Point(0, 0);
+      splitContainer3.Name = "splitContainer3";
+      splitContainer3.Orientation = Orientation.Horizontal;
+      // 
+      // splitContainer3.Panel1
+      // 
+      splitContainer3.Panel1.Controls.Add(plotSpectrum);
+      splitContainer3.Panel1.Controls.Add(lblScanFilter);
+      splitContainer3.Panel1.Controls.Add(lblScanInfo);
+      // 
+      // splitContainer3.Panel2
+      // 
+      splitContainer3.Panel2.Controls.Add(rtbLog);
+      splitContainer3.Size = new Size(542, 481);
+      splitContainer3.SplitterDistance = 246;
+      splitContainer3.TabIndex = 1;
+      // 
+      // plotSpectrum
+      // 
+      plotSpectrum.DisplayScale = 1F;
+      plotSpectrum.Dock = DockStyle.Fill;
+      plotSpectrum.Location = new Point(0, 30);
+      plotSpectrum.Name = "plotSpectrum";
+      plotSpectrum.Size = new Size(542, 216);
+      plotSpectrum.TabIndex = 0;
+      // 
+      // lblScanFilter
+      // 
+      lblScanFilter.AutoSize = true;
+      lblScanFilter.Dock = DockStyle.Top;
+      lblScanFilter.Location = new Point(0, 15);
+      lblScanFilter.Name = "lblScanFilter";
+      lblScanFilter.Size = new Size(0, 15);
+      lblScanFilter.TabIndex = 2;
+      // 
+      // lblScanInfo
+      // 
+      lblScanInfo.AutoSize = true;
+      lblScanInfo.Dock = DockStyle.Top;
+      lblScanInfo.Location = new Point(0, 0);
+      lblScanInfo.Name = "lblScanInfo";
+      lblScanInfo.Size = new Size(0, 15);
+      lblScanInfo.TabIndex = 1;
+      // 
+      // rtbLog
+      // 
+      rtbLog.Dock = DockStyle.Fill;
+      rtbLog.Location = new Point(0, 0);
+      rtbLog.Name = "rtbLog";
+      rtbLog.Size = new Size(542, 231);
+      rtbLog.TabIndex = 0;
+      rtbLog.Text = "";
       // 
       // toolStrip1
       // 
@@ -159,16 +224,7 @@
       statusStrip1.TabIndex = 1;
       statusStrip1.Text = "statusStrip1";
       // 
-      // rtbLog
-      // 
-      rtbLog.Dock = DockStyle.Fill;
-      rtbLog.Location = new Point(0, 0);
-      rtbLog.Name = "rtbLog";
-      rtbLog.Size = new Size(542, 481);
-      rtbLog.TabIndex = 0;
-      rtbLog.Text = "";
-      // 
-      // Form1
+      // SpyIAPI
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
@@ -177,7 +233,7 @@
       Controls.Add(toolStrip1);
       Controls.Add(statusStrip1);
       Margin = new Padding(1);
-      Name = "Form1";
+      Name = "SpyIAPI";
       Text = "Spy-IAPI";
       splitContainer1.Panel1.ResumeLayout(false);
       splitContainer1.Panel2.ResumeLayout(false);
@@ -186,6 +242,11 @@
       splitContainer2.Panel1.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
       splitContainer2.ResumeLayout(false);
+      splitContainer3.Panel1.ResumeLayout(false);
+      splitContainer3.Panel1.PerformLayout();
+      splitContainer3.Panel2.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
+      splitContainer3.ResumeLayout(false);
       toolStrip1.ResumeLayout(false);
       toolStrip1.PerformLayout();
       ResumeLayout(false);
@@ -203,5 +264,9 @@
     private Button buttonListen;
     private Button listenIndicator;
     private RichTextBox rtbLog;
+    private SplitContainer splitContainer3;
+    private ScottPlot.WinForms.FormsPlot plotSpectrum;
+    private Label lblScanFilter;
+    private Label lblScanInfo;
   }
 }
