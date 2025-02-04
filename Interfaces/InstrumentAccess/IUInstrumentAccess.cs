@@ -29,7 +29,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// For regular messages see Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccessContainer.MessagesArrived<br/>
         /// This event handler is accessible offline.
         /// </summary>
-        event EventHandler<AcquisitionErrorsEventArgs> AcquisitionErrorsArrived;
+        event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
 
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -46,14 +46,13 @@ namespace UIAPI.Interfaces.InstrumentAccess
         event EventHandler<CCEventArgs> ContactClosureChanged;
 
         /// <summary>
-        /// Note, this is implemented as a function in UIAPI.<br/><br/>
         /// From IAPI Docs:<br/>
         /// Get access to the connection state of the instrument and of this driver to the communication layer. Most functionality is not available if the instrument is not connected.<br/>
         /// This property is accessible offline.<br/>
         /// See Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccessContainer.StartOnlineAccess for initiating online access.
         /// </summary>
         /// <returns>true/false status of the underlying connection state of the instrument.</returns>
-        bool Connected();
+        bool Connected { get; }
 
         UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IInstMsScanContainer GetMsScanContainer(int msDetectorSet);
 
@@ -67,13 +66,14 @@ namespace UIAPI.Interfaces.InstrumentAccess
     class UInstrumentAccessExploris : IUInstrumentAccess
     {
         exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess instAcc;
+        public bool Connected { get; }
         public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
         public string[] DetectorClasses { get; }
         public int InstrumentId { get; }
         public string InstrumentName { get; }
-        public event EventHandler<AcquisitionErrorsEventArgs> AcquisitionErrorsArrived;
+        public event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
         public event EventHandler<EventArgs> ConnectionChanged;
         public event EventHandler<CCEventArgs> ContactClosureChanged;
 
@@ -84,7 +84,8 @@ namespace UIAPI.Interfaces.InstrumentAccess
             instAcc.ConnectionChanged += ConnectionChangedExploris;
             //instAcc.ContactClosureChanged += ContactClosureChangedFusion; //not implemented in Exploris
             //Control = InstControlFactory.Get(instAcc);
-            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UExplorisControl(instAcc);
+            Connected = instAcc.Connected;
+            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UControlExploris(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
             DetectorClasses = instAcc.DetectorClasses;
@@ -94,13 +95,8 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
         void AcquisitionErrorsArrivedExploris(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
         {
-            AcquisitionErrorsEventArgs args = new AcquisitionErrorsEventArgs(e);
+            AcquisitionErrorsArrivedEventArgs args = new AcquisitionErrorsArrivedEventArgs(e);
             OnAcquisitionErrorsArrived(args);
-        }
-
-        public bool Connected()
-        {
-            return instAcc.Connected;
         }
 
         void ConnectionChangedExploris(object sender, EventArgs e)
@@ -114,9 +110,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             return msCont;
         }
 
-        protected virtual void OnAcquisitionErrorsArrived(AcquisitionErrorsEventArgs e)
+        protected virtual void OnAcquisitionErrorsArrived(AcquisitionErrorsArrivedEventArgs e)
         {
-            EventHandler<AcquisitionErrorsEventArgs> handler = AcquisitionErrorsArrived;
+            EventHandler<AcquisitionErrorsArrivedEventArgs> handler = AcquisitionErrorsArrived;
             if (handler != null)
             {
                 handler(this, e);
@@ -145,13 +141,14 @@ namespace UIAPI.Interfaces.InstrumentAccess
     class UInstrumentAccessFusion : IUInstrumentAccess
     {
         fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess instAcc;
-        public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
+    public bool Connected { get; }
+    public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
         public string[] DetectorClasses { get; }
         public int InstrumentId { get; }
         public string InstrumentName { get; }
-        public event EventHandler<AcquisitionErrorsEventArgs> AcquisitionErrorsArrived;
+        public event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
         public event EventHandler<EventArgs> ConnectionChanged;
         public event EventHandler<CCEventArgs> ContactClosureChanged;
 
@@ -162,7 +159,8 @@ namespace UIAPI.Interfaces.InstrumentAccess
             instAcc.ConnectionChanged += ConnectionChangedFusion;
             instAcc.ContactClosureChanged += ContactClosureChangedFusion;
             //Control = InstControlFactory.Get(instAcc);
-            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UFusionControl(instAcc);
+            Connected = instAcc.Connected;
+            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UControlFusion(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
             DetectorClasses = instAcc.DetectorClasses;
@@ -172,13 +170,8 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
         void AcquisitionErrorsArrivedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
         {
-            AcquisitionErrorsEventArgs args = new AcquisitionErrorsEventArgs(e);
+            AcquisitionErrorsArrivedEventArgs args = new AcquisitionErrorsArrivedEventArgs(e);
             OnAcquisitionErrorsArrived(args);
-        }
-
-        public bool Connected()
-        {
-            return instAcc.Connected;
         }
 
         void ConnectionChangedFusion(object sender, EventArgs e)
@@ -198,9 +191,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             return msCont;
         }
 
-        protected virtual void OnAcquisitionErrorsArrived(AcquisitionErrorsEventArgs e)
+        protected virtual void OnAcquisitionErrorsArrived(AcquisitionErrorsArrivedEventArgs e)
         {
-            EventHandler<AcquisitionErrorsEventArgs> handler = AcquisitionErrorsArrived;
+            EventHandler<AcquisitionErrorsArrivedEventArgs> handler = AcquisitionErrorsArrived;
             if (handler != null)
             {
                 handler(this, e);

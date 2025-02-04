@@ -61,7 +61,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// This event will be thrown when at least one error arrived from the instrument during an acquisition. This event handler will not be used for status reports or messages of the transport layer.<br/>
         /// For messages during acquisitions see Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccess.AcquisitionErrorsArrived.
         /// </summary>
-        event EventHandler<MessageEventArgs> MessagesArrived;
+        event EventHandler<UMessagesArrivedEventArgs> MessagesArrived;
 
         /// <summary>
         /// This event handler will be fired when Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccessContainer.ServiceConnected has changed its value. 
@@ -76,7 +76,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         private exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
         private bool check = false;
         public event EventHandler<EventArgs> ServiceConnectionChanged;
-        public event EventHandler<MessageEventArgs> MessagesArrived;
+        public event EventHandler<UMessagesArrivedEventArgs> MessagesArrived;
         public bool ServiceConnected { get; protected set; }
 
         public UInstrumentAccessContainerExploris()
@@ -116,7 +116,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
         void MessagesArrivedExploris(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs e)
         {
-            MessageEventArgs args = new MessageEventArgs(e);
+            UMessagesArrivedEventArgs args = new UMessagesArrivedEventArgs(e);
             OnMessagesArrived(args);
         }
 
@@ -135,9 +135,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
         {
             return "Exploris";
         }
-        protected virtual void OnMessagesArrived(MessageEventArgs e)
+        protected virtual void OnMessagesArrived(UMessagesArrivedEventArgs e)
         {
-            EventHandler<MessageEventArgs> handler = MessagesArrived;
+            EventHandler<UMessagesArrivedEventArgs> handler = MessagesArrived;
             if (handler != null)
             {
                 handler(this, e);
@@ -176,7 +176,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         private fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
         private bool check = false;
         public event EventHandler<EventArgs> ServiceConnectionChanged;
-        public event EventHandler<MessageEventArgs> MessagesArrived;
+        public event EventHandler<UMessagesArrivedEventArgs> MessagesArrived;
         public bool ServiceConnected { get; protected set; }
 
         public UInstrumentAccessContainerFusion()
@@ -216,7 +216,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
         void MessagesArrivedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs e)
         {
-            MessageEventArgs args = new MessageEventArgs(e);
+            UMessagesArrivedEventArgs args = new UMessagesArrivedEventArgs(e);
             OnMessagesArrived(args);
         }
 
@@ -236,9 +236,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             return "Fusion";
         }
 
-        protected virtual void OnMessagesArrived(MessageEventArgs e)
+        protected virtual void OnMessagesArrived(UMessagesArrivedEventArgs e)
         {
-            EventHandler<MessageEventArgs> handler = MessagesArrived;
+            EventHandler<UMessagesArrivedEventArgs> handler = MessagesArrived;
             if (handler != null)
             {
                 handler(this, e);

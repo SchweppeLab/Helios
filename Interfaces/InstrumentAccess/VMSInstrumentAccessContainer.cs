@@ -56,7 +56,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
       return "VirtualMS";
     }
 
-    protected virtual void OnMessagesArrived(MessageEventArgs e)
+    protected virtual void OnMessagesArrived(UMessagesArrivedEventArgs e)
     {
       MessagesArrived?.Invoke(this, e);
     }
@@ -107,7 +107,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     /// This event will be thrown when at least one error arrived from the instrument during an acquisition. This event handler will not be used for status reports or messages of the transport layer.<br/>
     /// For messages during acquisitions see Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccess.AcquisitionErrorsArrived.
     /// </summary>
-    public event EventHandler<MessageEventArgs> MessagesArrived;
+    public event EventHandler<UMessagesArrivedEventArgs> MessagesArrived;
 
     /// <summary>
     /// This event handler will be fired when Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccessContainer.ServiceConnected has changed its value. 

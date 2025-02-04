@@ -133,7 +133,7 @@ namespace Spy_IAPI
       UpdateConnection();
     }
 
-    void AcquisitionErrorsArrived(object? sender, AcquisitionErrorsEventArgs e)
+    void AcquisitionErrorsArrived(object? sender, AcquisitionErrorsArrivedEventArgs e)
     {
       Log("Acquisition Error: " + e.ToString());
     }
@@ -165,7 +165,7 @@ namespace Spy_IAPI
     {
       if (msIA != null)
       {
-        Log(msIA.Connected().ToString() + " :: " + e.ToString());
+        Log(msIA.Connected.ToString() + " :: " + e.ToString());
       }
     }
 
@@ -179,7 +179,7 @@ namespace Spy_IAPI
       rtbLog.AppendText(s + System.Environment.NewLine);
     }
 
-    void MessagesArrived(object? sender, MessageEventArgs e)
+    void MessagesArrived(object? sender, UMessagesArrivedEventArgs e)
     {
       StringBuilder sb = new StringBuilder();
       foreach (var message in e.Messages)

@@ -3,46 +3,82 @@ extern alias exploris;
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using UIAPI.Interfaces.InstrumentAccess.Control.Scans;
 
 namespace UIAPI.Interfaces.InstrumentAccess.Control
 {
+  /// <summary>
+  /// This interface wraps the extensions to IControl by Exploris and Fusion based instruments.
+  /// </summary>    
+  public interface IUControl
+  {
+
     /// <summary>
-    /// This interface wraps the extensions to IControl by Exploris and Fusion based instruments.
-    /// </summary>    
-    public interface IUControl
+    /// Get access to the scans interface. This interface allows to execute repeating and custum scans during a method or any other execution.
+    ///
+    /// Calling this method will lock that interface until it is disposed.
+    /// The instrument will not stop its current operation for the first.
+    /// If exclusive access is requested it will be guaranteed that no other Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans interface is in use and that any further request for such an interface no matter whether exclusive or cooperative will be rejected.
+    /// If non-exclusive access is requested it will not be satisfied if an exclusive access is already granted.
+    /// </summary>
+    /// <param name="exclusiveAccess">: request for exclusive access(true) or cooperative access (false)</param>
+    /// <returns>IUScans interface being capable to receive user commands.</returns>
+    IUScans GetScans(bool exclusiveAccess);
+
+    /// <summary>
+    /// Get access to the acquisition interface.
+    /// This property is the instrument-specific implementation for Fusion and Exploris-based instruments.
+    /// </summary>  
+    UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+  }
+
+  class UControlExploris : IUControl
+  {
+    exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl control;
+    public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+    public UControlExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
     {
-        /// <summary>
-        /// Get access to the acquisition interface.
-        /// This property is the instrument-specific implementation for Fusion and Exploris-based instruments.
-        /// </summary>  
-        UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+      control = ia.Control;
+      //Acquisition = InstAcquisitionFactory.Get(control);
+      Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionExploris(control);
+    }
+    public UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans GetScans(bool exclusiveAccess)
+    {
+      return new UIAPI.Interfaces.InstrumentAccess.Control.Scans.UScansExploris(control,exclusiveAccess);
+    }
+  }
+
+  class UControlFusion : IUControl
+  {
+    fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl control;
+    public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+    public UControlFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
+    {
+      control = ia.Control;
+      //Acquisition = InstAcquisitionFactory.Get(control);
+      Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionFusion(control);
     }
 
-    class UExplorisControl : IUControl
+    public UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans GetScans(bool exclusiveAccess)
     {
-        exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl control;
-        public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
-        public UExplorisControl(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
-        {
-            control = ia.Control;
-            //Acquisition = InstAcquisitionFactory.Get(control);
-            Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionExploris(control);
-        }
+      return new UIAPI.Interfaces.InstrumentAccess.Control.Scans.UScansFusion(control, exclusiveAccess);
     }
-    class UFusionControl : IUControl
+  }
+
+  class UControlVMS : IUControl
+  {
+    public new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+
+    public UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans GetScans(bool exclusiveAccess)
     {
-        fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl control;
-        public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
-        public UFusionControl(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
-        {
-            control = ia.Control;
-            //Acquisition = InstAcquisitionFactory.Get(control);
-            Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionFusion(control);
-        }
+      return new UIAPI.Interfaces.InstrumentAccess.Control.Scans.UScansVMS();
     }
+  }
 
     //static class InstAcquisitionFactory
     //{

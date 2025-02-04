@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Thermo.Interfaces.InstrumentAccess_V1;
 
 namespace UIAPI.Interfaces.InstrumentAccess
 {
@@ -13,7 +14,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     /// A wrapper around IAPI IMessage interface. Documentation from IAPI:<br/>
     /// Describes an error coming from the instrument during an acquisition. This interface will not be used for status reports or messages of the transport layer.
     /// </summary>
-    public interface IUIAPIAcquisitionErrors
+    public interface IUAcquisitionError
     {
         /// <summary>
         /// The text content of the error
@@ -25,63 +26,63 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// </summary>
         TimeSpan Occurrence { get; }
     }
-    class UIAPIAcquisitionErrors : IUIAPIAcquisitionErrors
+    class UAcquisitionError : IUAcquisitionError
     {
         public string Content { get; }
         public TimeSpan Occurrence { get; }
-        public UIAPIAcquisitionErrors()
+        public UAcquisitionError()
         {
 
         }
-        public UIAPIAcquisitionErrors(Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionError ae)
+        public UAcquisitionError(Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionError ae)
         {
             Content = ae.Content;
             Occurrence = ae.Occurrence;
         }
-        public UIAPIAcquisitionErrors(exploris.Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionError ae)
+        public UAcquisitionError(exploris.Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionError ae)
         {
             Content = ae.Content;
             Occurrence = ae.Occurrence;
         }
+    }
+
+  /// <summary>
+  /// A wrapper around IAPI AcquisitionErrorsArrivedEventArgs. From IAPI Documentation:<br/>
+  /// This implementation of EventArgs carries a list of Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionErrors. This class will not be used for status reports or messages of the transport layer.
+  /// </summary>
+  public class AcquisitionErrorsArrivedEventArgs : EventArgs
+  {
+    /// <summary>
+    /// Get access to the errors that have arrived from the instrument.
+    /// </summary>
+    public IList<IUAcquisitionError> Errors;
+
+    /// <summary>
+    /// Create a new UIAPI.Interfaces.InstrumentAccess.AcquisitionErrorsEventArgs from Fusion Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
+    /// </summary>
+    /// <param name="e"></param>
+    public AcquisitionErrorsArrivedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
+    {
+      foreach (var v in e.Errors)
+      {
+        IUAcquisitionError err = new UAcquisitionError(v);
+        Errors.Add(err);
+      }
+
     }
 
     /// <summary>
-    /// A wrapper around IAPI AcquisitionErrorsArrivedEventArgs. From IAPI Documentation:<br/>
-    /// This implementation of EventArgs carries a list of Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionErrors. This class will not be used for status reports or messages of the transport layer.
+    /// Create a new UIAPI.Interfaces.InstrumentAccess.AcquisitionErrorsEventArgs from Exploris Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
     /// </summary>
-    public class AcquisitionErrorsEventArgs : EventArgs
+    /// <param name="e"></param>
+    public AcquisitionErrorsArrivedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
     {
-        /// <summary>
-        /// Get access to the errors that have arrived from the instrument.
-        /// </summary>
-        public IList<IUIAPIAcquisitionErrors> Errors;
+      foreach (var v in e.Errors)
+      {
+        IUAcquisitionError err = new UAcquisitionError(v);
+        Errors.Add(err);
+      }
 
-        /// <summary>
-        /// Create a new UIAPI.Interfaces.InstrumentAccess.AcquisitionErrorsEventArgs from Fusion Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
-        /// </summary>
-        /// <param name="e"></param>
-        public AcquisitionErrorsEventArgs(Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
-        {
-            foreach (var v in e.Errors)
-            {
-                IUIAPIAcquisitionErrors err = new UIAPIAcquisitionErrors(v);
-                Errors.Add(err);
-            }
-
-        }
-
-        /// <summary>
-        /// Create a new UIAPI.Interfaces.InstrumentAccess.AcquisitionErrorsEventArgs from Exploris Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
-        /// </summary>
-        /// <param name="e"></param>
-        public AcquisitionErrorsEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
-        {
-            foreach (var v in e.Errors)
-            {
-                IUIAPIAcquisitionErrors err = new UIAPIAcquisitionErrors(v);
-                Errors.Add(err);
-            }
-
-        }
     }
+  }
 }

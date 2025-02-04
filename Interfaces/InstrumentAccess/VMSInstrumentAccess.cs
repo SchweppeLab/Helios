@@ -12,19 +12,21 @@ namespace UIAPI.Interfaces.InstrumentAccess
   class VMSInstrumentAccess : IUInstrumentAccess
   {
     public VMSMsScanContainer MsScanCont { get; }
+    public bool Connected { get; }
     public IUControl Control { get; }
     public int CountAnalogChannels { get; }
     public int CountMsDetectors { get; }
     public string[] DetectorClasses { get; }
     public int InstrumentId { get; }
     public string InstrumentName { get; }
-    public event EventHandler<AcquisitionErrorsEventArgs> AcquisitionErrorsArrived;
+    public event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
     public event EventHandler<EventArgs> ConnectionChanged;
     public event EventHandler<CCEventArgs> ContactClosureChanged;
 
     public VMSInstrumentAccess()
     {
-      Control = new VMSControl();
+      Connected = true;
+      Control = new UControlVMS();
       MsScanCont = new VMSMsScanContainer();
       CountAnalogChannels = 1;
       CountMsDetectors = 1;
@@ -33,10 +35,6 @@ namespace UIAPI.Interfaces.InstrumentAccess
       InstrumentName = "VirtualMS Instrument Name";
     }
 
-    public bool Connected()
-    {
-      return true;
-    }
     public IInstMsScanContainer GetMsScanContainer(int msDetectorSet)
     {
       return MsScanCont;

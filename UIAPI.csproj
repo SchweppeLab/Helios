@@ -83,7 +83,7 @@
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\AOEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\SCEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\UIAPIState.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\VMSControl.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUIScans.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccessContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccess.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\InstrumentAcquisition.cs" />
