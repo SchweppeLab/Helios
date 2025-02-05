@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using UIAPI.Interfaces.InstrumentAccess.Control.Acquisition;
 using UIAPI.Interfaces.InstrumentAccess.Control.Scans;
 
 namespace UIAPI.Interfaces.InstrumentAccess.Control
@@ -34,18 +35,18 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control
     /// Get access to the acquisition interface.
     /// This property is the instrument-specific implementation for Fusion and Exploris-based instruments.
     /// </summary>  
-    UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+    UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IUAcquisition Acquisition { get; }
   }
 
-  class UControlExploris : IUControl
+  internal class UControlExploris : IUControl
   {
     exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl control;
-    public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+    public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IUAcquisition Acquisition { get; }
     public UControlExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
     {
       control = ia.Control;
       //Acquisition = InstAcquisitionFactory.Get(control);
-      Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionExploris(control);
+      Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.UAcquisitionExploris(control);
     }
     public UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans GetScans(bool exclusiveAccess)
     {
@@ -53,15 +54,15 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control
     }
   }
 
-  class UControlFusion : IUControl
+  internal class UControlFusion : IUControl
   {
     fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl control;
-    public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+    public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IUAcquisition Acquisition { get; }
     public UControlFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
     {
       control = ia.Control;
       //Acquisition = InstAcquisitionFactory.Get(control);
-      Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionFusion(control);
+      Acquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.UAcquisitionFusion(control);
     }
 
     public UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans GetScans(bool exclusiveAccess)
@@ -70,9 +71,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control
     }
   }
 
-  class UControlVMS : IUControl
+  internal class UControlVMS : IUControl
   {
-    public new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Acquisition { get; }
+    public IUAcquisition Acquisition { get; } = new UAcquisitionVMS();
 
     public UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans GetScans(bool exclusiveAccess)
     {
@@ -80,19 +81,4 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control
     }
   }
 
-    //static class InstAcquisitionFactory
-    //{
-
-    //    static public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Get(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
-    //    {
-    //        UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionExploris instAcquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionExploris(c);
-    //        return instAcquisition;
-    //    }
-
-    //    static public UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition Get(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
-    //    {
-    //        UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionFusion instAcquisition = new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.InstAcquisitionFusion(c);
-    //        return instAcquisition;
-    //    }
-    //}
 }

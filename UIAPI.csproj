@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="API-2.0">
       <HintPath>..\..\Other\IAPI\lib\API-2.0.dll</HintPath>
+      <Aliases>global</Aliases>
     </Reference>
     <Reference Include="Fusion.API-1.0">
       <HintPath>..\..\Other\IAPI\lib\tribrid\Fusion.API-1.0.dll</HintPath>
@@ -78,26 +79,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\InstrumentAccess\AcquisitionErrors.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\CCEventArgs.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\ContactClosureEventArgs.cs" />
     <Compile Include="ExplorisConnection.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\AOEventArgs.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\SCEventArgs.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\UIAPIState.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUIScans.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\AcquisitionOpeningEventArgs.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\StateChangedEventArgs.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IUState.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUScans.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccessContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccess.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\InstrumentAcquisition.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentControl.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\VMSScan.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\VMSMSEventArgs.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IInstrumentMsScanContainer.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\MSEventArgs.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\UIAPIMsScan.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\VMSMsScanContainer.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\VMSInstrumentAccess.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\VMSInstrumentAccessContainer.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IUAcquisition.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\IUControl.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IUMsScanContainer.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\MsScanEventArgs.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IUMsScan.cs" />
     <Compile Include="Interfaces\Interfaces.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\IUIAPIMessage.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\IUMessage.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IUCentroid.cs" />
     <Compile Include="UIAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

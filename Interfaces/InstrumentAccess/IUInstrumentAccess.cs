@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UIAPI.Interfaces.InstrumentAccess.Control;
+using UIAPI.Interfaces.InstrumentAccess.MsScanContainer;
 
 namespace UIAPI.Interfaces.InstrumentAccess
 {
@@ -43,7 +45,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// Occurs whenever the contact closure detects a rising and/or falling edge.<br/>
         /// Only applies to Fusion instruments. Exploris instruments will not raise these events.
         /// </summary>
-        event EventHandler<CCEventArgs> ContactClosureChanged;
+        event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -54,7 +56,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// <returns>true/false status of the underlying connection state of the instrument.</returns>
         bool Connected { get; }
 
-        UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IInstMsScanContainer GetMsScanContainer(int msDetectorSet);
+        UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer GetMsScanContainer(int msDetectorSet);
 
         int CountAnalogChannels { get; }
         int CountMsDetectors { get; }
@@ -75,7 +77,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         public string InstrumentName { get; }
         public event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
         public event EventHandler<EventArgs> ConnectionChanged;
-        public event EventHandler<CCEventArgs> ContactClosureChanged;
+        public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
         public UInstrumentAccessExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer iac, int index)
         {
@@ -104,9 +106,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             OnConnectionChanged(e);
         }
 
-        public UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IInstMsScanContainer GetMsScanContainer(int msDetectorSet)
+        public UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer GetMsScanContainer(int msDetectorSet)
         {
-            UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IInstMsScanContainer msCont = new UIAPI.Interfaces.InstrumentAccess.MsScanContainer.InstMsScanContainerExploris(instAcc,msDetectorSet);
+            UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer msCont = new UIAPI.Interfaces.InstrumentAccess.MsScanContainer.UMsScanContainerExploris(instAcc,msDetectorSet);
             return msCont;
         }
 
@@ -128,9 +130,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             }
         }
 
-        protected virtual void OnContactClosureChanged(CCEventArgs e)
+        protected virtual void OnContactClosureChanged(ContactClosureEventArgs e)
         {
-            EventHandler<CCEventArgs> handler = ContactClosureChanged;
+            EventHandler<ContactClosureEventArgs> handler = ContactClosureChanged;
             if (handler != null)
             {
                 handler(this, e);
@@ -150,7 +152,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         public string InstrumentName { get; }
         public event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
         public event EventHandler<EventArgs> ConnectionChanged;
-        public event EventHandler<CCEventArgs> ContactClosureChanged;
+        public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
         public UInstrumentAccessFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer iac, int index)
         {
@@ -181,13 +183,13 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
         void ContactClosureChangedFusion(object sender, fusion.Thermo.Interfaces.FusionAccess_V1.ContactClosureEventArgs e)
         {
-            CCEventArgs args = new CCEventArgs(e);
+            ContactClosureEventArgs args = new ContactClosureEventArgs(e);
             OnContactClosureChanged(args);
         }
 
-        public UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IInstMsScanContainer GetMsScanContainer(int msDetectorSet)
+        public UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer GetMsScanContainer(int msDetectorSet)
         {
-            UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IInstMsScanContainer msCont = new UIAPI.Interfaces.InstrumentAccess.MsScanContainer.InstMsScanContainerFusion(instAcc, msDetectorSet);
+            UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer msCont = new UIAPI.Interfaces.InstrumentAccess.MsScanContainer.UMsScanContainerFusion(instAcc, msDetectorSet);
             return msCont;
         }
 
@@ -209,9 +211,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             }
         }
 
-        protected virtual void OnContactClosureChanged(CCEventArgs e)
+        protected virtual void OnContactClosureChanged(ContactClosureEventArgs e)
         {
-            EventHandler<CCEventArgs> handler = ContactClosureChanged;
+            EventHandler<ContactClosureEventArgs> handler = ContactClosureChanged;
             if(handler != null)
             {
                 handler(this, e);
@@ -219,39 +221,38 @@ namespace UIAPI.Interfaces.InstrumentAccess
         }
     }
 
-    //static class InstrumentAccessFactory
-    //{
-        
-    //    static public IInstAccess Get(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer iac, int index)
-    //    {
-    //        InstrumentAccessExploris explorisAccess = new InstrumentAccessExploris(iac,index);
-    //        return explorisAccess;
-    //    }
+  internal class UInstrumentAccessVMS : IUInstrumentAccess
+  {
+    public UMsScanContainerVMS MsScanCont { get; }
+    public bool Connected { get; }
+    public IUControl Control { get; }
+    public int CountAnalogChannels { get; }
+    public int CountMsDetectors { get; }
+    public string[] DetectorClasses { get; }
+    public int InstrumentId { get; }
+    public string InstrumentName { get; }
+    public event EventHandler<AcquisitionErrorsArrivedEventArgs> AcquisitionErrorsArrived;
+    public event EventHandler<EventArgs> ConnectionChanged;
+    public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
-    //    static public IInstAccess Get(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer iac, int index)
-    //    {
-    //        InstrumentAccessFusion fusionAccess = new InstrumentAccessFusion(iac, index);
-    //        return fusionAccess;
-    //    }
-    //}
+    public UInstrumentAccessVMS()
+    {
+      Connected = true;
+      Control = new UControlVMS();
+      MsScanCont = new UMsScanContainerVMS();
+      CountAnalogChannels = 1;
+      CountMsDetectors = 1;
+      DetectorClasses = new string[1] { "dunno" };
+      InstrumentId = 1;
+      InstrumentName = "VirtualMS Instrument Name";
+    }
 
+    public IUMsScanContainer GetMsScanContainer(int msDetectorSet)
+    {
+      return MsScanCont;
+    }
 
-
-    //static class InstControlFactory
-    //{
-
-    //    static public UIAPI.Interfaces.InstrumentAccess.Control.IInstControl Get(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
-    //    {
-    //        UIAPI.Interfaces.InstrumentAccess.Control.InstControlExploris instControl = new UIAPI.Interfaces.InstrumentAccess.Control.InstControlExploris(ia);
-    //        return instControl;
-    //    }
-
-    //    static public UIAPI.Interfaces.InstrumentAccess.Control.IInstControl Get(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
-    //    {
-    //        UIAPI.Interfaces.InstrumentAccess.Control.InstControlFusion instControl = new UIAPI.Interfaces.InstrumentAccess.Control.InstControlFusion(ia);
-    //        return instControl;
-    //    }
-    //}
+  }
 
 
 

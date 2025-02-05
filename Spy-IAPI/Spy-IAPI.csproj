@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-	<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +30,9 @@
     </Reference>
     <Reference Include="Spectrum-1.0">
       <HintPath>..\..\..\Other\IAPI\lib\Spectrum-1.0.dll</HintPath>
+    </Reference>
+    <Reference Include="Thermo.API.NetStd-1.0">
+      <HintPath>..\..\..\Other\IAPI\lib\Exploris4.3-and-higher\Thermo.API.NetStd-1.0.dll</HintPath>
     </Reference>
   </ItemGroup>
 

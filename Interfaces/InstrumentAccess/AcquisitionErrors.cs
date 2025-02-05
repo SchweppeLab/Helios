@@ -26,7 +26,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// </summary>
         TimeSpan Occurrence { get; }
     }
-    class UAcquisitionError : IUAcquisitionError
+    internal class UAcquisitionError : IUAcquisitionError
     {
         public string Content { get; }
         public TimeSpan Occurrence { get; }

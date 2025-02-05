@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
 {
-  public interface IUScans
+  public interface IUScans //: exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans, fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans
   {
     //bool CancelCustomScan();
     //bool CancelRepetition();

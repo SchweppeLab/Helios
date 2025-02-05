@@ -16,13 +16,13 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     /// to wait for contact closure or to extend the delay between the start of 
     /// the acquisition process and the real start of the first scan programmatically.
     /// </summary>
-    public interface IInstAcquisition
+    public interface IUAcquisition
     {
         /// <summary>
         /// This event will be fired after UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IInstAcquisition.State has changed its value. 
         /// The current instrument state will be carried along.
         /// </summary>
-        event EventHandler<SCEventArgs> StateChanged;
+        event EventHandler<StateChangedEventArgs> StateChanged;
 
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -41,17 +41,17 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
         /// An acquisition is not necessarily bound to a rawfile, but it is in most cases.<br/><br/>
         /// The individual information of a scan will reflect the information whether a scan belongs to an acquisition or not.
         /// </summary>
-        event EventHandler<AOEventArgs> AcquisitionStreamOpening;
+        event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
     }
 
-    class InstAcquisitionExploris : IInstAcquisition
+  internal class UAcquisitionExploris : IUAcquisition
     {
         exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
-        public event EventHandler<SCEventArgs> StateChanged;
+        public event EventHandler<StateChangedEventArgs> StateChanged;
         public event EventHandler<EventArgs> AcquisitionStreamClosing;
-        public event EventHandler<AOEventArgs> AcquisitionStreamOpening;
+        public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-        public InstAcquisitionExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
+        public UAcquisitionExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
         {
             acquisition = c.Acquisition;
             acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingFusion;
@@ -66,7 +66,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
 
         void AcquisitionStreamOpeningFusion(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs e)
         {
-            AOEventArgs args = new AOEventArgs(e);
+            AcquisitionOpeningEventArgs args = new AcquisitionOpeningEventArgs(e);
             OnAcquisitionStreamOpening(args);
         }
 
@@ -79,18 +79,18 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
             }
         }
 
-        protected virtual void OnAcquisitionStreamOpening(AOEventArgs e)
+        protected virtual void OnAcquisitionStreamOpening(AcquisitionOpeningEventArgs e)
         {
-            EventHandler<AOEventArgs> handler = AcquisitionStreamOpening;
+            EventHandler<AcquisitionOpeningEventArgs> handler = AcquisitionStreamOpening;
             if (handler != null)
             {
                 handler(this, e);
             }
         }
 
-        protected virtual void OnStateChanged(SCEventArgs e)
+        protected virtual void OnStateChanged(StateChangedEventArgs e)
         {
-            EventHandler<SCEventArgs> handler = StateChanged;
+            EventHandler<StateChangedEventArgs> handler = StateChanged;
             if (handler != null)
             {
                 handler(this, e);
@@ -99,19 +99,19 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
 
         void StateChangedFusion(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
         {
-            SCEventArgs args = new SCEventArgs(e);
+      StateChangedEventArgs args = new StateChangedEventArgs(e);
             OnStateChanged(args);
         }
     }
 
-    class InstAcquisitionFusion : IInstAcquisition
+  internal class UAcquisitionFusion : IUAcquisition
     {
         Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
-        public event EventHandler<SCEventArgs> StateChanged;
+        public event EventHandler<StateChangedEventArgs> StateChanged;
         public event EventHandler<EventArgs> AcquisitionStreamClosing;
-        public event EventHandler<AOEventArgs> AcquisitionStreamOpening;
+        public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
         
-        public InstAcquisitionFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
+        public UAcquisitionFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
         {
             acquisition = c.Acquisition;
             acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingFusion;
@@ -126,7 +126,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
 
         void AcquisitionStreamOpeningFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs e)
         {
-            AOEventArgs args = new AOEventArgs(e);
+            AcquisitionOpeningEventArgs args = new AcquisitionOpeningEventArgs(e);
             OnAcquisitionStreamOpening(args);
         }
 
@@ -139,18 +139,18 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
             }
         }
 
-        protected virtual void OnAcquisitionStreamOpening(AOEventArgs e)
+        protected virtual void OnAcquisitionStreamOpening(AcquisitionOpeningEventArgs e)
         {
-            EventHandler<AOEventArgs> handler = AcquisitionStreamOpening;
+            EventHandler<AcquisitionOpeningEventArgs> handler = AcquisitionStreamOpening;
             if (handler != null)
             {
                 handler(this, e);
             }
         }
 
-        protected virtual void OnStateChanged(SCEventArgs e)
+        protected virtual void OnStateChanged(StateChangedEventArgs e)
         {
-            EventHandler<SCEventArgs> handler = StateChanged;
+            EventHandler<StateChangedEventArgs> handler = StateChanged;
             if (handler != null)
             {
                 handler(this, e);
@@ -159,9 +159,30 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
 
         void StateChangedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
         {
-            SCEventArgs args = new SCEventArgs(e);
+      StateChangedEventArgs args = new StateChangedEventArgs(e);
             OnStateChanged(args);
         }
     }
 
+  internal class UAcquisitionVMS : IUAcquisition
+  {
+    public event EventHandler<StateChangedEventArgs> StateChanged;
+    public event EventHandler<EventArgs> AcquisitionStreamClosing;
+    public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
+
+    public void OnStateChanged(StateChangedEventArgs e)
+    {
+      StateChanged?.Invoke(this, e);
+    }
+
+    public void OnAcquisitionStreamClosing(EventArgs e)
+    {
+      AcquisitionStreamClosing?.Invoke(this, e);
+    }
+
+    public void OnAcquisitionStreamOpening(AcquisitionOpeningEventArgs e)
+    {
+      AcquisitionStreamOpening?.Invoke(this, e);
+    }
+  }
 }

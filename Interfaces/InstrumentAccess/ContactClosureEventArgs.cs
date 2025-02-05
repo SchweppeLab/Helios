@@ -12,7 +12,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     /// Wraps the ContactClosureEventArgs (Fusion only). From IAPI docs:<br/>
     /// The event data for when a contact closure occurs. This can happen on either the rising and/or falling edges.
     /// </summary>
-    public class CCEventArgs : EventArgs
+    public class ContactClosureEventArgs : EventArgs
     {
         /// <summary>
         /// Indicates if any falling edge events occured since it was last polled
@@ -35,7 +35,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// Default constructor.
         /// </summary>
         /// <param name="e"></param>
-        public CCEventArgs(fusion.Thermo.Interfaces.FusionAccess_V1.ContactClosureEventArgs e)
+        public ContactClosureEventArgs(fusion.Thermo.Interfaces.FusionAccess_V1.ContactClosureEventArgs e)
         {
             DidFall = e.DidFall;
             DidRise = e.DidRise;

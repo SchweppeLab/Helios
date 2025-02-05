@@ -24,12 +24,13 @@ namespace Spy_IAPI
     private IUInstrumentAccessContainer? msIAC;
     private IUInstrumentAccess? msIA;
     private IUControl? msControl;
-    private IInstAcquisition? msAcquisition;
-    private IInstMsScanContainer? msMSSC;
+    private IUAcquisition? msAcquisition;
+    private IUMsScanContainer? msMSSC;
 
     int[] scanCount = new int[4];
     bool connected = false;
     bool listener = false;
+    bool ignoreScan = false;
 
     readonly Scatter plotSpec;
     private long lastTicks = 0;
@@ -79,6 +80,7 @@ namespace Spy_IAPI
       //Step #2, if connected, then start the disconnect procedure.
       if (connected)
       {
+        Log("Attempting graceful disconnect...");
         if (listener) StopListening();
         if (msIA != null)
         {
@@ -103,10 +105,7 @@ namespace Spy_IAPI
           Log("Attempting to connect to instrument or VMS.");
 
           msIAC = InstrumentAccessContainerFactory.Get();
-          if (msIAC == null)
-          {
-            Log("Failed to connect to instrument or VMS.");
-          }
+          if (msIAC == null) Log("Failed to connect to instrument or VMS.");
           else
           {
             Log("Instrument ID: " + msIAC.InstrumentType());
@@ -115,7 +114,7 @@ namespace Spy_IAPI
               msIAC.ServiceConnectionChanged += ServiceConnectionChanged;
               msIAC.MessagesArrived += MessagesArrived;
               msIAC.StartOnlineAccess();
-              Log("StartOnlineAccess() happened.");
+              Log("StartOnlineAccess() happened. This message appears in lieu of a more natural message.");
             }
             catch (Exception exx)
             {
@@ -141,10 +140,22 @@ namespace Spy_IAPI
     private void AcquisitionStreamClosing(object? sender, EventArgs e)
     {
       Log("AcquisitionStreamClosing.");
+      if (listener && cbOnAcquisition.Checked)
+      {
+        listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
+        listenIndicatorWait.BackColor = System.Drawing.Color.Yellow;
+        listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
+        ignoreScan = true;
+      }
     }
 
-    private void AcquisitionStreamOpening(object? sender, AOEventArgs e)
+    private void AcquisitionStreamOpening(object? sender, AcquisitionOpeningEventArgs e)
     {
+      ignoreScan = false;
+      listenIndicatorOn.BackColor = System.Drawing.Color.Lime;
+      listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
+      listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
+      
       string str = "AcquisitionStreamOpening: ";
       Invoke(new Action(() =>
       {
@@ -169,7 +180,7 @@ namespace Spy_IAPI
       }
     }
 
-    void ContactClosureChanged(object? sender, CCEventArgs e)
+    void ContactClosureChanged(object? sender, ContactClosureEventArgs e)
     {
       Log("Contact Closure changed: " + e.ToString() + " " + e.DidRise.ToString() + " " + e.DidFall.ToString());
     }
@@ -179,7 +190,7 @@ namespace Spy_IAPI
       rtbLog.AppendText(s + System.Environment.NewLine);
     }
 
-    void MessagesArrived(object? sender, UMessagesArrivedEventArgs e)
+    void MessagesArrived(object? sender, MessagesArrivedEventArgs e)
     {
       StringBuilder sb = new StringBuilder();
       foreach (var message in e.Messages)
@@ -195,9 +206,10 @@ namespace Spy_IAPI
       Log(sb.ToString());
     }
 
-    private void MsScanArrived(object? sender, IMSEventArgs e)
+    private void MsScanArrived(object? sender, MsScanEventArgs e)
     {
-      //Log("MSSC_MsScanArrived: ");
+      if (ignoreScan) return;
+
       using (IUMsScan msScan = e.GetScan())
       {
         if (!bTemp)
@@ -318,9 +330,35 @@ namespace Spy_IAPI
 
     }
 
-    private void StateChanged(object? sender, SCEventArgs e)
+    private void StateChanged(object? sender, StateChangedEventArgs e)
     {
       Log("Acquisition State Chaged: " + e.State);
+    }
+
+    /// <summary>
+    /// Start listening for spectra.
+    /// </summary>
+    /// <returns>True on success or if listener is already running.</returns>
+    bool StartListening()
+    { 
+      if (!listener)
+      {
+        if (msIA != null)
+        {
+          msControl = msIA.Control;
+          msMSSC = msIA.GetMsScanContainer(0);
+          msMSSC.MsScanArrived += MsScanArrived;
+
+          msAcquisition = msControl.Acquisition;
+          msAcquisition.StateChanged += StateChanged;
+          msAcquisition.AcquisitionStreamOpening += AcquisitionStreamOpening;
+          msAcquisition.AcquisitionStreamClosing += AcquisitionStreamClosing;
+
+          return true;
+        }
+        return false;
+      }
+      return listener;
     }
 
     void StopListening()
@@ -354,12 +392,23 @@ namespace Spy_IAPI
     /// </summary>
     private void UpdateConnection()
     {
-      connectionIndicator.ForeColor = connected ? System.Drawing.Color.Red : System.Drawing.Color.Green;
-      buttonConnect.Text = connected ? "Disconnect" : "Connect";
+      if (msIAC != null)
+      {
+        connectionIndicator.BackColor = msIAC.ServiceConnected ? System.Drawing.Color.Lime : System.Drawing.Color.Gray;
+        disconnectionIndicator.BackColor = msIAC.ServiceConnected ? System.Drawing.Color.Gray : System.Drawing.Color.Red;
+        buttonConnect.Text = msIAC.ServiceConnected ? "Disconnect" : "Connect";
+        connected = msIAC.ServiceConnected ? true : false;
+      }
+      else
+      {
+        connectionIndicator.BackColor = System.Drawing.Color.Gray;
+        disconnectionIndicator.BackColor = System.Drawing.Color.Red;
+        buttonConnect.Text = "Connect";
+        connected = false;
+      }
       buttonConnect.Enabled = true;  //maybe disallow connection button while listener is activated?
 
-      //do the same with the Listener button, which is inherently tied to
-      //the Connection button.
+      //do the same with the Listener button, which is inherently tied to the Connection button.
       UpdateListener();
     }
 
@@ -372,20 +421,52 @@ namespace Spy_IAPI
     /// </summary>
     private void UpdateListener()
     {
-      listenIndicator.ForeColor = listener ? System.Drawing.Color.Red : System.Drawing.Color.Green;
-      buttonListen.Enabled = connected ? true : false;
+      if (msIAC == null || !msIAC.ServiceConnected)
+      {
+        buttonListen.Text = "Activate";
+        buttonListen.Enabled = false;
+        listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
+        listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
+        listenIndicatorOff.BackColor = System.Drawing.Color.Red;
+      }
+      else
+      {
+        buttonListen.Enabled = true;
+        if (listener)
+        {
+          buttonListen.Text = "Pause";
+          listenIndicatorOn.BackColor = cbOnAcquisition.Checked ? System.Drawing.Color.Gray : System.Drawing.Color.Lime;
+          listenIndicatorWait.BackColor = cbOnAcquisition.Checked ? System.Drawing.Color.Yellow : System.Drawing.Color.Gray;
+          listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
+          ignoreScan = cbOnAcquisition.Checked ? true : false;
+        }
+        else
+        {
+          buttonListen.Text = "Activate";
+          listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
+          listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
+          listenIndicatorOff.BackColor = System.Drawing.Color.Red;
+        }
+      }
     }
 
     private void buttonListen_Click(object sender, EventArgs e)
     {
+      buttonListen.Enabled = false;
+
+      //spy is not active, so start spying
       if (!listener)
       {
-        msControl = msIA.Control;
-        msMSSC = msIA.GetMsScanContainer(0);
-        msMSSC.MsScanArrived += MsScanArrived;
-
-        listener = true;
+        listener = StartListening();
       }
+
+      //spy is active, so stop spying
+      else
+      {
+        StopListening();
+      }
+
+      UpdateListener();
     }
   }
 }

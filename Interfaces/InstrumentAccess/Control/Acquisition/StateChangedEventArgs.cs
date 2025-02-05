@@ -1,0 +1,45 @@
+﻿extern alias exploris;
+extern alias fusion;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
+{
+  /// <summary>
+  /// Wrapper around StateChangedEventArgs in IAPI.<br/>
+  /// This implementation of EventArgs carries an UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IUState.
+  /// </summary>
+  public class StateChangedEventArgs : EventArgs
+  {
+    /// <summary>
+    /// Get access to the current state of the instrument. 
+    /// </summary>
+    public IUState State { get; protected set; }
+
+    /// <summary>
+    /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.SCEventArgs from an
+    /// Exploris Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs.
+    /// </summary>
+    /// <param name="e">Exploris IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
+    public StateChangedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
+    {
+      State = new UStateExploris(e.State);
+    }
+
+    /// <summary>
+    /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.SCEventArgs from a
+    /// Fusion Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs.
+    /// </summary>
+    /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
+    public StateChangedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
+    {
+      State = new UStateFusion(e.State);
+    }
+
+
+  }
+}
