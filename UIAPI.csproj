@@ -81,9 +81,15 @@
     <Compile Include="Interfaces\InstrumentAccess\AcquisitionErrors.cs" />
     <Compile Include="Interfaces\InstrumentAccess\ContactClosureEventArgs.cs" />
     <Compile Include="ExplorisConnection.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\Acquisition.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\AcquisitionOpeningEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\StateChangedEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IUState.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentValues\IUInstrumentValues.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentValues\IUValue.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\IUParameterDescription.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUCustomScan.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUScanDefinition.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUScans.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccessContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccess.cs" />
@@ -95,6 +101,10 @@
     <Compile Include="Interfaces\Interfaces.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IUMessage.cs" />
     <Compile Include="Interfaces\SpectrumFormat\IUCentroid.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IUMassIntensity.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IUNoiseNode.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IUSpectrum.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IUInformationSourceAccess.cs" />
     <Compile Include="UIAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

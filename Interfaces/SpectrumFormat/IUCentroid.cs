@@ -1,13 +1,34 @@
-﻿using System;
+﻿extern alias exploris;
+extern alias fusion;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Thermo.Interfaces.SpectrumFormat_V1;
 
 namespace UIAPI.Interfaces.SpectrumFormat
 {
-  internal class UCentroid : ICentroid
+  public interface IUCentroid : IUMassIntensity
+  {
+    bool? IsExceptional { get; }
+    bool? IsReferenced { get; }
+    bool? IsMerged { get; }
+    bool? IsFragmented { get; }
+    int? Charge { get; }
+    new IUMassIntensity[] Profile { get; }
+    double? Resolution { get; }
+    int? ChargeEnvelopeIndex { get; }
+    bool? IsMonoisotopic { get; }
+    bool? IsClusterTop { get; }
+    bool? IsIsotopicallyResolved { get; }
+    bool? IsSaturated { get; }
+    double Mz { get; }
+    double Intensity { get; }
+
+  }
+
+  internal class UCentroid : IUCentroid
   {
     public bool? IsExceptional => throw new NotImplementedException();
 
@@ -19,7 +40,7 @@ namespace UIAPI.Interfaces.SpectrumFormat
 
     public int? Charge => throw new NotImplementedException();
 
-    public IMassIntensity[] Profile => throw new NotImplementedException();
+    public IUMassIntensity[] Profile => throw new NotImplementedException();
 
     public double? Resolution => throw new NotImplementedException();
 
@@ -28,6 +49,10 @@ namespace UIAPI.Interfaces.SpectrumFormat
     public bool? IsMonoisotopic => throw new NotImplementedException();
 
     public bool? IsClusterTop => throw new NotImplementedException();
+
+    public bool? IsIsotopicallyResolved => throw new NotImplementedException();
+    public bool? IsSaturated => throw new NotImplementedException();
+
 
     public double Mz { get; }
 

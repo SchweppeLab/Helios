@@ -30,7 +30,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
 
         void MsScanArrivedExploris(object sender, exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs e)
         {
-      MsScanEventArgs args = new MsScanEventArgs(e);
+            MsScanEventArgs args = new ExplorisMsScanEventArgs(e);
             OnMsScanArrived(args);
         }
 
@@ -44,34 +44,34 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
         }
     }
 
-    internal class UMsScanContainerFusion : IUMsScanContainer
+  internal class UMsScanContainerFusion : IUMsScanContainer
+  {
+      fusion.Thermo.Interfaces.FusionAccess_V1.MsScanContainer.IFusionMsScanContainer cont;
+      public string DetectorClass { get; }
+      public event EventHandler<MsScanEventArgs> MsScanArrived;
+
+      public UMsScanContainerFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess c, int msDetectorSet)
+      {
+          cont = c.GetMsScanContainer(msDetectorSet);
+          cont.MsScanArrived += MsScanArrivedFusion;
+          DetectorClass = cont.DetectorClass;
+      }
+
+    void MsScanArrivedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs e)
     {
-        fusion.Thermo.Interfaces.FusionAccess_V1.MsScanContainer.IFusionMsScanContainer cont;
-        public string DetectorClass { get; }
-        public event EventHandler<MsScanEventArgs> MsScanArrived;
-
-        public UMsScanContainerFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess c, int msDetectorSet)
-        {
-            cont = c.GetMsScanContainer(msDetectorSet);
-            cont.MsScanArrived += MsScanArrivedFusion;
-            DetectorClass = cont.DetectorClass;
-        }
-
-        void MsScanArrivedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs e)
-        {
-      MsScanEventArgs args = new MsScanEventArgs(e);
-            OnMsScanArrived(args);
-        }
-
-        protected virtual void OnMsScanArrived(MsScanEventArgs e)
-        {
-            EventHandler<MsScanEventArgs> handler = MsScanArrived;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
-        }
+      MsScanEventArgs args = new FusionMsScanEventArgs(e);
+      OnMsScanArrived(args);
     }
+
+      protected virtual void OnMsScanArrived(MsScanEventArgs e)
+      {
+          EventHandler<MsScanEventArgs> handler = MsScanArrived;
+          if (handler != null)
+          {
+              handler(this, e);
+          }
+      }
+  }
   
   internal class UMsScanContainerVMS : IUMsScanContainer
   {
@@ -85,7 +85,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
 
     public void ReceiveScan(byte[] arr)
     {
-      MsScanArrived?.Invoke(this, new MsScanEventArgs(arr));
+      MsScanArrived?.Invoke(this, new VMSMsScanEventArgs(arr));
     }
 
     protected virtual void OnMsScanArrived(MsScanEventArgs e)

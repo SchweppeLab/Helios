@@ -22,7 +22,7 @@ namespace UIAPI.Interfaces
     /// Get an instance of the instrument.
     /// </summary>
     /// <returns>UIAPI.Interfaces.IInstrument object</returns>
-    static public IUInstrumentAccessContainer Get()
+    static public IUInstrumentAccessContainer Create()
     {
       UInstrumentAccessContainerFusion fusion = new UInstrumentAccessContainerFusion();
       if (fusion.Check()) return fusion;

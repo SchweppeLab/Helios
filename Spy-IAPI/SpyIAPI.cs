@@ -104,7 +104,7 @@ namespace Spy_IAPI
         {
           Log("Attempting to connect to instrument or VMS.");
 
-          msIAC = InstrumentAccessContainerFactory.Get();
+          msIAC = InstrumentAccessContainerFactory.Create();
           if (msIAC == null) Log("Failed to connect to instrument or VMS.");
           else
           {
@@ -218,6 +218,9 @@ namespace Spy_IAPI
           foreach(string s in msScan.Trailer.ItemNames)
           {
             Log(s);
+            string tmp;
+            msScan.Trailer.TryGetValue(s, out tmp);
+            if(tmp!=null) Log(tmp);
           }
         }
         //string str = "Scan ";

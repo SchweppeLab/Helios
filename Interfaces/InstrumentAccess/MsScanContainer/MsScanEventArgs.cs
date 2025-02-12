@@ -11,44 +11,60 @@ using ProjectMIDAS.Data.Spectrum;
 namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
 {
 
-  public class MsScanEventArgs : EventArgs
+  public abstract class MsScanEventArgs : EventArgs
+  {
+    protected MsScanEventArgs()
+    {
+    }
+
+    public abstract IUMsScan GetScan();
+  }
+
+  internal class ExplorisMsScanEventArgs : MsScanEventArgs
   {
     private exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs eExploris = null;
-    private Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs eFusion = null;
-    private Spectrum spec = null;
-    public MsScanEventArgs(exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs e)
+
+    public ExplorisMsScanEventArgs(exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs e)
     {
       eExploris = e;
     }
 
-    public MsScanEventArgs(Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs e)
+    public override IUMsScan GetScan()
+    {
+      IUMsScan scan = new UMsScanExploris(eExploris.GetScan());
+      return scan;
+    }
+  }
+
+  internal class FusionMsScanEventArgs : MsScanEventArgs
+  {
+    private Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs eFusion = null;
+
+    public FusionMsScanEventArgs(Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs e)
     {
       eFusion = e;
     }
 
-    public MsScanEventArgs(byte[] arr)
+    public override IUMsScan GetScan()
+    {
+      IUMsScan scan = new UMsScanFusion(eFusion.GetScan());
+      return scan;
+    }
+  }
+
+  internal class VMSMsScanEventArgs : MsScanEventArgs
+  {
+    private Spectrum spec = null;
+    public VMSMsScanEventArgs(byte[] arr)
     {
       this.spec = new Spectrum();
       spec.Deserialize(arr);
     }
 
-    public IUMsScan GetScan()
+    public override IUMsScan GetScan()
     {
-      if (eExploris != null)
-      {
-        IUMsScan scan = new UMsScanExploris(eExploris.GetScan());
-        return scan;
-      }
-      else if (eFusion != null)
-      {
-        IUMsScan scan = new UMsScanFusion(eFusion.GetScan());
-        return scan;
-      }
-      else
-      {
-        IUMsScan scan = new UMsScanVMS(spec);
-        return scan;
-      }
+      IUMsScan scan = new UMsScanVMS(spec);
+      return scan;
     }
   }
 

@@ -13,33 +13,55 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
   /// Wrapper around StateChangedEventArgs in IAPI.<br/>
   /// This implementation of EventArgs carries an UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.IUState.
   /// </summary>
-  public class StateChangedEventArgs : EventArgs
+  public abstract class StateChangedEventArgs : EventArgs
   {
     /// <summary>
     /// Get access to the current state of the instrument. 
     /// </summary>
     public IUState State { get; protected set; }
 
+    protected StateChangedEventArgs()
+    {
+    }
+
+  }
+
+  internal class ExplorisStateChangedEventArgs : StateChangedEventArgs
+  {
     /// <summary>
     /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.SCEventArgs from an
     /// Exploris Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs.
     /// </summary>
     /// <param name="e">Exploris IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
-    public StateChangedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
+    public ExplorisStateChangedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
     {
       State = new UStateExploris(e.State);
     }
+  }
 
+  internal class FusionStateChangedEventArgs : StateChangedEventArgs
+  {
     /// <summary>
     /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.SCEventArgs from a
     /// Fusion Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs.
     /// </summary>
     /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
-    public StateChangedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
+    public FusionStateChangedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
     {
       State = new UStateFusion(e.State);
     }
+  }
 
-
+  internal class VMSStateChangedEventArgs : StateChangedEventArgs
+  {
+    /// <summary>
+    /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.SCEventArgs from a
+    /// Fusion Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs.
+    /// </summary>
+    /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
+    public VMSStateChangedEventArgs()
+    {
+      State = new UStateVMS();
+    }
   }
 }

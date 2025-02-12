@@ -13,7 +13,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
   /// UIAPI wrapper around AcquisitionOpeningEventArgs. From IAPI Docs:<br/>
   /// This implementation of EventArgs carries information about further scans to be acquired.
   /// </summary>
-  public class AcquisitionOpeningEventArgs : EventArgs
+  public abstract class AcquisitionOpeningEventArgs : EventArgs
   {
     /// <summary>
     /// From IAPI Docs:<br/>
@@ -23,31 +23,44 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     public IDictionary<string, string> StartingInformation { get; protected set; }
 
     /// <summary>
+    /// Default constructor.
+    /// </summary>
+    protected AcquisitionOpeningEventArgs()
+    {
+    }
+  }
+
+  internal class ExplorisAcquisitionOpeningEventArgs : AcquisitionOpeningEventArgs
+  {
+    /// <summary>
     /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.AOEventArgs from an
     /// Exporis Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs.
     /// </summary>
     /// <param name="e">Exploris IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs</param>
-    public AcquisitionOpeningEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs e)
+    public ExplorisAcquisitionOpeningEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs e)
     {
       StartingInformation = e.StartingInformation;
     }
+  }
 
+  internal class FusionAcquisitionOpeningEventArgs : AcquisitionOpeningEventArgs
+  {
     /// <summary>
     /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.AOEventArgs from an
     /// Fusion Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs.
     /// </summary>
     /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs</param>
-    public AcquisitionOpeningEventArgs(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs e)
+    public FusionAcquisitionOpeningEventArgs(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.AcquisitionOpeningEventArgs e)
     {
       StartingInformation = e.StartingInformation;
     }
+  }
 
-    /// <summary>
-    /// Default constructor.
-    /// </summary>
-    public AcquisitionOpeningEventArgs()
+  internal class VMSAcquisitionOpeningEventArgs : AcquisitionOpeningEventArgs
+  {
+    public VMSAcquisitionOpeningEventArgs()
     {
-      StartingInformation = new Dictionary<string, string>();
+      StartingInformation = new Dictionary<string,string>();
     }
   }
 }

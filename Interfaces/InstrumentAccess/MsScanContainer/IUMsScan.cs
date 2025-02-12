@@ -17,27 +17,27 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
   /// Wrapper around IAPI IMsScan. Because the IMsScan interface could be ambiguous, I am 
   /// not sure yet how I want to play this out.
   /// </summary>
-  public interface IUMsScan : IMsScan
+  public interface IUMsScan : IUSpectrum, IDisposable
   {
     /// <summary>
     /// Get access to the information coming from the header. It is a set of name/value pairs. A pure name has a value of null.
     /// </summary>
-    new IDictionary<string,string> Header { get; }
+    IDictionary<string,string> Header { get; }
 
     /// <summary>
     /// Get access to the StatusLog information source. Text representation of numbers will always appear in the independent (US) locale.
     /// </summary>
-    new Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess StatusLog { get; }
+    Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess StatusLog { get; }
 
     /// <summary>
     /// Get access to the Trailer information source. Text representation of numbers will always appear in the independent (US) locale.
     /// </summary>
-    new Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess Trailer { get; }
+    Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess Trailer { get; }
 
     /// <summary>
     /// Get access to the TuneData information source. This is mostly accessible at acquisition start. Text representation of numbers will always appear in the independent (US) locale.
     /// </summary>
-    new Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess TuneData { get; }
+    Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess TuneData { get; }
   }
 
   internal class UMsScanExploris : IUMsScan
@@ -48,9 +48,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
     public Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess TuneData { get; }
     public string DetectorName { get; }
     public int? NoiseCount { get; }
-    public IEnumerable<INoiseNode> NoiseBand { get; }
+    public IEnumerable<IUNoiseNode> NoiseBand { get; }
     public int? CentroidCount { get; }
-    public IEnumerable<ICentroid> Centroids { get; }
+    public IEnumerable<IUCentroid> Centroids { get; }
     public IChargeEnvelope[] ChargeEnvelopes { get; }
 
     public UMsScanExploris(exploris.Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
@@ -59,9 +59,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       StatusLog = (Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess)m.StatusLog;
       Trailer = (Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess)m.Trailer;
       TuneData = (Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess)m.TuneData;
-      Centroids = (IEnumerable<ICentroid>)m.Centroids;
+      Centroids = (IEnumerable<IUCentroid>)m.Centroids;
       ChargeEnvelopes = (IChargeEnvelope[])m.ChargeEnvelopes;
-      NoiseBand = (IEnumerable<INoiseNode>)m.NoiseBand;
+      NoiseBand = (IEnumerable<IUNoiseNode>)m.NoiseBand;
       CentroidCount = m.CentroidCount;
       NoiseCount = m.NoiseCount;
       DetectorName = m.DetectorName;
@@ -92,9 +92,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
 
     public string DetectorName { get; }
     public int? NoiseCount { get; }
-    public IEnumerable<INoiseNode> NoiseBand { get; }
+    public IEnumerable<IUNoiseNode> NoiseBand { get; }
     public int? CentroidCount { get; }
-    public IEnumerable<ICentroid> Centroids { get; }
+    public IEnumerable<IUCentroid> Centroids { get; }
     public IChargeEnvelope[] ChargeEnvelopes { get; }
 
     public UMsScanFusion(Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
@@ -103,9 +103,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       StatusLog = m.StatusLog;
       Trailer = m.Trailer;
       TuneData = m.TuneData;
-      Centroids = m.Centroids;
+      Centroids = (IEnumerable<IUCentroid>)m.Centroids;
       ChargeEnvelopes = m.ChargeEnvelopes;
-      NoiseBand = m.NoiseBand;
+      NoiseBand = (IEnumerable<IUNoiseNode>)m.NoiseBand;
       CentroidCount = m.CentroidCount;
       NoiseCount = m.NoiseCount;
       DetectorName = m.DetectorName;
@@ -136,12 +136,12 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
 
     public string DetectorName { get; }
     public int? NoiseCount { get; }
-    public IEnumerable<INoiseNode> NoiseBand { get; }
+    public IEnumerable<IUNoiseNode> NoiseBand { get; }
     public int? CentroidCount { get; } = null;
-    public IEnumerable<ICentroid> Centroids => CentroidList;
+    public IEnumerable<IUCentroid> Centroids => CentroidList;
     public IChargeEnvelope[] ChargeEnvelopes { get; }
 
-    public List<ICentroid> CentroidList { get; } = new List<ICentroid>();
+    public List<IUCentroid> CentroidList { get; } = new List<IUCentroid>();
 
     public UMsScanVMS(Spectrum m)
     {
@@ -150,6 +150,12 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       Header.Add("MSOrder", m.MsLevel.ToString());
       Header.Add("RetentionTime", m.RetentionTime.ToString());
       Header.Add("Filter", m.ScanFilter.ToString());
+      
+      UInformationSourceAccess trailer = new UInformationSourceAccess();
+      //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
+      //trailer.Add("Access ID", "UIAPIzoink");
+      Trailer = trailer;
+
       if (m.Centroid) CentroidCount = m.Count;
       //else CentroidCount = null; //not needed?
       foreach (var dp in m.DataPoints)

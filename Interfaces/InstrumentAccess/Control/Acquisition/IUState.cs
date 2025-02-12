@@ -26,7 +26,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
         /// Rather than wrap this in a new object, just reuse an existing object in IAPI, and assume
         /// it will remain the same for both Fusion and Exploris
         /// </remarks>
-        Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.InstrumentState SystemState { get; }
+        InstrumentState SystemState { get; }
         
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -37,39 +37,39 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
         /// Rather than wrap this in a new object, just reuse an existing object in IAPI, and assume
         /// it will remain the same for both Fusion and Exploris
         /// </remarks>
-        Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.SystemMode SystemMode { get; }
+        SystemMode SystemMode { get; }
     }
 
   internal class UStateExploris : IUState
   {
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.InstrumentState SystemState { get; }
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.SystemMode SystemMode { get; }
+    public InstrumentState SystemState { get; }
+    public SystemMode SystemMode { get; }
     public UStateExploris(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
     {
-      SystemState = (Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.InstrumentState)s.SystemState;
-      SystemMode = (Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.SystemMode)s.SystemMode;
+      SystemState = (InstrumentState)s.SystemState;
+      SystemMode = (SystemMode)s.SystemMode;
     }
   }
 
   internal class UStateFusion : IUState
   {
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.InstrumentState SystemState { get; }
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.SystemMode SystemMode { get; }
+    public InstrumentState SystemState { get; }
+    public SystemMode SystemMode { get; }
     public UStateFusion(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
     {
-      SystemState = s.SystemState;
-      SystemMode = s.SystemMode;
+      SystemState = (InstrumentState)s.SystemState;
+      SystemMode = (SystemMode)s.SystemMode;
     }
   }
 
   internal class UStateVMS : IUState
   {
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.InstrumentState SystemState { get; }
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.SystemMode SystemMode { get; }
-    public UStateVMS(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
+    public InstrumentState SystemState { get; }
+    public SystemMode SystemMode { get; }
+    public UStateVMS()
     {
-      SystemState = s.SystemState;
-      SystemMode = s.SystemMode;
+      SystemState = InstrumentState.NotConnected;
+      SystemMode = SystemMode.Disconnected;
     }
   }
 }
