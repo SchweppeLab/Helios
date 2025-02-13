@@ -221,5 +221,11 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     {
       AcquisitionStreamOpening?.Invoke(this, e);
     }
+
+    public void SetState(InstrumentState state)
+    {
+      ((UStateVMS)State).SetSystemState(state);
+      OnStateChanged(new VMSStateChangedEventArgs(State));
+    }
   }
 }

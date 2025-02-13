@@ -150,10 +150,21 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       Header.Add("MSOrder", m.MsLevel.ToString());
       Header.Add("RetentionTime", m.RetentionTime.ToString());
       Header.Add("Filter", m.ScanFilter.ToString());
+      if (m.Precursors.Count > 0)
+      {
+        Header.Add("PrecursorMass[0]", m.Precursors[0].IsolationMz.ToString());
+        Header.Add("CollisionEnergy[0]",m.CollisionEnergy.ToString());
+      }
       
       UInformationSourceAccess trailer = new UInformationSourceAccess();
       //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
       //trailer.Add("Access ID", "UIAPIzoink");
+      trailer.Add("Scan Description", m.ScanFilter.ToString());
+      if (m.Precursors.Count > 0)
+      {
+        trailer.Add("Monoisotopic M/Z", m.Precursors[0].MonoisotopicMz);
+        trailer.Add("Charge State", m.Precursors[0].Charge);
+      }
       Trailer = trailer;
 
       if (m.Centroid) CentroidCount = m.Count;

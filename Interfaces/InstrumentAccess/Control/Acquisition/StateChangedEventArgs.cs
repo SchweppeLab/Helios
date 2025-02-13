@@ -63,5 +63,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     {
       State = new UStateVMS();
     }
+    public VMSStateChangedEventArgs(IUState s)
+    {
+      State = s;
+    }
   }
 }

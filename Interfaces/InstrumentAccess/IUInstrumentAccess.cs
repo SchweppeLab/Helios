@@ -225,7 +225,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
   {
     public UMsScanContainerVMS MsScanCont { get; }
     public bool Connected { get; }
-    public IUControl Control { get; }
+    public IUControl Control { get; } = new UControlVMS();
     public int CountAnalogChannels { get; }
     public int CountMsDetectors { get; }
     public string[] DetectorClasses { get; }

@@ -64,12 +64,17 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
 
   internal class UStateVMS : IUState
   {
-    public InstrumentState SystemState { get; }
+    public InstrumentState SystemState { get; set; }
     public SystemMode SystemMode { get; }
     public UStateVMS()
     {
-      SystemState = InstrumentState.NotConnected;
+      SystemState = InstrumentState.ReadyForRun;
       SystemMode = SystemMode.Disconnected;
+    }
+
+    public void SetSystemState(InstrumentState state)
+    {
+      SystemState = state;
     }
   }
 }

@@ -28,7 +28,7 @@ namespace UIAPI.Interfaces.SpectrumFormat
 
   }
 
-  internal class UCentroid : IUCentroid
+  class UCentroid : IUCentroid
   {
     public bool? IsExceptional => throw new NotImplementedException();
 

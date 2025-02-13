@@ -347,6 +347,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
           ((UMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScan(message.MsgData);
           break;
         case '2':
+          ((UAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.Running);
           AcquisitionOpeningEventArgs e = new VMSAcquisitionOpeningEventArgs();
           e.StartingInformation.Add("RawFile",message.DecodeString());
           ((UAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamOpening(e);
