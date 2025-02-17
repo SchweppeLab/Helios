@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ScottPlot.WinForms</name>
+    </assembly>
+    <members>
+        <member name="P:ScottPlot.WinForms.FormsPlotBase.IsDesignerAlternative">
+            <summary>
+            A design time alternative view is displayed for instances where the plot control
+            is loaded inside Visual Studio and the SkiaSharp DLL cannot be properly loaded.
+            </summary>
+        </member>
+        <member name="F:ScottPlot.WinForms.FormsPlotDesignerAlternative.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ScottPlot.WinForms.FormsPlotDesignerAlternative.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ScottPlot.WinForms.FormsPlotDesignerAlternative.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+    </members>
+</doc>
