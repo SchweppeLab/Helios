@@ -3,6 +3,7 @@ extern alias fusion;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -182,14 +183,30 @@ namespace UIAPI.Interfaces.InstrumentAccess
       {
           try
           {
-              cont = Thermo.TNG.Factory.Factory<fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer>.Create();
-              cont.ServiceConnectionChanged += ServiceConnectionChangedFusion;
+        using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
+        {
+          writer.WriteLine("Attempting Fusion");
+        }
+          cont = Thermo.TNG.Factory.Factory<fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer>.Create();
+        using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
+        {
+          writer.WriteLine("Setting events");
+        }
+        cont.ServiceConnectionChanged += ServiceConnectionChangedFusion;
               cont.MessagesArrived += MessagesArrivedFusion;
-              check = true;
+        using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
+        {
+          writer.WriteLine("success");
+        }
+        check = true;
           }
-          catch
+          catch (Exception ex)
           {
-              check = false;
+          using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
+          {
+            writer.WriteLine("Exception: "+ex.Message);
+          }
+          check = false;
           }
 
       }
