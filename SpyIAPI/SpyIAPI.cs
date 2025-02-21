@@ -188,7 +188,7 @@ namespace SpyIAPI
       bool match = false;
       foreach (DataGridViewRow row in dgv.Rows)
       {
-        if (row.Cells[0].Value == key)
+        if (row.Cells[0].Value.ToString() == key)
         {
           match = true;
           row.Cells[1].Value += "," + msLevel.ToString();
