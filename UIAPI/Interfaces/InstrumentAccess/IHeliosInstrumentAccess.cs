@@ -6,24 +6,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UIAPI.Interfaces.InstrumentAccess.Control;
-using UIAPI.Interfaces.InstrumentAccess.MsScanContainer;
+using Helios.Interfaces.InstrumentAccess.Control;
+using Helios.Interfaces.InstrumentAccess.MsScanContainer;
 
-namespace UIAPI.Interfaces.InstrumentAccess
+namespace Helios.Interfaces.InstrumentAccess
 {
 
     /// <summary>
     /// Wrapper around IAPI IInstrumentAccess. IAPI Docs:<br/>
     /// This interface describes the access to one particular instrument both for reading data as for managing access or behaviour of the instrument.
     /// </summary>
-    public interface IUInstrumentAccess
+    public interface IHeliosInstrumentAccess
     {
         /// <summary>
         /// From IAPI Docs:<br/>
         /// Get access to the interface covering all control functionality of an instrument.<br/>
         /// This property is accessible offline.
         /// </summary>
-        UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
+        IHeliosControl Control { get; }
 
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -56,7 +56,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         /// <returns>true/false status of the underlying connection state of the instrument.</returns>
         bool Connected { get; }
 
-        UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer GetMsScanContainer(int msDetectorSet);
+        IHeliosMsScanContainer GetMsScanContainer(int msDetectorSet);
 
         int CountAnalogChannels { get; }
         int CountMsDetectors { get; }
@@ -65,11 +65,11 @@ namespace UIAPI.Interfaces.InstrumentAccess
         string InstrumentName { get; }
     }
 
-    class UInstrumentAccessExploris : IUInstrumentAccess
+    class HeliosInstrumentAccessExploris : IHeliosInstrumentAccess
     {
         exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess instAcc;
         public bool Connected { get; }
-        public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
+        public IHeliosControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
         public string[] DetectorClasses { get; }
@@ -79,7 +79,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         public event EventHandler<EventArgs> ConnectionChanged;
         public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
-        public UInstrumentAccessExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer iac, int index)
+        public HeliosInstrumentAccessExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer iac, int index)
         {
             instAcc = iac.Get(index);
             instAcc.AcquisitionErrorsArrived += AcquisitionErrorsArrivedExploris;
@@ -87,7 +87,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
             //instAcc.ContactClosureChanged += ContactClosureChangedFusion; //not implemented in Exploris
             //Control = InstControlFactory.Get(instAcc);
             Connected = instAcc.Connected;
-            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UControlExploris(instAcc);
+            Control = new HeliosControlExploris(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
             DetectorClasses = instAcc.DetectorClasses;
@@ -106,9 +106,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             OnConnectionChanged(e);
         }
 
-        public UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer GetMsScanContainer(int msDetectorSet)
+        public IHeliosMsScanContainer GetMsScanContainer(int msDetectorSet)
         {
-            UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer msCont = new UIAPI.Interfaces.InstrumentAccess.MsScanContainer.UMsScanContainerExploris(instAcc,msDetectorSet);
+            IHeliosMsScanContainer msCont = new HeliosMsScanContainerExploris(instAcc,msDetectorSet);
             return msCont;
         }
 
@@ -140,11 +140,11 @@ namespace UIAPI.Interfaces.InstrumentAccess
         }
     }
 
-    class UInstrumentAccessFusion : IUInstrumentAccess
-    {
-        fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess instAcc;
+  class HeliosInstrumentAccessFusion : IHeliosInstrumentAccess
+  {
+    fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess instAcc;
     public bool Connected { get; }
-    public UIAPI.Interfaces.InstrumentAccess.Control.IUControl Control { get; }
+    public IHeliosControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
         public string[] DetectorClasses { get; }
@@ -154,7 +154,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         public event EventHandler<EventArgs> ConnectionChanged;
         public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
-        public UInstrumentAccessFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer iac, int index)
+        public HeliosInstrumentAccessFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer iac, int index)
         {
             instAcc = iac.Get(index);
             instAcc.AcquisitionErrorsArrived += AcquisitionErrorsArrivedFusion;
@@ -162,7 +162,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
             instAcc.ContactClosureChanged += ContactClosureChangedFusion;
             //Control = InstControlFactory.Get(instAcc);
             Connected = instAcc.Connected;
-            Control = new UIAPI.Interfaces.InstrumentAccess.Control.UControlFusion(instAcc);
+            Control = new HeliosControlFusion(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
             DetectorClasses = instAcc.DetectorClasses;
@@ -187,9 +187,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
             OnContactClosureChanged(args);
         }
 
-        public UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer GetMsScanContainer(int msDetectorSet)
+        public IHeliosMsScanContainer GetMsScanContainer(int msDetectorSet)
         {
-            UIAPI.Interfaces.InstrumentAccess.MsScanContainer.IUMsScanContainer msCont = new UIAPI.Interfaces.InstrumentAccess.MsScanContainer.UMsScanContainerFusion(instAcc, msDetectorSet);
+            IHeliosMsScanContainer msCont = new HeliosMsScanContainerFusion(instAcc, msDetectorSet);
             return msCont;
         }
 
@@ -221,11 +221,11 @@ namespace UIAPI.Interfaces.InstrumentAccess
         }
     }
 
-  internal class UInstrumentAccessVMS : IUInstrumentAccess
+  internal class HeliosInstrumentAccessVMS : IHeliosInstrumentAccess
   {
-    public UMsScanContainerVMS MsScanCont { get; }
+    public HeliosMsScanContainerVMS MsScanCont { get; }
     public bool Connected { get; }
-    public IUControl Control { get; } = new UControlVMS();
+    public IHeliosControl Control { get; } = new HeliosControlVMS();
     public int CountAnalogChannels { get; }
     public int CountMsDetectors { get; }
     public string[] DetectorClasses { get; }
@@ -235,11 +235,11 @@ namespace UIAPI.Interfaces.InstrumentAccess
     public event EventHandler<EventArgs> ConnectionChanged;
     public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
-    public UInstrumentAccessVMS()
+    public HeliosInstrumentAccessVMS()
     {
       Connected = true;
-      Control = new UControlVMS();
-      MsScanCont = new UMsScanContainerVMS();
+      Control = new HeliosControlVMS();
+      MsScanCont = new HeliosMsScanContainerVMS();
       CountAnalogChannels = 1;
       CountMsDetectors = 1;
       DetectorClasses = new string[1] { "dunno" };
@@ -247,7 +247,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
       InstrumentName = "VirtualMS Instrument Name";
     }
 
-    public IUMsScanContainer GetMsScanContainer(int msDetectorSet)
+    public IHeliosMsScanContainer GetMsScanContainer(int msDetectorSet)
     {
       return MsScanCont;
     }

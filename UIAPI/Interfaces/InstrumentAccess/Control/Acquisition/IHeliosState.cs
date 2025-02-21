@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
+namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 {
     /// <summary>
     /// Wrapper around IAPI IState. From IAPI Docs:<br/>
@@ -15,7 +15,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     /// A missing connection can be detected by examining Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState.SystemState.NotConnected 
     /// informs about a missing link between driver and instrument, ServerFailed about a missing link between the current software and the driver.
     /// </summary>
-    public interface IUState
+    public interface IHeliosState
     {
         /// <summary>
         /// From IAPI Docs:<br/>
@@ -40,7 +40,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
         SystemMode SystemMode { get; }
     }
 
-  internal class UStateExploris : IUState
+  internal class UStateExploris : IHeliosState
   {
     public InstrumentState SystemState { get; }
     public SystemMode SystemMode { get; }
@@ -51,7 +51,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     }
   }
 
-  internal class UStateFusion : IUState
+  internal class UStateFusion : IHeliosState
   {
     public InstrumentState SystemState { get; }
     public SystemMode SystemMode { get; }
@@ -62,7 +62,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     }
   }
 
-  internal class UStateVMS : IUState
+  internal class UStateVMS : IHeliosState
   {
     public InstrumentState SystemState { get; set; }
     public SystemMode SystemMode { get; }

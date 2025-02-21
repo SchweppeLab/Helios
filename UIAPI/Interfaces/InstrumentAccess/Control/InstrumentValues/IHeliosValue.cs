@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
+namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
 {
   /// <summary>
   /// This interface describes the methods and properties of a value. An IValue is
@@ -20,7 +20,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
   /// An instance of this class will be created by Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IInstrumentValues.Get(System.UInt64)
   /// or by Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IInstrumentValues.Get(System.String).
   /// </remarks>
-  public interface IUValue
+  public interface IHeliosValue
   {  
     /// <summary>
     /// Get access to the ID of the value.
@@ -33,7 +33,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
     /// The commands will be null if the instrument is not connected or if the IValue is unknown to the instrument or if 
     /// Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IValue.Set(System.String) cannot be performed for this value.
     /// </summary>
-    IUParameterDescription SetParameterDescription { get; }
+    IHeliosParameterDescription SetParameterDescription { get; }
    
     /// <summary>
     /// Set the content of the value. The command will be verified using Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IValue.SetParameterDescription.

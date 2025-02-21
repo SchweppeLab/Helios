@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nova.Data.Spectrum;
 
-namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
+namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 {
 
   public abstract class MsScanEventArgs : EventArgs
@@ -18,7 +18,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
     {
     }
 
-    public abstract IUMsScan GetScan();
+    public abstract IHeliosMsScan GetScan();
   }
 
   internal class ExplorisMsScanEventArgs : MsScanEventArgs
@@ -30,9 +30,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       eExploris = e;
     }
 
-    public override IUMsScan GetScan()
+    public override IHeliosMsScan GetScan()
     {
-      IUMsScan scan = new UMsScanExploris(eExploris.GetScan());
+      IHeliosMsScan scan = new UMsScanExploris(eExploris.GetScan());
       return scan;
     }
   }
@@ -46,9 +46,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       eFusion = e;
     }
 
-    public override IUMsScan GetScan()
+    public override IHeliosMsScan GetScan()
     {
-      IUMsScan scan = new UMsScanFusion(eFusion.GetScan());
+      IHeliosMsScan scan = new UMsScanFusion(eFusion.GetScan());
       return scan;
     }
   }
@@ -62,9 +62,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       spec.Deserialize(arr);
     }
 
-    public override IUMsScan GetScan()
+    public override IHeliosMsScan GetScan()
     {
-      IUMsScan scan = new UMsScanVMS(spec);
+      IHeliosMsScan scan = new UMsScanVMS(spec);
       return scan;
     }
   }

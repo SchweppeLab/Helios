@@ -6,40 +6,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Thermo.Interfaces.InstrumentAccess_V1.Control.Scans;
+using Helios.Interfaces.InstrumentAccess.Control;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
+namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 {
-  public interface IUScans //: exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans, fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans
+  public interface IHeliosScans //: exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans, fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans
   {
     bool CancelCustomScan();
     //bool CancelRepetition();
-    IUCustomScan CreateCustomScan();
+    IHeliosCustomScan CreateCustomScan();
     //IURepeatingScan CreateRepeatingScan();
-    bool SetCustomScan(IUCustomScan scan);
+    bool SetCustomScan(IHeliosCustomScan scan);
     //bool SetRepetitionScan(IURepeatingScan scan);
 
     /// <summary>
     /// From IAPI: All possible parameters of a scan will be listed here.
     /// </summary>
-    IUParameterDescription[] PossibleParameters { get; }
+    IHeliosParameterDescription[] PossibleParameters { get; }
 
     event EventHandler<EventArgs> CanAcceptNextCustomScan;
     event EventHandler<EventArgs> PossibleParametersChanged;
   }
 
-  class UScansExploris: IUScans 
+  class HeliosScansExploris: IHeliosScans 
   {
     exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans scans;
 
-    public IUParameterDescription[] PossibleParameters { get; }
+    public IHeliosParameterDescription[] PossibleParameters { get; }
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
     public event EventHandler<EventArgs> PossibleParametersChanged;
-    public UScansExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c, bool exclusiveAccess)
+    public HeliosScansExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c, bool exclusiveAccess)
     {
       scans = c.GetScans(exclusiveAccess);
-      PossibleParameters = (IUParameterDescription[])scans.PossibleParameters;
+      PossibleParameters = (IHeliosParameterDescription[])scans.PossibleParameters;
       scans.CanAcceptNextCustomScan += CanAcceptNextCustomScanExploris;
       scans.PossibleParametersChanged += PossibleParametersChangedExploris;
     }
@@ -53,9 +53,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
       return scans.CancelCustomScan();
     }
 
-    public IUCustomScan CreateCustomScan()
+    public IHeliosCustomScan CreateCustomScan()
     {
-      return new UCustomScan();
+      return new HeliosCustomScan();
     }
 
     protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
@@ -81,24 +81,24 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
       }
     }
 
-    public bool SetCustomScan(IUCustomScan customScan)
+    public bool SetCustomScan(IHeliosCustomScan customScan)
     {
       return scans.SetCustomScan((exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.ICustomScan)customScan);
     }
   }
 
-  class UScansFusion : IUScans
+  class HeliosScansFusion : IHeliosScans
   {
     fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans scans;
     
-    public IUParameterDescription[] PossibleParameters { get; }
+    public IHeliosParameterDescription[] PossibleParameters { get; }
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
     public event EventHandler<EventArgs> PossibleParametersChanged;
-    public UScansFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c, bool exclusiveAccess)
+    public HeliosScansFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c, bool exclusiveAccess)
     {
       scans = (fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans)c.GetScans(exclusiveAccess);
-      PossibleParameters = (IUParameterDescription[])scans.PossibleParameters;
+      PossibleParameters = (IHeliosParameterDescription[])scans.PossibleParameters;
       scans.CanAcceptNextCustomScan += CanAcceptNextCustomScanFusion;
       scans.PossibleParametersChanged += PossibleParametersChangedFusion;
     }
@@ -113,9 +113,9 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
       return scans.CancelCustomScan();
     }
 
-    public IUCustomScan CreateCustomScan()
+    public IHeliosCustomScan CreateCustomScan()
     {
-      return new UCustomScan();
+      return new HeliosCustomScan();
     }
 
     protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
@@ -141,29 +141,33 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
       }
     }
 
-    public bool SetCustomScan(IUCustomScan customScan)
+    public bool SetCustomScan(IHeliosCustomScan customScan)
     {
       return scans.SetCustomScan((fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionCustomScan)customScan);
     }
   }
 
-  class UScansVMS : IUScans
+  class HeliosScansVMS : IHeliosScans
   {
 
-    public IUParameterDescription[] PossibleParameters { get; }
+    public IHeliosParameterDescription[] PossibleParameters { get; } = new HeliosParameterDescription[1];
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
     public event EventHandler<EventArgs> PossibleParametersChanged;
 
+    public HeliosScansVMS()
+    {
+      PossibleParameters[0] = new HeliosParameterDescription("ScanRate", "Selection", "Normal", "ScanRate Help");
+    }
 
     public bool CancelCustomScan()
     {
       return true;
     }
 
-    public IUCustomScan CreateCustomScan()
+    public IHeliosCustomScan CreateCustomScan()
     {
-      return new UCustomScan();
+      return new HeliosCustomScan();
     }
 
     protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
@@ -189,7 +193,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Scans
     /// </summary>
     /// <param name="customScan"></param>
     /// <returns></returns>
-    public bool SetCustomScan(IUCustomScan customScan)
+    public bool SetCustomScan(IHeliosCustomScan customScan)
     {
       return true;
     }

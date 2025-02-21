@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
+namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 {
 
   //

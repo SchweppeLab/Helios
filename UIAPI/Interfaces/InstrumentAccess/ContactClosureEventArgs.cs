@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess
+namespace Helios.Interfaces.InstrumentAccess
 {
     /// <summary>
     /// Wraps the ContactClosureEventArgs (Fusion only). From IAPI docs:<br/>

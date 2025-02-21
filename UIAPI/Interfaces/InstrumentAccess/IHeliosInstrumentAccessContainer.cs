@@ -8,17 +8,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pipes;
-using UIAPI.Interfaces.InstrumentAccess.Control.Acquisition;
-using UIAPI.Interfaces.InstrumentAccess.MsScanContainer;
+using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
+using Helios.Interfaces.InstrumentAccess.MsScanContainer;
 
-namespace UIAPI.Interfaces.InstrumentAccess
+namespace Helios.Interfaces.InstrumentAccess
 {
   /// <summary>
   /// Wrapper around the InstrumentAccessContainer. IAPI Docs:<br/>
   /// This interface is the central access point for a direct access of an instrument. 
   /// It covers both online functionality as well as offline manipulation of methods.
   /// </summary>
-  public interface IUInstrumentAccessContainer : IDisposable
+  public interface IHeliosInstrumentAccessContainer : IDisposable
   {
       /// <summary>
       /// Check if connection to the instrument was successful.
@@ -33,7 +33,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
       /// <returns>The return value allows access to a particular instrument. 
       /// If one service hosts several instruments in parallel, this value can be of a different type for each. 
       /// </returns>
-      IUInstrumentAccess Get(int index);
+      IHeliosInstrumentAccess Get(int index);
 
       /// <summary>
       /// Currently used for UIAPI diagnostics. Likely to be removed at some point.
@@ -71,7 +71,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
         
   }
 
-  internal class UInstrumentAccessContainerExploris : IUInstrumentAccessContainer
+  internal class HeliosInstrumentAccessContainerExploris : IHeliosInstrumentAccessContainer
   {
       private exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
       private bool check = false;
@@ -79,7 +79,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
       public event EventHandler<MessagesArrivedEventArgs> MessagesArrived;
       public bool ServiceConnected { get; protected set; }
 
-      public UInstrumentAccessContainerExploris()
+      public HeliosInstrumentAccessContainerExploris()
       {
           try
           {
@@ -126,9 +126,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
           OnServiceConnectionChanged(e);
       }
 
-      public UIAPI.Interfaces.InstrumentAccess.IUInstrumentAccess Get(int index)
+      public IHeliosInstrumentAccess Get(int index)
       {
-          return new UIAPI.Interfaces.InstrumentAccess.UInstrumentAccessExploris(cont, index);
+          return new HeliosInstrumentAccessExploris(cont, index);
       }
 
       public string InstrumentType()
@@ -171,7 +171,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
 
   }
 
-  internal class UInstrumentAccessContainerFusion : IUInstrumentAccessContainer
+  internal class HeliosInstrumentAccessContainerFusion : IHeliosInstrumentAccessContainer
   {
       private fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
       private bool check = false;
@@ -179,7 +179,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
       public event EventHandler<MessagesArrivedEventArgs> MessagesArrived;
       public bool ServiceConnected { get; protected set; }
 
-      public UInstrumentAccessContainerFusion()
+      public HeliosInstrumentAccessContainerFusion()
       {
           try
           {
@@ -242,9 +242,9 @@ namespace UIAPI.Interfaces.InstrumentAccess
           OnServiceConnectionChanged(e);
       }
 
-      public UIAPI.Interfaces.InstrumentAccess.IUInstrumentAccess Get(int index)
+      public Helios.Interfaces.InstrumentAccess.IHeliosInstrumentAccess Get(int index)
       {
-          return new UIAPI.Interfaces.InstrumentAccess.UInstrumentAccessFusion(cont, index);
+          return new HeliosInstrumentAccessFusion(cont, index);
       }
 
       public string InstrumentType()
@@ -288,14 +288,14 @@ namespace UIAPI.Interfaces.InstrumentAccess
       }
   }
 
-  internal class UInstrumentAccessContainerVMS : IUInstrumentAccessContainer
+  internal class HeliosInstrumentAccessContainerVMS : IHeliosInstrumentAccessContainer
   {
 
-    UInstrumentAccessVMS instAcc = new UInstrumentAccessVMS();
+    private HeliosInstrumentAccessVMS instAcc = new HeliosInstrumentAccessVMS();
     private bool check = false;
     PipesClient pipeClient = null;
 
-    public UInstrumentAccessContainerVMS()
+    public HeliosInstrumentAccessContainerVMS()
     {
       var exists = System.Diagnostics.Process.GetProcessesByName("VirtualMS").Count() > 0;
       if (exists) check = true;
@@ -348,7 +348,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
       OnServiceConnectionChanged(new EventArgs());
     }
 
-    public IUInstrumentAccess Get(int index)
+    public IHeliosInstrumentAccess Get(int index)
     {
       return instAcc;
     }
@@ -361,7 +361,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
           Console.WriteLine("Server says: {0}", message.DecodeString());
           break;
         case '1':
-          ((UMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScan(message.MsgData);
+          ((HeliosMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScan(message.MsgData);
           break;
         case '2':
           ((UAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.Running);

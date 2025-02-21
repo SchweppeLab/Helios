@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
+namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 {
 
   /// <summary>
@@ -17,13 +16,13 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
   /// to wait for contact closure or to extend the delay between the start of 
   /// the acquisition process and the real start of the first scan programmatically.
   /// </summary>
-  public interface IUAcquisition
+  public interface IHeliosAcquisition
   {
 
     /// <summary>
     /// Get access to the current state of the instrument.
     /// </summary>
-    IUState State { get; }
+    IHeliosState State { get; }
 
     /// <summary>
     /// Will it be possible to pause the current operation?
@@ -61,14 +60,14 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
   }
 
-  internal class UAcquisitionExploris : IUAcquisition
+  internal class UAcquisitionExploris : IHeliosAcquisition
   {
     exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
     public event EventHandler<StateChangedEventArgs> StateChanged;
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IUState State { get; }
+    public IHeliosState State { get; }
     public bool CanPause { get; }
     public bool CanResume { get; }
 
@@ -129,14 +128,14 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
         }
     }
 
-  internal class UAcquisitionFusion : IUAcquisition
+  internal class UAcquisitionFusion : IHeliosAcquisition
   {
     Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
     public event EventHandler<StateChangedEventArgs> StateChanged;
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IUState State { get; }
+    public IHeliosState State { get; }
     public bool CanPause { get; }
     public bool CanResume { get; }
 
@@ -197,13 +196,13 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
         }
     }
 
-  internal class UAcquisitionVMS : IUAcquisition
+  internal class UAcquisitionVMS : IHeliosAcquisition
   {
     public event EventHandler<StateChangedEventArgs> StateChanged;
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IUState State { get; } = new UStateVMS();
+    public IHeliosState State { get; } = new UStateVMS();
     public bool CanPause { get; } = true;
     public bool CanResume { get; } = true;
 

@@ -11,27 +11,31 @@ using System.Windows.Forms;
 using ScottPlot.Plottables;
 using ScottPlot;
 
-using UIAPI.Interfaces;
-using UIAPI.Interfaces.InstrumentAccess;
-using UIAPI.Interfaces.InstrumentAccess.Control;
-using UIAPI.Interfaces.InstrumentAccess.Control.Acquisition;
-using UIAPI.Interfaces.InstrumentAccess.MsScanContainer;
+using Helios.Interfaces;
+using Helios.Interfaces.InstrumentAccess;
+using Helios.Interfaces.InstrumentAccess.Control;
+using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
+using Helios.Interfaces.InstrumentAccess.Control.Scans;
+using Helios.Interfaces.InstrumentAccess.MsScanContainer;
 
 
 namespace SpyIAPI
 {
   public partial class SpyIAPI : Form
   {
-    private IUInstrumentAccessContainer msIAC;
-    private IUInstrumentAccess msIA;
-    private IUControl msControl;
-    private IUAcquisition msAcquisition;
-    private IUMsScanContainer msMSSC;
+    private IHeliosInstrumentAccessContainer msIAC;
+    private IHeliosInstrumentAccess msIA;
+    private IHeliosControl msControl;
+    private IHeliosAcquisition msAcquisition;
+    private IHeliosMsScanContainer msMSSC;
+    private IHeliosScans msScans;
 
     int[] scanCount = new int[4];
     bool connected = false;
     bool listener = false;
     bool ignoreScan = false;
+
+    bool[] headers = new bool[3];
 
     readonly Scatter plotSpec;
     private long lastTicks = 0;
@@ -179,6 +183,28 @@ namespace SpyIAPI
       Log(str);
     }
 
+    private void CheckDictionary(string key, string value, int msLevel, DataGridView dgv)
+    {
+      bool match = false;
+      foreach (DataGridViewRow row in dgv.Rows)
+      {
+        if (row.Cells[0].Value == key)
+        {
+          match = true;
+          row.Cells[1].Value += "," + msLevel.ToString();
+          break;
+        }
+      }
+
+      if (!match)
+      {
+        int index = dgv.Rows.Add();
+        dgv.Rows[index].Cells[0].Value = key;
+        dgv.Rows[index].Cells[1].Value = msLevel.ToString();
+        dgv.Rows[index].Cells[2].Value = value;
+      }
+    }
+
     void ConnectionChanged(object sender, EventArgs e)
     {
       if (msIA != null)
@@ -217,31 +243,23 @@ namespace SpyIAPI
     {
       if (ignoreScan) return;
 
-      using (IUMsScan msScan = e.GetScan())
+      using (IHeliosMsScan msScan = e.GetScan())
       {
-        if (!bTemp)
+        string tmp;
+        int msLevel=0;
+        if (msScan.TryHeader("MSOrder", out tmp)) msLevel = Convert.ToInt32(tmp);
+        if (msLevel>0 && !headers[msLevel]) //first time we've seen this scan level, so process the headers available to the user
         {
-          bTemp = true;
-          foreach(var x in msScan.Header)
+          headers[msLevel] = true;
+          foreach (var x in msScan.Header) CheckDictionary(x.Key.ToString(), x.Value.ToString(), msLevel, dgvHeaders);
+          foreach (string x in msScan.Trailer.ItemNames)
           {
-            Log("H: " + x.Key.ToString() + ": " + x.Value.ToString()); 
-          }
-          foreach (string s in msScan.Trailer.ItemNames)
-          {
-            Log(s);
-            string tmp;
-            msScan.Trailer.TryGetValue(s, out tmp);
-            if (tmp != null) Log("T: " + tmp);
+            if (msScan.Trailer.TryGetValue(x, out tmp))
+            {
+              CheckDictionary(x, tmp, msLevel, dgvTrailers);
+            }
           }
         }
-        //string str = "Scan ";
-        //string? tmp;
-        //msScan.Header.TryGetValue("ScanNumber", out tmp);
-        //if (tmp != null) str += tmp;
-        //str += " MsLevel: ";
-        //msScan.Header.TryGetValue("MSOrder", out tmp);
-        //if (tmp != null) str += tmp;
-        //Log(str);
 
         long curTicks = DateTime.Now.Ticks;
         long tickDif = curTicks - lastTicks;
@@ -250,21 +268,10 @@ namespace SpyIAPI
           double rt = 0;
           int scanNumber = 0;
           string scanFilter = "";
-          string tmp;
-          msScan.Header.TryGetValue("ScanNumber", out tmp);
-          if (tmp != null) scanNumber = Convert.ToInt32(tmp);
-          else
-          {
-            msScan.Header.TryGetValue("Scan", out tmp);
-            if (tmp != null) scanNumber = Convert.ToInt32(tmp);
-          }
-          msScan.Header.TryGetValue("RetentionTime", out tmp);
-          if (tmp != null) rt = Convert.ToDouble(tmp);
-          else
-          {
-            msScan.Header.TryGetValue("StartTime", out tmp);
-            if (tmp != null) rt = Convert.ToDouble(tmp);
-          }
+
+          if(msScan.TryHeader("ScanNumber", out tmp)) scanNumber =Convert.ToInt32(tmp);
+          if(msScan.TryHeader("RetentionTime", out tmp)) rt = Convert.ToDouble(tmp);
+
           msScan.Header.TryGetValue("Filter", out tmp);
           if (tmp != null) scanFilter = tmp;
 
@@ -303,7 +310,7 @@ namespace SpyIAPI
 
       }
       return;
-      using (IUMsScan msScan = e.GetScan())
+      using (IHeliosMsScan msScan = e.GetScan())
       {
         string tmp;
         msScan.Header.TryGetValue("MSOrder", out tmp);
@@ -379,6 +386,8 @@ namespace SpyIAPI
           msAcquisition.StateChanged += StateChanged;
           msAcquisition.AcquisitionStreamOpening += AcquisitionStreamOpening;
           msAcquisition.AcquisitionStreamClosing += AcquisitionStreamClosing;
+
+          msScans = msControl.GetScans(false);
 
           return true;
         }
@@ -493,6 +502,18 @@ namespace SpyIAPI
       }
 
       UpdateListener();
+    }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+      IHeliosCustomScan ecs = msScans.CreateCustomScan();
+
+      ecs.SingleProcessingDelay = 0;
+      ecs.RunningNumber = 1;
+      foreach(var property in msScans.PossibleParameters)
+      {
+        Log("Params: '" + property.Name + "' = " + property.Help + " Default=" + property.DefaultValue + " Selection=" + property.Selection);
+      }
     }
   }
 

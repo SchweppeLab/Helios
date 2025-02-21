@@ -7,28 +7,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.SpectrumFormat
+namespace Helios.Interfaces.SpectrumFormat
 {
-  public interface IUCentroid : IUMassIntensity
+  public interface IHeliosCentroid : IHeliosMassIntensity
   {
     bool? IsExceptional { get; }
     bool? IsReferenced { get; }
     bool? IsMerged { get; }
     bool? IsFragmented { get; }
     int? Charge { get; }
-    new IUMassIntensity[] Profile { get; }
+    IHeliosMassIntensity[] Profile { get; }
     double? Resolution { get; }
     int? ChargeEnvelopeIndex { get; }
     bool? IsMonoisotopic { get; }
     bool? IsClusterTop { get; }
     bool? IsIsotopicallyResolved { get; }
     bool? IsSaturated { get; }
-    double Mz { get; }
-    double Intensity { get; }
 
   }
 
-  class UCentroid : IUCentroid
+  class UCentroid : IHeliosCentroid
   {
     public bool? IsExceptional => throw new NotImplementedException();
 
@@ -40,7 +38,7 @@ namespace UIAPI.Interfaces.SpectrumFormat
 
     public int? Charge => throw new NotImplementedException();
 
-    public IUMassIntensity[] Profile => throw new NotImplementedException();
+    public IHeliosMassIntensity[] Profile => throw new NotImplementedException();
 
     public double? Resolution => throw new NotImplementedException();
 

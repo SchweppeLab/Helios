@@ -7,21 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
+namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 {
-    public interface IUMsScanContainer
+    public interface IHeliosMsScanContainer
     {
         string DetectorClass { get; }
         event EventHandler<MsScanEventArgs> MsScanArrived;
     }
 
-    internal class UMsScanContainerExploris : IUMsScanContainer
+    internal class HeliosMsScanContainerExploris : IHeliosMsScanContainer
     {
         exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.IExplorisMsScanContainer cont;
         public string DetectorClass { get; }
         public event EventHandler<MsScanEventArgs> MsScanArrived;
 
-        public UMsScanContainerExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess c, int msDetectorSet)
+        public HeliosMsScanContainerExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess c, int msDetectorSet)
         {
             cont = c.GetMsScanContainer(msDetectorSet);
             cont.MsScanArrived += MsScanArrivedExploris;
@@ -44,13 +44,13 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
         }
     }
 
-  internal class UMsScanContainerFusion : IUMsScanContainer
+  internal class HeliosMsScanContainerFusion : IHeliosMsScanContainer
   {
       fusion.Thermo.Interfaces.FusionAccess_V1.MsScanContainer.IFusionMsScanContainer cont;
       public string DetectorClass { get; }
       public event EventHandler<MsScanEventArgs> MsScanArrived;
 
-      public UMsScanContainerFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess c, int msDetectorSet)
+      public HeliosMsScanContainerFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess c, int msDetectorSet)
       {
           cont = c.GetMsScanContainer(msDetectorSet);
           cont.MsScanArrived += MsScanArrivedFusion;
@@ -73,12 +73,12 @@ namespace UIAPI.Interfaces.InstrumentAccess.MsScanContainer
       }
   }
   
-  internal class UMsScanContainerVMS : IUMsScanContainer
+  internal class HeliosMsScanContainerVMS : IHeliosMsScanContainer
   {
     public string DetectorClass { get; }
     public event EventHandler<MsScanEventArgs> MsScanArrived;
 
-    public UMsScanContainerVMS()
+    public HeliosMsScanContainerVMS()
     {
       DetectorClass = "VMS DetectorClass";
     }

@@ -59,7 +59,8 @@
     <Reference Include="Nova">
       <HintPath>..\..\Nova\Nova\bin\x64\Release\Nova.dll</HintPath>
     </Reference>
-    <Reference Include="Pipes">
+    <Reference Include="Pipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Pipes\bin\x64\Release\Pipes.dll</HintPath>
     </Reference>
     <Reference Include="Spectrum-1.0">
@@ -96,30 +97,31 @@
     <Compile Include="Interfaces\InstrumentAccess\ContactClosureEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\Acquisition.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\AcquisitionOpeningEventArgs.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IUAcquisition.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IUState.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IHeliosAcquisition.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\IHeliosState.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Acquisition\StateChangedEventArgs.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentValues\IUInstrumentValues.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentValues\IUValue.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\IUControl.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\IUParameterDescription.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUCustomScan.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUScanDefinition.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IUScans.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccess.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\IUInstrumentAccessContainer.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\IUMessage.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IUMsScan.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IUMsScanContainer.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentValues\IHeliosInstrumentValues.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\InstrumentValues\IHeliosValue.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\IHeliosControl.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\IHeliosParameterDescription.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IHeliosCustomScan.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IHeliosScanDefinition.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IHeliosScans.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\IHeliosInstrumentAccess.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\IHeliosInstrumentAccessContainer.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\IHeliosMessage.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IHeliosMsScan.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IHeliosMsScanContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\MsScanEventArgs.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\HeliosDictionary.cs" />
     <Compile Include="Interfaces\Interfaces.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IUCentroid.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IUInformationSourceAccess.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IUMassIntensity.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IUNoiseNode.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IUSpectrum.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IHeliosCentroid.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IHeliosInformationSourceAccess.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IHeliosMassIntensity.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IHeliosNoiseNode.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IHeliosSpectrum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UIAPI.cs" />
+    <Compile Include="Helios.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -153,9 +153,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UIAPI\UIAPI.csproj">
+    <ProjectReference Include="..\UIAPI\Helios.csproj">
       <Project>{7b4c1e72-ab3c-4c84-a4e7-e50009b567c1}</Project>
-      <Name>UIAPI</Name>
+      <Name>Helios</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

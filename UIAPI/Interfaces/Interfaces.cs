@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UIAPI.Interfaces.InstrumentAccess;
+using Helios.Interfaces.InstrumentAccess;
 
-namespace UIAPI.Interfaces
+namespace Helios.Interfaces
 {
   //TODO: think about moving this up to the parent namesapace.
 
@@ -22,15 +22,15 @@ namespace UIAPI.Interfaces
     /// Get an instance of the instrument.
     /// </summary>
     /// <returns>UIAPI.Interfaces.IInstrument object</returns>
-    static public IUInstrumentAccessContainer Create()
+    static public IHeliosInstrumentAccessContainer Create()
     {
-      UInstrumentAccessContainerFusion fusion = new UInstrumentAccessContainerFusion();
+      HeliosInstrumentAccessContainerFusion fusion = new HeliosInstrumentAccessContainerFusion();
       if (fusion.Check()) return fusion;
 
-      UInstrumentAccessContainerExploris exploris = new UInstrumentAccessContainerExploris();
+      HeliosInstrumentAccessContainerExploris exploris = new HeliosInstrumentAccessContainerExploris();
       if (exploris.Check()) return exploris;
 
-      UInstrumentAccessContainerVMS vm = new UInstrumentAccessContainerVMS();
+      HeliosInstrumentAccessContainerVMS vm = new HeliosInstrumentAccessContainerVMS();
       if (vm.Check()) return vm;
 
       return null;

@@ -13,7 +13,7 @@ using Microsoft.Win32;
 
 using exploris.Thermo.Interfaces.ExplorisAccess_V1;
 
-namespace UIAPI
+namespace Helios
 {
 	static class ExplorisConnection
 	{

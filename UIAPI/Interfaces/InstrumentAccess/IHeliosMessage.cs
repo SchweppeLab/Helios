@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess
+namespace Helios.Interfaces.InstrumentAccess
 {
   /// <summary>
   /// A wrapper around IAPI IMessage interface. Documentation from IAPI:<br/>
@@ -17,7 +17,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
   /// The instruments sends message = "Just a message {0}.", messageArgs = null should be formatted as "Just a message ." because missing elements will be ignored.<br/>
   /// The instruments sends message= "Just a message {0}.", messageArgs={ "for you" } should be formatted as "Just a message for you.".
   /// </summary>
-  public interface IUMessage : exploris.Thermo.Interfaces.InstrumentAccess_V1.IMessage, Thermo.Interfaces.InstrumentAccess_V1.IMessage
+  public interface IHeliosMessage : exploris.Thermo.Interfaces.InstrumentAccess_V1.IMessage, Thermo.Interfaces.InstrumentAccess_V1.IMessage
   {
     /// <summary>
     /// Not documented in IAPI.
@@ -137,7 +137,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     /// <summary>
     /// Get access to the messages that have arrived from all instrument and the transport layer.
     /// </summary>
-    public IList<IUMessage> Messages { get; protected set; }
+    public IList<IHeliosMessage> Messages { get; protected set; }
 
     /// <summary>
     /// Create a new Exploris Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs.
@@ -147,7 +147,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     {
       foreach (var v in e.Messages)
       {
-        Messages.Add((IUMessage)v);// new UMessage(v));
+        Messages.Add((IHeliosMessage)v);// new UMessage(v));
       }
     }
 
@@ -159,7 +159,7 @@ namespace UIAPI.Interfaces.InstrumentAccess
     {
       foreach (var v in e.Messages)
       {
-        Messages.Add((IUMessage)v); // new UMessage(v));
+        Messages.Add((IHeliosMessage)v); // new UMessage(v));
       }
     }
   }

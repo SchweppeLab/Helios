@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
+namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
 {
-  public interface IUInstrumentValues
+  public interface IHeliosInstrumentValues
   {
     //
     // Summary:
@@ -35,7 +35,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
     // Remarks:
     //     Accessing the same internal object twice just increments an internal reference,
     //     a further object will not be returned.
-    IUValue Get(string name);
+    IHeliosValue Get(string name);
 
     //
     // Summary:
@@ -52,10 +52,10 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
     // Remarks:
     //     Accessing the same internal object twice just increments an internal reference,
     //     a further object will not be returned.
-    IUValue Get(ulong number);
+    IHeliosValue Get(ulong number);
   }
 
-  internal class UInstrumentValues : IUInstrumentValues
+  internal class UInstrumentValues : IHeliosInstrumentValues
   {
     public string[] ValueNames { get; }
 
@@ -74,11 +74,11 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues
       ValueNames = new string[0];
     }
 
-    public IUValue Get(string name)
+    public IHeliosValue Get(string name)
     {
       return null;
     }
-    public IUValue Get(ulong number)
+    public IHeliosValue Get(ulong number)
     {
       return null;
     }

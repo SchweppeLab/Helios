@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
+namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 {
   /// <summary>
   /// Wrapper around StateChangedEventArgs in IAPI.<br/>
@@ -18,7 +18,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     /// <summary>
     /// Get access to the current state of the instrument. 
     /// </summary>
-    public IUState State { get; protected set; }
+    public IHeliosState State { get; protected set; }
 
     protected StateChangedEventArgs()
     {
@@ -63,7 +63,7 @@ namespace UIAPI.Interfaces.InstrumentAccess.Control.Acquisition
     {
       State = new UStateVMS();
     }
-    public VMSStateChangedEventArgs(IUState s)
+    public VMSStateChangedEventArgs(IHeliosState s)
     {
       State = s;
     }
