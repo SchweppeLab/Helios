@@ -47,6 +47,7 @@
       this.disconnectionIndicator = new System.Windows.Forms.Button();
       this.connectionIndicator = new System.Windows.Forms.Button();
       this.buttonConnect = new System.Windows.Forms.Button();
+      this.button1 = new System.Windows.Forms.Button();
       this.splitContainer3 = new System.Windows.Forms.SplitContainer();
       this.plotSpectrum = new ScottPlot.WinForms.FormsPlot();
       this.lblScanFilter = new System.Windows.Forms.Label();
@@ -64,7 +65,6 @@
       this.TrailerA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TrailerB = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TrailerC = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.button1 = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
       this.splitContainer1.Panel2.SuspendLayout();
@@ -304,6 +304,16 @@
       this.buttonConnect.UseVisualStyleBackColor = true;
       this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
       // 
+      // button1
+      // 
+      this.button1.Location = new System.Drawing.Point(3, 330);
+      this.button1.Name = "button1";
+      this.button1.Size = new System.Drawing.Size(75, 23);
+      this.button1.TabIndex = 1;
+      this.button1.Text = "Inject Scan";
+      this.button1.UseVisualStyleBackColor = true;
+      this.button1.Click += new System.EventHandler(this.button1_Click);
+      // 
       // splitContainer3
       // 
       this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -321,7 +331,7 @@
       // 
       this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
       this.splitContainer3.Size = new System.Drawing.Size(560, 508);
-      this.splitContainer3.SplitterDistance = 287;
+      this.splitContainer3.SplitterDistance = 286;
       this.splitContainer3.TabIndex = 0;
       // 
       // plotSpectrum
@@ -330,7 +340,7 @@
       this.plotSpectrum.Dock = System.Windows.Forms.DockStyle.Fill;
       this.plotSpectrum.Location = new System.Drawing.Point(0, 34);
       this.plotSpectrum.Name = "plotSpectrum";
-      this.plotSpectrum.Size = new System.Drawing.Size(560, 253);
+      this.plotSpectrum.Size = new System.Drawing.Size(560, 252);
       this.plotSpectrum.TabIndex = 0;
       // 
       // lblScanFilter
@@ -363,7 +373,7 @@
       this.tabControl1.Location = new System.Drawing.Point(0, 0);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(560, 217);
+      this.tabControl1.Size = new System.Drawing.Size(560, 218);
       this.tabControl1.TabIndex = 0;
       // 
       // tabPage1
@@ -371,8 +381,8 @@
       this.tabPage1.Controls.Add(this.rtbLog);
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
       this.tabPage1.Name = "tabPage1";
-      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage1.Size = new System.Drawing.Size(552, 191);
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      this.tabPage1.Size = new System.Drawing.Size(552, 192);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Message Log";
       this.tabPage1.UseVisualStyleBackColor = true;
@@ -382,7 +392,7 @@
       this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
       this.rtbLog.Location = new System.Drawing.Point(3, 3);
       this.rtbLog.Name = "rtbLog";
-      this.rtbLog.Size = new System.Drawing.Size(546, 185);
+      this.rtbLog.Size = new System.Drawing.Size(546, 186);
       this.rtbLog.TabIndex = 0;
       this.rtbLog.Text = "";
       // 
@@ -391,8 +401,8 @@
       this.tabPage2.Controls.Add(this.dgvHeaders);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
-      this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage2.Size = new System.Drawing.Size(552, 191);
+      this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      this.tabPage2.Size = new System.Drawing.Size(625, 194);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Headers";
       this.tabPage2.UseVisualStyleBackColor = true;
@@ -412,14 +422,16 @@
       this.dgvHeaders.Name = "dgvHeaders";
       this.dgvHeaders.ReadOnly = true;
       this.dgvHeaders.RowHeadersVisible = false;
+      this.dgvHeaders.RowHeadersWidth = 62;
       this.dgvHeaders.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.dgvHeaders.Size = new System.Drawing.Size(546, 185);
+      this.dgvHeaders.Size = new System.Drawing.Size(619, 188);
       this.dgvHeaders.TabIndex = 0;
       // 
       // HeaderA
       // 
       this.HeaderA.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.HeaderA.HeaderText = "Header";
+      this.HeaderA.MinimumWidth = 8;
       this.HeaderA.Name = "HeaderA";
       this.HeaderA.ReadOnly = true;
       this.HeaderA.Width = 67;
@@ -428,6 +440,7 @@
       // 
       this.HeaderB.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.HeaderB.HeaderText = "MS Level";
+      this.HeaderB.MinimumWidth = 8;
       this.HeaderB.Name = "HeaderB";
       this.HeaderB.ReadOnly = true;
       this.HeaderB.Width = 77;
@@ -436,6 +449,7 @@
       // 
       this.HeaderC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
       this.HeaderC.HeaderText = "Example";
+      this.HeaderC.MinimumWidth = 8;
       this.HeaderC.Name = "HeaderC";
       this.HeaderC.ReadOnly = true;
       // 
@@ -444,8 +458,8 @@
       this.tabPage3.Controls.Add(this.dgvTrailers);
       this.tabPage3.Location = new System.Drawing.Point(4, 4);
       this.tabPage3.Name = "tabPage3";
-      this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage3.Size = new System.Drawing.Size(552, 191);
+      this.tabPage3.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      this.tabPage3.Size = new System.Drawing.Size(625, 194);
       this.tabPage3.TabIndex = 2;
       this.tabPage3.Text = "Trailers";
       this.tabPage3.UseVisualStyleBackColor = true;
@@ -464,13 +478,15 @@
       this.dgvTrailers.Name = "dgvTrailers";
       this.dgvTrailers.ReadOnly = true;
       this.dgvTrailers.RowHeadersVisible = false;
-      this.dgvTrailers.Size = new System.Drawing.Size(546, 185);
+      this.dgvTrailers.RowHeadersWidth = 62;
+      this.dgvTrailers.Size = new System.Drawing.Size(619, 188);
       this.dgvTrailers.TabIndex = 0;
       // 
       // TrailerA
       // 
       this.TrailerA.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.TrailerA.HeaderText = "Trailer";
+      this.TrailerA.MinimumWidth = 8;
       this.TrailerA.Name = "TrailerA";
       this.TrailerA.ReadOnly = true;
       this.TrailerA.Width = 61;
@@ -479,6 +495,7 @@
       // 
       this.TrailerB.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.TrailerB.HeaderText = "MS Level";
+      this.TrailerB.MinimumWidth = 8;
       this.TrailerB.Name = "TrailerB";
       this.TrailerB.ReadOnly = true;
       this.TrailerB.Width = 77;
@@ -487,18 +504,9 @@
       // 
       this.TrailerC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
       this.TrailerC.HeaderText = "Example";
+      this.TrailerC.MinimumWidth = 8;
       this.TrailerC.Name = "TrailerC";
       this.TrailerC.ReadOnly = true;
-      // 
-      // button1
-      // 
-      this.button1.Location = new System.Drawing.Point(3, 330);
-      this.button1.Name = "button1";
-      this.button1.Size = new System.Drawing.Size(75, 23);
-      this.button1.TabIndex = 1;
-      this.button1.Text = "Inject Scan";
-      this.button1.UseVisualStyleBackColor = true;
-      this.button1.Click += new System.EventHandler(this.button1_Click);
       // 
       // SpyIAPI
       // 

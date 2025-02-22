@@ -3,10 +3,12 @@ extern alias fusion;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Helios.Interfaces.InstrumentAccess.Control;
+using Thermo.Interfaces.InstrumentAccess_V1.Control;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 {
@@ -98,7 +100,11 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     public HeliosScansFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c, bool exclusiveAccess)
     {
       scans = (fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans)c.GetScans(exclusiveAccess);
-      PossibleParameters = (IHeliosParameterDescription[])scans.PossibleParameters;
+      PossibleParameters = new IHeliosParameterDescription[scans.PossibleParameters.Length];
+      for (int i = 0; i < scans.PossibleParameters.Length; i++)
+      {
+        PossibleParameters[i] = new HeliosParameterDescription(scans.PossibleParameters[i].Name,scans.PossibleParameters[i].Selection,scans.PossibleParameters[i].DefaultValue,scans.PossibleParameters[i].Help);
+      }
       scans.CanAcceptNextCustomScan += CanAcceptNextCustomScanFusion;
       scans.PossibleParametersChanged += PossibleParametersChangedFusion;
     }
