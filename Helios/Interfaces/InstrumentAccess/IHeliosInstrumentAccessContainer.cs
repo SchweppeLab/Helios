@@ -73,143 +73,132 @@ namespace Helios.Interfaces.InstrumentAccess
 
   internal class HeliosInstrumentAccessContainerExploris : IHeliosInstrumentAccessContainer
   {
-      private exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
-      private bool check = false;
-      public event EventHandler<EventArgs> ServiceConnectionChanged;
-      public event EventHandler<MessagesArrivedEventArgs> MessagesArrived;
-      public bool ServiceConnected { get; protected set; }
+    private exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
+    private bool check = false;
+    public event EventHandler<EventArgs> ServiceConnectionChanged;
+    public event EventHandler<MessagesArrivedEventArgs> MessagesArrived;
+    public bool ServiceConnected { get; protected set; }
 
-      public HeliosInstrumentAccessContainerExploris()
+    public HeliosInstrumentAccessContainerExploris()
+    {
+      try
       {
-          try
-          {
-              cont = ExplorisConnection.Get();
-              cont.ServiceConnectionChanged += ServiceConnectionChangedExploris;
-              cont.MessagesArrived += MessagesArrivedExploris;
-              check = true;
-          }
-          catch
-          {
-              check = false;
-          }
-
+        cont = ExplorisConnection.Get();
+        cont.ServiceConnectionChanged += ServiceConnectionChangedExploris;
+        cont.MessagesArrived += MessagesArrivedExploris;  //Capturing messages before StartOnlineService() causes crashes.
+        check = true;
       }
-      public bool Check()
+      catch
       {
-          return check;
+        check = false;
       }
 
-      public void Dispose()
-      {
-          Dispose(true);
-          GC.SuppressFinalize(this);
-      }
+    }
+    public bool Check()
+    {
+      return check;
+    }
 
-      protected virtual void Dispose(bool disposing)
+    public void Dispose()
+    {
+      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
       {
-          if (disposing)
-          {
-              cont.Dispose();
-          }
-          // free native resources if there are any.
+        writer.WriteLine("Dispose called");
       }
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
 
-      void MessagesArrivedExploris(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs e)
+    protected virtual void Dispose(bool disposing)
+    {
+      if (disposing)
       {
-          MessagesArrivedEventArgs args = new MessagesArrivedEventArgs(e);
-          OnMessagesArrived(args);
+        cont.Dispose();
       }
+      // free native resources if there are any.
+    }
 
-      void ServiceConnectionChangedExploris(object sender, EventArgs e)
+    void MessagesArrivedExploris(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs e)
+    {
+      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
       {
-          ServiceConnected = cont.ServiceConnected;
-          OnServiceConnectionChanged(e);
+        writer.WriteLine("MessagesArrivedExploris = " + e.ToString());
       }
+      MessagesArrivedEventArgs args = new MessagesArrivedEventArgs(e);
+      OnMessagesArrived(args);
+    }
 
-      public IHeliosInstrumentAccess Get(int index)
-      {
-          return new HeliosInstrumentAccessExploris(cont, index);
-      }
+    void ServiceConnectionChangedExploris(object sender, EventArgs e)
+    {
+      ServiceConnected = cont.ServiceConnected;
+      OnServiceConnectionChanged(e);
+    }
 
-      public string InstrumentType()
-      {
-          return "Exploris";
-      }
-      protected virtual void OnMessagesArrived(MessagesArrivedEventArgs e)
-      {
-          EventHandler<MessagesArrivedEventArgs> handler = MessagesArrived;
-          if (handler != null)
-          {
-              handler(this, e);
-          }
-      }
+    public IHeliosInstrumentAccess Get(int index)
+    {
+      return new HeliosInstrumentAccessExploris(cont, index);
+    }
 
-      protected virtual void OnServiceConnectionChanged(EventArgs e)
-      {
-          EventHandler<EventArgs> handler = ServiceConnectionChanged;
-          if (handler != null)
-          {
-              handler(this, e);
-          }
-      }
+    public string InstrumentType()
+    {
+      return "Exploris";
+    }
+    
+    protected virtual void OnMessagesArrived(MessagesArrivedEventArgs e)
+    {
+      MessagesArrived?.Invoke(this, e);
+    }
 
-      //public bool ServiceConnected()
-      //{
-      //    return cont.ServiceConnected;
-      //}
-      public void StartOnlineAccess()
+    protected virtual void OnServiceConnectionChanged(EventArgs e)
+    {
+      EventHandler<EventArgs> handler = ServiceConnectionChanged;
+      if (handler != null)
       {
-          try
-          {
-              cont.StartOnlineAccess();
-          }
-          catch (Exception e)
-          {
-              System.Console.WriteLine("StartOnlineAccess Failed: " + e.Message);
-          }
+        handler(this, e);
       }
+    }
+
+    public void StartOnlineAccess()
+    {
+      try
+      {
+        cont.StartOnlineAccess();
+      }
+      catch (Exception e)
+      {
+        System.Console.WriteLine("StartOnlineAccess Failed: " + e.Message);
+      }
+    }
 
   }
 
   internal class HeliosInstrumentAccessContainerFusion : IHeliosInstrumentAccessContainer
   {
-      private fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
-      private bool check = false;
-      public event EventHandler<EventArgs> ServiceConnectionChanged;
-      public event EventHandler<MessagesArrivedEventArgs> MessagesArrived;
-      public bool ServiceConnected { get; protected set; }
+    private fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
+    private bool check = false;
+    public event EventHandler<EventArgs> ServiceConnectionChanged;
+    public event EventHandler<MessagesArrivedEventArgs> MessagesArrived;
+    public bool ServiceConnected { get; protected set; }
 
-      public HeliosInstrumentAccessContainerFusion()
+    public HeliosInstrumentAccessContainerFusion()
+    {
+      try
       {
-          try
-          {
-        using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-        {
-          writer.WriteLine("Attempting Fusion");
-        }
-          cont = fusion.Thermo.TNG.Factory.Factory<fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer>.Create();
-        using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-        {
-          writer.WriteLine("Setting events");
-        }
+      //using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
+      //{
+      //  writer.WriteLine("Attempting Fusion");
+      //}
+        cont = fusion.Thermo.TNG.Factory.Factory<fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer>.Create();
         cont.ServiceConnectionChanged += ServiceConnectionChangedFusion;
-              cont.MessagesArrived += MessagesArrivedFusion;
-        using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-        {
-          writer.WriteLine("success");
-        }
+        cont.MessagesArrived += MessagesArrivedFusion;
         check = true;
-          }
-          catch (Exception ex)
-          {
-          using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-          {
-            writer.WriteLine("Exception: "+ex.Message);
-          }
-          check = false;
-          }
-
       }
+      catch (Exception ex)
+      {
+        check = false;
+      }
+    }
+
       public bool Check()
       {
           return check;
@@ -270,12 +259,7 @@ namespace Helios.Interfaces.InstrumentAccess
           }
       }
 
-      //public bool ServiceConnected()
-      //{
-      //    return cont.ServiceConnected;
-      //}
-
-      public void StartOnlineAccess()
+    public void StartOnlineAccess()
       {
           try
           {
@@ -291,15 +275,27 @@ namespace Helios.Interfaces.InstrumentAccess
   internal class HeliosInstrumentAccessContainerVMS : IHeliosInstrumentAccessContainer
   {
 
-    private HeliosInstrumentAccessVMS instAcc = new HeliosInstrumentAccessVMS();
+    private HeliosInstrumentAccessVMS instAcc = null;
     private bool check = false;
     PipesClient pipeClient = null;
+
+    private event EventHandler<EventArgs> SendScan;
 
     public HeliosInstrumentAccessContainerVMS()
     {
       var exists = System.Diagnostics.Process.GetProcessesByName("VirtualMS").Count() > 0;
-      if (exists) check = true;
-      else check = false;
+      if (exists)
+      {
+        pipeClient = new PipesClient("VirtualMS");
+        pipeClient.ServerMessage += OnServerMessage;
+        pipeClient.Error += OnError;
+        instAcc = new HeliosInstrumentAccessVMS(pipeClient);
+        check = true;
+      }
+      else
+      {
+        check = false;
+      }
       return;
     }
     public bool Check()
@@ -333,6 +329,11 @@ namespace Helios.Interfaces.InstrumentAccess
       MessagesArrived?.Invoke(this, e);
     }
 
+    protected virtual void OnSendScan(PipeMessage e)
+    {
+      pipeClient?.Send(e);
+    }
+
     protected virtual void OnServiceConnectionChanged(EventArgs e)
     {
       ServiceConnectionChanged?.Invoke(this, e);
@@ -340,9 +341,9 @@ namespace Helios.Interfaces.InstrumentAccess
 
     public void StartOnlineAccess()
     {
-      pipeClient = new PipesClient("VirtualMS");
-      pipeClient.ServerMessage += OnServerMessage;
-      pipeClient.Error += OnError;
+      //pipeClient = new PipesClient("VirtualMS");
+      //pipeClient.ServerMessage += OnServerMessage;
+      //pipeClient.Error += OnError;
       pipeClient.Start(); //check this for failure? or just listen indefinitely until a server appears?
       ServiceConnected = true;
       OnServiceConnectionChanged(new EventArgs());
@@ -364,13 +365,13 @@ namespace Helios.Interfaces.InstrumentAccess
           ((HeliosMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScan(message.MsgData);
           break;
         case '2':
-          ((UAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.Running);
+          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.Running);
           AcquisitionOpeningEventArgs e = new VMSAcquisitionOpeningEventArgs();
           e.StartingInformation.Add("RawFile",message.DecodeString());
-          ((UAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamOpening(e);
+          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamOpening(e);
           break;
         case '3':
-          ((UAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamClosing(new EventArgs());
+          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamClosing(new EventArgs());
           break;
         default:
           Console.WriteLine("Server sent unrecognized message code: {0}", message.MsgCode);

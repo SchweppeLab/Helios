@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Helios.Interfaces.InstrumentAccess.Control;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
+using Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess
 {
@@ -235,16 +236,21 @@ namespace Helios.Interfaces.InstrumentAccess
     public event EventHandler<EventArgs> ConnectionChanged;
     public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
-    public HeliosInstrumentAccessVMS()
+    private readonly PipesClient pipeClient = null;
+
+    public HeliosInstrumentAccessVMS(PipesClient pc = null)
     {
+      pipeClient = pc;
+      
       Connected = true;
-      Control = new HeliosControlVMS();
+      Control = new HeliosControlVMS(pipeClient);
       MsScanCont = new HeliosMsScanContainerVMS();
       CountAnalogChannels = 1;
       CountMsDetectors = 1;
       DetectorClasses = new string[1] { "dunno" };
       InstrumentId = 1;
       InstrumentName = "VirtualMS Instrument Name";
+      
     }
 
     public IHeliosMsScanContainer GetMsScanContainer(int msDetectorSet)

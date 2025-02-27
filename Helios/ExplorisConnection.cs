@@ -17,7 +17,7 @@ namespace Helios
 {
 	static class ExplorisConnection
 	{
-		static IExplorisInstrumentAccessContainer retval;
+		//static IExplorisInstrumentAccessContainer retval;
 
 		const string DefaultBasePath = "Thermo\\Exploris";          // Default path of the instrument's config file.
 		const string DefaultRegistry = "SOFTWARE\\Thermo Exploris"; // Name of the instrument's host in the registry.
@@ -53,7 +53,7 @@ namespace Helios
 			string filename = doc[XmlRoot][ApiFileNameDescriptor].InnerText.Trim();
 			string classname = doc[XmlRoot][ApiClassNameDescriptor].InnerText.Trim();
 
-			//IExplorisInstrumentAccessContainer retval;
+			IExplorisInstrumentAccessContainer retval;
 			if (!File.Exists(filename))
 			{
 				// assume GAC specification

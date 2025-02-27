@@ -32,7 +32,11 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     public override IHeliosMsScan GetScan()
     {
-      IHeliosMsScan scan = new UMsScanExploris(eExploris.GetScan());
+      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
+      {
+        writer.WriteLine("Getting Exploris Scan");
+      }
+      IHeliosMsScan scan = new HeliosMsScanExploris(eExploris.GetScan());
       return scan;
     }
   }
@@ -48,7 +52,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     public override IHeliosMsScan GetScan()
     {
-      IHeliosMsScan scan = new UMsScanFusion(eFusion.GetScan());
+      IHeliosMsScan scan = new HeliosMsScanFusion(eFusion.GetScan());
       return scan;
     }
   }
@@ -64,7 +68,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     public override IHeliosMsScan GetScan()
     {
-      IHeliosMsScan scan = new UMsScanVMS(spec);
+      IHeliosMsScan scan = new HeliosMsScanVMS(spec);
       return scan;
     }
   }

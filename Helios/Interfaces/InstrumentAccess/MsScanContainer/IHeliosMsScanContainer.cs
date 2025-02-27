@@ -15,34 +15,30 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
         event EventHandler<MsScanEventArgs> MsScanArrived;
     }
 
-    internal class HeliosMsScanContainerExploris : IHeliosMsScanContainer
+  internal class HeliosMsScanContainerExploris : IHeliosMsScanContainer
+  {
+    exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.IExplorisMsScanContainer cont;
+    public string DetectorClass { get; }
+    public event EventHandler<MsScanEventArgs> MsScanArrived;
+
+    public HeliosMsScanContainerExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess c, int msDetectorSet)
     {
-        exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.IExplorisMsScanContainer cont;
-        public string DetectorClass { get; }
-        public event EventHandler<MsScanEventArgs> MsScanArrived;
-
-        public HeliosMsScanContainerExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess c, int msDetectorSet)
-        {
-            cont = c.GetMsScanContainer(msDetectorSet);
-            cont.MsScanArrived += MsScanArrivedExploris;
-            DetectorClass = cont.DetectorClass;
-        }
-
-        void MsScanArrivedExploris(object sender, exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs e)
-        {
-            MsScanEventArgs args = new ExplorisMsScanEventArgs(e);
-            OnMsScanArrived(args);
-        }
-
-        protected virtual void OnMsScanArrived(MsScanEventArgs e)
-        {
-            EventHandler<MsScanEventArgs> handler = MsScanArrived;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
-        }
+      cont = c.GetMsScanContainer(msDetectorSet);
+      cont.MsScanArrived += MsScanArrivedExploris;
+      DetectorClass = cont.DetectorClass;
     }
+
+    void MsScanArrivedExploris(object sender, exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs e)
+    {
+      MsScanEventArgs args = new ExplorisMsScanEventArgs(e);
+      OnMsScanArrived(args);
+    }
+
+    protected virtual void OnMsScanArrived(MsScanEventArgs e)
+    {
+      MsScanArrived?.Invoke(this, e);
+    }
+  }
 
   internal class HeliosMsScanContainerFusion : IHeliosMsScanContainer
   {

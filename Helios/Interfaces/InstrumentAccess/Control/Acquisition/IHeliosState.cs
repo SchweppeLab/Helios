@@ -40,33 +40,33 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
         SystemMode SystemMode { get; }
     }
 
-  internal class UStateExploris : IHeliosState
+  internal class HeliosStateExploris : IHeliosState
   {
     public InstrumentState SystemState { get; }
     public SystemMode SystemMode { get; }
-    public UStateExploris(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
+    public HeliosStateExploris(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
     {
       SystemState = (InstrumentState)s.SystemState;
       SystemMode = (SystemMode)s.SystemMode;
     }
   }
 
-  internal class UStateFusion : IHeliosState
+  internal class HeliosStateFusion : IHeliosState
   {
     public InstrumentState SystemState { get; }
     public SystemMode SystemMode { get; }
-    public UStateFusion(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
+    public HeliosStateFusion(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IState s)
     {
       SystemState = (InstrumentState)s.SystemState;
       SystemMode = (SystemMode)s.SystemMode;
     }
   }
 
-  internal class UStateVMS : IHeliosState
+  internal class HeliosStateVMS : IHeliosState
   {
     public InstrumentState SystemState { get; set; }
     public SystemMode SystemMode { get; }
-    public UStateVMS()
+    public HeliosStateVMS()
     {
       SystemState = InstrumentState.ReadyForRun;
       SystemMode = SystemMode.Disconnected;

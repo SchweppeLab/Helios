@@ -124,6 +124,7 @@ namespace SpyIAPI
             {
               msIAC.ServiceConnectionChanged += ServiceConnectionChanged;
               msIAC.MessagesArrived += MessagesArrived;
+              Log("Attempting to start online access, already at " + msIAC.ServiceConnected.ToString());
               msIAC.StartOnlineAccess();
               Log("StartOnlineAccess() happened. This message appears in lieu of a more natural message.");
             }
@@ -192,6 +193,7 @@ namespace SpyIAPI
         {
           match = true;
           row.Cells[1].Value += "," + msLevel.ToString();
+          if (msLevel > 0 && msLevel < 4) row.Cells[msLevel + 1].Value = value;
           break;
         }
       }
@@ -201,7 +203,7 @@ namespace SpyIAPI
         int index = dgv.Rows.Add();
         dgv.Rows[index].Cells[0].Value = key;
         dgv.Rows[index].Cells[1].Value = msLevel.ToString();
-        dgv.Rows[index].Cells[2].Value = value;
+        if(msLevel>0 && msLevel<4) dgv.Rows[index].Cells[msLevel+1].Value = value;
       }
     }
 
@@ -225,18 +227,18 @@ namespace SpyIAPI
 
     void MessagesArrived(object sender, MessagesArrivedEventArgs e)
     {
-      //StringBuilder sb = new StringBuilder();
-      //foreach (var message in e.Messages)
-      //{
-      //  string msg = string.Format("[{0}] ID: {1} Status: {2} Msg: {3}",
-      //      message.CreationTime,
-      //      message.MessageId,
-      //      message.Status,
-      //      string.Format(message.Message, message.MessageArgs));
+      StringBuilder sb = new StringBuilder();
+      foreach (var message in e.Messages)
+      {
+        string msg = string.Format("[{0}] ID: {1} Status: {2} Msg: {3}",
+            message.CreationTime,
+            message.MessageId,
+            message.Status,
+            string.Format(message.Message, message.MessageArgs));
 
-      //  sb.AppendLine(msg);
-      //}
-      //Log(sb.ToString());
+        sb.AppendLine(msg);
+      }
+      Log(sb.ToString());
     }
 
     private void MsScanArrived(object sender, MsScanEventArgs e)
@@ -246,9 +248,14 @@ namespace SpyIAPI
       using (IHeliosMsScan msScan = e.GetScan())
       {
         string tmp;
-        int msLevel=0;
-        if (msScan.TryHeader("MSOrder", out tmp)) msLevel = Convert.ToInt32(tmp);
-        if (msLevel>0 && !headers[msLevel]) //first time we've seen this scan level, so process the headers available to the user
+        int msLevel = 0;
+        if (msScan.TryHeader("MSOrder", out tmp))
+        {
+          if (tmp == "MS") msLevel = 1;
+          else if (tmp == "MS2") msLevel = 2;
+          else msLevel = Convert.ToInt32(tmp);
+        }
+        if (msLevel > 0 && !headers[msLevel]) //first time we've seen this scan level, so process the headers available to the user
         {
           headers[msLevel] = true;
           foreach (var x in msScan.Header) CheckDictionary(x.Key.ToString(), x.Value.ToString(), msLevel, dgvHeaders);
@@ -256,6 +263,7 @@ namespace SpyIAPI
           {
             if (msScan.Trailer.TryGetValue(x, out tmp))
             {
+              if (tmp == null) tmp = "(null)";
               CheckDictionary(x, tmp, msLevel, dgvTrailers);
             }
           }
@@ -269,8 +277,8 @@ namespace SpyIAPI
           int scanNumber = 0;
           string scanFilter = "";
 
-          if(msScan.TryHeader("ScanNumber", out tmp)) scanNumber =Convert.ToInt32(tmp);
-          if(msScan.TryHeader("RetentionTime", out tmp)) rt = Convert.ToDouble(tmp);
+          if (msScan.TryHeader("ScanNumber", out tmp)) scanNumber = Convert.ToInt32(tmp);
+          if (msScan.TryHeader("RetentionTime", out tmp)) rt = Convert.ToDouble(tmp);
 
           msScan.Header.TryGetValue("Filter", out tmp);
           if (tmp != null) scanFilter = tmp;
@@ -284,6 +292,10 @@ namespace SpyIAPI
           {
             x[a] = centroid.Mz;
             y[a] = centroid.Intensity;
+            if (centroid.IsMonoisotopic != null)
+            {
+              Log("IsMonoisotopic is not null: " + centroid.IsMonoisotopic.ToString() + " mz: " + centroid.Mz.ToString() + " in scan " + scanNumber.ToString());
+            } 
             a++;
           }
           lock (plotSpectrum.Plot.Sync)
@@ -309,6 +321,7 @@ namespace SpyIAPI
         }
 
       }
+
       return;
       using (IHeliosMsScan msScan = e.GetScan())
       {
@@ -513,6 +526,24 @@ namespace SpyIAPI
       foreach(var property in msScans.PossibleParameters)
       {
         Log("Params: '" + property.Name + "' = " + property.Help + " Default=" + property.DefaultValue + " Selection=" + property.Selection);
+      }
+    }
+
+    private void button2_Click(object sender, EventArgs e)
+    {
+      if (msIAC.InstrumentType() != "VirtualMS")
+      {
+        Log("This is disabled on real mass spectrometers!!");
+        return;
+      }
+      IHeliosCustomScan ecs = msScans.CreateCustomScan();
+      ecs.SingleProcessingDelay = 0;
+      ecs.RunningNumber = 1;
+      ecs.Values["Analyzer"] = "Orbitrap";
+      ecs.Values["CollisionEnergy"] = new Random().Next(20,40).ToString();
+      if (!msScans.SetCustomScan(ecs))
+      {
+        Log("SetCustomScan failed.");
       }
     }
   }

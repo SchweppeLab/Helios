@@ -35,7 +35,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     /// <param name="e">Exploris IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
     public ExplorisStateChangedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
     {
-      State = new UStateExploris(e.State);
+      State = new HeliosStateExploris(e.State);
     }
   }
 
@@ -48,7 +48,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
     public FusionStateChangedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
     {
-      State = new UStateFusion(e.State);
+      State = new HeliosStateFusion(e.State);
     }
   }
 
@@ -61,7 +61,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
     public VMSStateChangedEventArgs()
     {
-      State = new UStateVMS();
+      State = new HeliosStateVMS();
     }
     public VMSStateChangedEventArgs(IHeliosState s)
     {

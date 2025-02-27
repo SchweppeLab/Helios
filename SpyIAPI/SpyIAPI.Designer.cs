@@ -47,6 +47,7 @@
       this.disconnectionIndicator = new System.Windows.Forms.Button();
       this.connectionIndicator = new System.Windows.Forms.Button();
       this.buttonConnect = new System.Windows.Forms.Button();
+      this.button2 = new System.Windows.Forms.Button();
       this.button1 = new System.Windows.Forms.Button();
       this.splitContainer3 = new System.Windows.Forms.SplitContainer();
       this.plotSpectrum = new ScottPlot.WinForms.FormsPlot();
@@ -60,11 +61,15 @@
       this.HeaderA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.HeaderB = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.HeaderC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.ExampleMS2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.ExampleMS3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.tabPage3 = new System.Windows.Forms.TabPage();
       this.dgvTrailers = new System.Windows.Forms.DataGridView();
       this.TrailerA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TrailerB = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TrailerC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.TrailerD = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.TrailerE = new System.Windows.Forms.DataGridViewTextBoxColumn();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
       this.splitContainer1.Panel2.SuspendLayout();
@@ -144,6 +149,7 @@
       // 
       // splitContainer2.Panel2
       // 
+      this.splitContainer2.Panel2.Controls.Add(this.button2);
       this.splitContainer2.Panel2.Controls.Add(this.button1);
       this.splitContainer2.Size = new System.Drawing.Size(220, 508);
       this.splitContainer2.SplitterDistance = 148;
@@ -304,13 +310,23 @@
       this.buttonConnect.UseVisualStyleBackColor = true;
       this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
       // 
+      // button2
+      // 
+      this.button2.Location = new System.Drawing.Point(21, 290);
+      this.button2.Name = "button2";
+      this.button2.Size = new System.Drawing.Size(77, 29);
+      this.button2.TabIndex = 2;
+      this.button2.Text = "button2";
+      this.button2.UseVisualStyleBackColor = true;
+      this.button2.Click += new System.EventHandler(this.button2_Click);
+      // 
       // button1
       // 
       this.button1.Location = new System.Drawing.Point(3, 330);
       this.button1.Name = "button1";
-      this.button1.Size = new System.Drawing.Size(75, 23);
+      this.button1.Size = new System.Drawing.Size(125, 23);
       this.button1.TabIndex = 1;
-      this.button1.Text = "Inject Scan";
+      this.button1.Text = "Custom Scan Info\r\n";
       this.button1.UseVisualStyleBackColor = true;
       this.button1.Click += new System.EventHandler(this.button1_Click);
       // 
@@ -381,7 +397,7 @@
       this.tabPage1.Controls.Add(this.rtbLog);
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
       this.tabPage1.Name = "tabPage1";
-      this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
       this.tabPage1.Size = new System.Drawing.Size(552, 192);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Message Log";
@@ -401,8 +417,8 @@
       this.tabPage2.Controls.Add(this.dgvHeaders);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
-      this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-      this.tabPage2.Size = new System.Drawing.Size(625, 194);
+      this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage2.Size = new System.Drawing.Size(552, 192);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Headers";
       this.tabPage2.UseVisualStyleBackColor = true;
@@ -416,7 +432,9 @@
       this.dgvHeaders.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.HeaderA,
             this.HeaderB,
-            this.HeaderC});
+            this.HeaderC,
+            this.ExampleMS2,
+            this.ExampleMS3});
       this.dgvHeaders.Dock = System.Windows.Forms.DockStyle.Fill;
       this.dgvHeaders.Location = new System.Drawing.Point(3, 3);
       this.dgvHeaders.Name = "dgvHeaders";
@@ -424,7 +442,7 @@
       this.dgvHeaders.RowHeadersVisible = false;
       this.dgvHeaders.RowHeadersWidth = 62;
       this.dgvHeaders.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.dgvHeaders.Size = new System.Drawing.Size(619, 188);
+      this.dgvHeaders.Size = new System.Drawing.Size(546, 186);
       this.dgvHeaders.TabIndex = 0;
       // 
       // HeaderA
@@ -447,19 +465,35 @@
       // 
       // HeaderC
       // 
-      this.HeaderC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-      this.HeaderC.HeaderText = "Example";
+      this.HeaderC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      this.HeaderC.HeaderText = "ExampleMS1";
       this.HeaderC.MinimumWidth = 8;
       this.HeaderC.Name = "HeaderC";
       this.HeaderC.ReadOnly = true;
+      this.HeaderC.Width = 94;
+      // 
+      // ExampleMS2
+      // 
+      this.ExampleMS2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      this.ExampleMS2.HeaderText = "ExampleMS2";
+      this.ExampleMS2.Name = "ExampleMS2";
+      this.ExampleMS2.ReadOnly = true;
+      this.ExampleMS2.Width = 94;
+      // 
+      // ExampleMS3
+      // 
+      this.ExampleMS3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+      this.ExampleMS3.HeaderText = "ExampleMS3";
+      this.ExampleMS3.Name = "ExampleMS3";
+      this.ExampleMS3.ReadOnly = true;
       // 
       // tabPage3
       // 
       this.tabPage3.Controls.Add(this.dgvTrailers);
       this.tabPage3.Location = new System.Drawing.Point(4, 4);
       this.tabPage3.Name = "tabPage3";
-      this.tabPage3.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-      this.tabPage3.Size = new System.Drawing.Size(625, 194);
+      this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage3.Size = new System.Drawing.Size(552, 192);
       this.tabPage3.TabIndex = 2;
       this.tabPage3.Text = "Trailers";
       this.tabPage3.UseVisualStyleBackColor = true;
@@ -472,14 +506,16 @@
       this.dgvTrailers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TrailerA,
             this.TrailerB,
-            this.TrailerC});
+            this.TrailerC,
+            this.TrailerD,
+            this.TrailerE});
       this.dgvTrailers.Dock = System.Windows.Forms.DockStyle.Fill;
       this.dgvTrailers.Location = new System.Drawing.Point(3, 3);
       this.dgvTrailers.Name = "dgvTrailers";
       this.dgvTrailers.ReadOnly = true;
       this.dgvTrailers.RowHeadersVisible = false;
       this.dgvTrailers.RowHeadersWidth = 62;
-      this.dgvTrailers.Size = new System.Drawing.Size(619, 188);
+      this.dgvTrailers.Size = new System.Drawing.Size(546, 186);
       this.dgvTrailers.TabIndex = 0;
       // 
       // TrailerA
@@ -502,11 +538,27 @@
       // 
       // TrailerC
       // 
-      this.TrailerC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-      this.TrailerC.HeaderText = "Example";
+      this.TrailerC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      this.TrailerC.HeaderText = "ExampleMS1";
       this.TrailerC.MinimumWidth = 8;
       this.TrailerC.Name = "TrailerC";
       this.TrailerC.ReadOnly = true;
+      this.TrailerC.Width = 94;
+      // 
+      // TrailerD
+      // 
+      this.TrailerD.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      this.TrailerD.HeaderText = "ExampleMS2";
+      this.TrailerD.Name = "TrailerD";
+      this.TrailerD.ReadOnly = true;
+      this.TrailerD.Width = 94;
+      // 
+      // TrailerE
+      // 
+      this.TrailerE.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+      this.TrailerE.HeaderText = "ExampleMS3";
+      this.TrailerE.Name = "TrailerE";
+      this.TrailerE.ReadOnly = true;
       // 
       // SpyIAPI
       // 
@@ -578,13 +630,18 @@
     private System.Windows.Forms.DataGridView dgvHeaders;
     private System.Windows.Forms.TabPage tabPage3;
     private System.Windows.Forms.DataGridView dgvTrailers;
+    private System.Windows.Forms.Button button1;
+    private System.Windows.Forms.Button button2;
     private System.Windows.Forms.DataGridViewTextBoxColumn HeaderA;
     private System.Windows.Forms.DataGridViewTextBoxColumn HeaderB;
     private System.Windows.Forms.DataGridViewTextBoxColumn HeaderC;
+    private System.Windows.Forms.DataGridViewTextBoxColumn ExampleMS2;
+    private System.Windows.Forms.DataGridViewTextBoxColumn ExampleMS3;
     private System.Windows.Forms.DataGridViewTextBoxColumn TrailerA;
     private System.Windows.Forms.DataGridViewTextBoxColumn TrailerB;
     private System.Windows.Forms.DataGridViewTextBoxColumn TrailerC;
-    private System.Windows.Forms.Button button1;
+    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerD;
+    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerE;
   }
 }
 

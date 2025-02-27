@@ -4,6 +4,7 @@ extern alias exploris;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.Control.Scans;
 using Helios.Interfaces.InstrumentAccess.Control.InstrumentValues;
+using Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess.Control
 {
@@ -42,8 +43,8 @@ namespace Helios.Interfaces.InstrumentAccess.Control
     public HeliosControlExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
     {
       control = ia.Control;
-      Acquisition = new UAcquisitionExploris(control);
-      InstrumentValues = new UInstrumentValues(control);
+      Acquisition = new HeliosAcquisitionExploris(control);
+      InstrumentValues = new HeliosInstrumentValues(control);
     }
     public IHeliosScans GetScans(bool exclusiveAccess)
     {
@@ -59,8 +60,8 @@ namespace Helios.Interfaces.InstrumentAccess.Control
     public HeliosControlFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
     {
       control = ia.Control;
-      Acquisition = new UAcquisitionFusion(control);
-      InstrumentValues = new UInstrumentValues(control);
+      Acquisition = new HeliosAcquisitionFusion(control);
+      InstrumentValues = new HeliosInstrumentValues(control);
     }
 
     public IHeliosScans GetScans(bool exclusiveAccess)
@@ -71,12 +72,20 @@ namespace Helios.Interfaces.InstrumentAccess.Control
 
   internal class HeliosControlVMS : IHeliosControl
   {
-    public IHeliosAcquisition Acquisition { get; } = new UAcquisitionVMS();
-    public IHeliosInstrumentValues InstrumentValues { get; } = new UInstrumentValues();
+    public IHeliosAcquisition Acquisition { get; } = new HeliosAcquisitionVMS();
+    public IHeliosInstrumentValues InstrumentValues { get; } = new HeliosInstrumentValues();
+
+    private readonly PipesClient pipesClient = null;
+
+    public HeliosControlVMS(PipesClient pc = null)
+    {
+      pipesClient = pc;
+
+    }
 
     public IHeliosScans GetScans(bool exclusiveAccess)
     {
-      return new HeliosScansVMS();
+      return new HeliosScansVMS(pipesClient);
     }
   }
 

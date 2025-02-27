@@ -51,6 +51,6 @@ namespace Helios.Interfaces.SpectrumFormat
     //     Access to the array of all charge envelopes found in the spectrum. An empty array
     //     will be returned if nothing had been found. null will be returned if the detector's
     //     processing software doesn't support detection of charge envelopes for this scan.
-    ///IChargeEnvelope[] ChargeEnvelopes { get; }
+    IHeliosChargeEnvelope[] ChargeEnvelopes { get; }
   }
 }

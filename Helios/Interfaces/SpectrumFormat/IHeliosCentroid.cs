@@ -26,7 +26,7 @@ namespace Helios.Interfaces.SpectrumFormat
 
   }
 
-  class UCentroid : IHeliosCentroid
+  class HeliosCentroid : IHeliosCentroid
   {
     public bool? IsExceptional => throw new NotImplementedException();
 
@@ -44,7 +44,7 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public int? ChargeEnvelopeIndex => throw new NotImplementedException();
 
-    public bool? IsMonoisotopic => throw new NotImplementedException();
+    public bool? IsMonoisotopic { get; } = null;
 
     public bool? IsClusterTop => throw new NotImplementedException();
 
@@ -56,10 +56,17 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public double Intensity { get; }
 
-    public UCentroid(double mz, double intensity)
+    public HeliosCentroid(double mz, double intensity)
     {
       Mz = mz;
       Intensity = intensity;
+    }
+
+    public HeliosCentroid(exploris.Thermo.Interfaces.SpectrumFormat_V1.ICentroid c)
+    {
+      Mz = c.Mz;
+      Intensity = c.Intensity;
+      IsMonoisotopic = c.IsMonoisotopic;
     }
   }
 }

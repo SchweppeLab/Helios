@@ -29,6 +29,21 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     /// The unit of this property is seconds and possible values are between 0 and 600 inclusively. The default value is 0.
     /// </summary>
     double SingleProcessingDelay { get; set; }
+
+    fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionCustomScan ToFusion();
+  }
+
+  internal class FusionCustomScan : fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionCustomScan
+  {
+    public bool IsPAGCScan { get; set; }
+    public long PAGCGroupIndex { get; set; }
+    public double SingleProcessingDelay { get; set; } = 0;
+    public IDictionary<string, string> Values { get; set; }
+    public long RunningNumber { get; set; }
+    public FusionCustomScan()
+    {
+      Values = new Dictionary<string, string>();
+    }
   }
 
   internal class HeliosCustomScan : IHeliosCustomScan
@@ -41,6 +56,48 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     public HeliosCustomScan()
     {
       Values = new Dictionary<string, string>();
+    }
+
+    public fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionCustomScan ToFusion()
+    {
+      FusionCustomScan customScan = new FusionCustomScan();
+      customScan.IsPAGCScan = IsPAGCScan;
+      customScan.PAGCGroupIndex = PAGCGroupIndex;
+      customScan.SingleProcessingDelay = SingleProcessingDelay;
+      customScan.RunningNumber = RunningNumber;
+      foreach(KeyValuePair<string, string> kvp in Values)
+      {
+        if (kvp.Key == "CollisionEnergy") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ScanRate") customScan.Values.Add(kvp);
+        else if (kvp.Key == "FirstMass") customScan.Values.Add(kvp);
+        else if (kvp.Key == "LastMass") customScan.Values.Add(kvp);
+        else if (kvp.Key == "Analyzer") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ScanType") customScan.Values.Add(kvp);
+        else if (kvp.Key == "Polarity") customScan.Values.Add(kvp);
+        else if (kvp.Key == "DataType") customScan.Values.Add(kvp);
+        else if (kvp.Key == "SrcRFLens") customScan.Values.Add(kvp);
+        else if (kvp.Key == "SourceCIDEnergy") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ScanRangeMode") customScan.Values.Add(kvp);
+        else if (kvp.Key == "SourceCIDScalingFactor") customScan.Values.Add(kvp);
+        else if (kvp.Key == "FAIMS CV") customScan.Values.Add(kvp);
+        else if (kvp.Key == "FAIMS Voltages") customScan.Values.Add(kvp);
+        else if (kvp.Key == "IsolationMode") customScan.Values.Add(kvp);
+        else if (kvp.Key == "OrbitrapResolution") customScan.Values.Add(kvp);
+        else if (kvp.Key == "IsolationWidth") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ActivationType") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ChargeStates") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ActivationQ") customScan.Values.Add(kvp);
+        else if (kvp.Key == "AGCTarget") customScan.Values.Add(kvp);
+        else if (kvp.Key == "MaxIT") customScan.Values.Add(kvp);
+        else if (kvp.Key == "Microscans") customScan.Values.Add(kvp);
+        else if (kvp.Key == "PrecursorMass") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ReactionTime") customScan.Values.Add(kvp);
+        else if (kvp.Key == "MassRange") customScan.Values.Add(kvp);
+        else if (kvp.Key == "MSANeutralLoss") customScan.Values.Add(kvp);
+        else if (kvp.Key == "MSXTargets") customScan.Values.Add(kvp);
+        else if (kvp.Key == "ScanDescription") customScan.Values.Add(kvp);
+      }
+      return customScan;
     }
   } 
 

@@ -55,21 +55,21 @@ namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
     IHeliosValue Get(ulong number);
   }
 
-  internal class UInstrumentValues : IHeliosInstrumentValues
+  internal class HeliosInstrumentValues : IHeliosInstrumentValues
   {
     public string[] ValueNames { get; }
 
-    public UInstrumentValues(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
+    public HeliosInstrumentValues(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
     {
       ValueNames = c.InstrumentValues.ValueNames;
     }
 
-    public UInstrumentValues(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
+    public HeliosInstrumentValues(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
     {
       ValueNames = c.InstrumentValues.ValueNames;
     }
 
-    public UInstrumentValues()
+    public HeliosInstrumentValues()
     {
       ValueNames = new string[0];
     }

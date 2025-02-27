@@ -1,4 +1,7 @@
-﻿using System;
+﻿extern alias exploris;
+extern alias fusion;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,14 +17,21 @@ namespace Helios.Interfaces.SpectrumFormat
     double? Baseline { get; }
   }
 
-  internal class UNoiseNode : IHeliosNoiseNode
+  internal class HeliosNoiseNode : IHeliosNoiseNode
   {
     public double? Baseline { get; }
     public double Mz { get; }
 
     public double Intensity { get; }
 
-    public UNoiseNode(Thermo.Interfaces.SpectrumFormat_V1.INoiseNode n)
+    public HeliosNoiseNode(exploris.Thermo.Interfaces.SpectrumFormat_V1.INoiseNode n)
+    {
+      Baseline = n.Baseline;
+      Mz = n.Mz;
+      Intensity = n.Intensity;
+    }
+
+    public HeliosNoiseNode(Thermo.Interfaces.SpectrumFormat_V1.INoiseNode n)
     {
       Baseline = n.Baseline;
       Mz = n.Mz;

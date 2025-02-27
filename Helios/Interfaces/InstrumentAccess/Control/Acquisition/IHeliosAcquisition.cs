@@ -60,7 +60,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
   }
 
-  internal class UAcquisitionExploris : IHeliosAcquisition
+  internal class HeliosAcquisitionExploris : IHeliosAcquisition
   {
     exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
     public event EventHandler<StateChangedEventArgs> StateChanged;
@@ -71,14 +71,14 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     public bool CanPause { get; }
     public bool CanResume { get; }
 
-    public UAcquisitionExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
+    public HeliosAcquisitionExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
     {
       acquisition = c.Acquisition;
       acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingExploris;
       acquisition.AcquisitionStreamOpening += AcquisitionStreamOpeningExploris;
       acquisition.StateChanged += StateChangedFusion;
 
-      State = new UStateExploris(acquisition.State);
+      State = new HeliosStateExploris(acquisition.State);
       CanPause = acquisition.CanPause;
       CanResume = acquisition.CanResume;
     }
@@ -128,7 +128,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
         }
     }
 
-  internal class UAcquisitionFusion : IHeliosAcquisition
+  internal class HeliosAcquisitionFusion : IHeliosAcquisition
   {
     Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
     public event EventHandler<StateChangedEventArgs> StateChanged;
@@ -140,13 +140,13 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     public bool CanResume { get; }
 
         
-    public UAcquisitionFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
+    public HeliosAcquisitionFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
     {
       acquisition = c.Acquisition;
       acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingFusion;
       acquisition.AcquisitionStreamOpening += AcquisitionStreamOpeningFusion;
       acquisition.StateChanged += StateChangedFusion;
-      State = new UStateFusion(acquisition.State);
+      State = new HeliosStateFusion(acquisition.State);
       CanPause = acquisition.CanPause;
       CanResume = acquisition.CanResume;
     }
@@ -196,13 +196,13 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
         }
     }
 
-  internal class UAcquisitionVMS : IHeliosAcquisition
+  internal class HeliosAcquisitionVMS : IHeliosAcquisition
   {
     public event EventHandler<StateChangedEventArgs> StateChanged;
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IHeliosState State { get; } = new UStateVMS();
+    public IHeliosState State { get; } = new HeliosStateVMS();
     public bool CanPause { get; } = true;
     public bool CanResume { get; } = true;
 
@@ -223,7 +223,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 
     public void SetState(InstrumentState state)
     {
-      ((UStateVMS)State).SetSystemState(state);
+      ((HeliosStateVMS)State).SetSystemState(state);
       OnStateChanged(new VMSStateChangedEventArgs(State));
     }
   }
