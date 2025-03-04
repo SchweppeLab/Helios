@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Thermo.Interfaces.InstrumentAccess_V1;
 
 namespace Helios.Interfaces.InstrumentAccess
 {
@@ -46,23 +45,34 @@ namespace Helios.Interfaces.InstrumentAccess
         }
     }
 
-  /// <summary>
-  /// A wrapper around IAPI AcquisitionErrorsArrivedEventArgs. From IAPI Documentation:<br/>
-  /// This implementation of EventArgs carries a list of Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionErrors. This class will not be used for status reports or messages of the transport layer.
-  /// </summary>
-  public class AcquisitionErrorsArrivedEventArgs : EventArgs
+  //
+  // Summary:
+  //     This implementation of EventArgs carries a list of Thermo.Interfaces.InstrumentAccess_V1.IAcquisitionErrors.
+  //     This class will not be used for status reports or messages of the transport layer.
+  //
+  //
+  // Remarks:
+  //     An instance of this class will be created by Thermo.Interfaces.InstrumentAccess_V1.IInstrumentAccess.AcquisitionErrorsArrived.
+  public abstract class AcquisitionErrorsArrivedEventArgs : EventArgs
   {
-    /// <summary>
-    /// Get access to the errors that have arrived from the instrument.
-    /// </summary>
-    public IList<IHeliosAcquisitionError> Errors;
+    //
+    // Summary:
+    //     Get access to the errors that have arrived from the instrument.
+    public IList<IHeliosAcquisitionError> Errors { get; protected set; }
 
-    /// <summary>
-    /// Create a new UIAPI.Interfaces.InstrumentAccess.AcquisitionErrorsEventArgs from Fusion Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
-    /// </summary>
-    /// <param name="e"></param>
-    public AcquisitionErrorsArrivedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
+    //
+    // Summary:
+    //     Create a new Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
+    protected AcquisitionErrorsArrivedEventArgs()
     {
+    }
+  }
+
+  internal class ExplorisAcquisitionErrorsArrivedEventArgs : AcquisitionErrorsArrivedEventArgs
+  { 
+    public ExplorisAcquisitionErrorsArrivedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
+    {
+      Errors = new List<IHeliosAcquisitionError>();
       foreach (var v in e.Errors)
       {
         IHeliosAcquisitionError err = new HeliosAcquisitionError(v);
@@ -70,13 +80,15 @@ namespace Helios.Interfaces.InstrumentAccess
       }
 
     }
+  }
 
-    /// <summary>
-    /// Create a new UIAPI.Interfaces.InstrumentAccess.AcquisitionErrorsEventArgs from Exploris Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs.
-    /// </summary>
-    /// <param name="e"></param>
-    public AcquisitionErrorsArrivedEventArgs(exploris.Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
+ 
+  internal class FusionAcquisitionErrorsArrivedEventArgs : AcquisitionErrorsArrivedEventArgs
+  {
+
+    public FusionAcquisitionErrorsArrivedEventArgs(Thermo.Interfaces.InstrumentAccess_V1.AcquisitionErrorsArrivedEventArgs e)
     {
+      Errors = new List<IHeliosAcquisitionError>();
       foreach (var v in e.Errors)
       {
         IHeliosAcquisitionError err = new HeliosAcquisitionError(v);

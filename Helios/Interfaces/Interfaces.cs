@@ -22,7 +22,7 @@ namespace Helios.Interfaces
     /// Get an instance of the instrument.
     /// </summary>
     /// <returns>UIAPI.Interfaces.IInstrument object</returns>
-    static public IHeliosInstrumentAccessContainer Create()
+    static public IInstrumentAccessContainer Create()
     {
       HeliosInstrumentAccessContainerFusion fusion = new HeliosInstrumentAccessContainerFusion();
       if (fusion.Check()) return fusion;

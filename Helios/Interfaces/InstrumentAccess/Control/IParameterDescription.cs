@@ -11,7 +11,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control
   /// <remarks>An instance of this class will be created by UIAPI.Interfaces.InstrumentAccess.Control.InstrumentValues.IUValue.SetParameterDescription 
   /// or by UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans.PossibleParameters</remarks>
   /// </summary>
-  public interface IHeliosParameterDescription
+  public interface IParameterDescription
   {  
     /// <summary>
     /// From IAPI: This is the name of the command/property this parameter description belongs to.
@@ -40,7 +40,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control
     string Help { get; }
   }
 
-  internal class HeliosParameterDescription : IHeliosParameterDescription
+  internal class HeliosParameterDescription : IParameterDescription
   {
     public string Name { get; }
     public string Selection { get; }

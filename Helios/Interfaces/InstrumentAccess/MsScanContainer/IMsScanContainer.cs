@@ -6,16 +6,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer;
 
 namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 {
-    public interface IHeliosMsScanContainer
-    {
-        string DetectorClass { get; }
-        event EventHandler<MsScanEventArgs> MsScanArrived;
-    }
+  public interface IMsScanContainer
+  {
+    string DetectorClass { get; }
+    event EventHandler<MsScanEventArgs> MsScanArrived;
 
-  internal class HeliosMsScanContainerExploris : IHeliosMsScanContainer
+    //
+    // Summary:
+    //     Get access to the last scan seen in the system. The value can be null initially.
+    //
+    //
+    //     Note that accessing this property forces the consumer to dispose the item as
+    //     soon as possible in order to free its shared memory resources.
+    //
+    // Returns:
+    //     The method returns the latest scan the framework is aware off. It may be null.
+    //     It is castable to an Thermo.Interfaces.InstrumentAccess_V2.MsScanContainer.IMsScan
+    IMsScan GetLastMsScan();
+  }
+
+  internal class HeliosMsScanContainerExploris : IMsScanContainer
   {
     exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.IExplorisMsScanContainer cont;
     public string DetectorClass { get; }
@@ -30,17 +44,17 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     void MsScanArrivedExploris(object sender, exploris.Thermo.Interfaces.ExplorisAccess_V1.MsScanContainer.ExplorisMsScanEventArgs e)
     {
-      MsScanEventArgs args = new ExplorisMsScanEventArgs(e);
-      OnMsScanArrived(args);
+      MsScanArrived?.Invoke(this, new ExplorisMsScanEventArgs(e));
     }
 
-    protected virtual void OnMsScanArrived(MsScanEventArgs e)
+    public IMsScan GetLastMsScan()
     {
-      MsScanArrived?.Invoke(this, e);
+      return new HeliosMsScanExploris(cont.GetLastMsScan());
     }
+
   }
 
-  internal class HeliosMsScanContainerFusion : IHeliosMsScanContainer
+  internal class HeliosMsScanContainerFusion : IMsScanContainer
   {
       fusion.Thermo.Interfaces.FusionAccess_V1.MsScanContainer.IFusionMsScanContainer cont;
       public string DetectorClass { get; }
@@ -55,24 +69,20 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     void MsScanArrivedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.MsScanEventArgs e)
     {
-      MsScanEventArgs args = new FusionMsScanEventArgs(e);
-      OnMsScanArrived(args);
+      MsScanArrived?.Invoke(this, new FusionMsScanEventArgs(e));
     }
 
-      protected virtual void OnMsScanArrived(MsScanEventArgs e)
-      {
-          EventHandler<MsScanEventArgs> handler = MsScanArrived;
-          if (handler != null)
-          {
-              handler(this, e);
-          }
-      }
+    public IMsScan GetLastMsScan()
+    {
+      return new HeliosMsScanFusion(cont.GetLastMsScan());
+    }
   }
   
-  internal class HeliosMsScanContainerVMS : IHeliosMsScanContainer
+  internal class HeliosMsScanContainerVMS : IMsScanContainer
   {
     public string DetectorClass { get; }
     public event EventHandler<MsScanEventArgs> MsScanArrived;
+    private IMsScan LastScan;
 
     public HeliosMsScanContainerVMS()
     {
@@ -86,11 +96,13 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     protected virtual void OnMsScanArrived(MsScanEventArgs e)
     {
-      EventHandler<MsScanEventArgs> handler = MsScanArrived;
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      LastScan = e.GetScan();
+      MsScanArrived?.Invoke(this, e);
+    }
+
+    public IMsScan GetLastMsScan()
+    {
+      return LastScan;
     }
   }
 

@@ -4,6 +4,7 @@ extern alias exploris;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.Control.Scans;
 using Helios.Interfaces.InstrumentAccess.Control.InstrumentValues;
+using Helios.Interfaces.InstrumentAccess.Control.Peripherals;
 using Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess.Control
@@ -11,7 +12,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control
   /// <summary>
   /// This interface wraps the extensions to IControl by Exploris and Fusion based instruments.
   /// </summary>    
-  public interface IHeliosControl
+  public interface IControl
   {
 
     /// <summary>
@@ -24,56 +25,66 @@ namespace Helios.Interfaces.InstrumentAccess.Control
     /// </summary>
     /// <param name="exclusiveAccess">: request for exclusive access(true) or cooperative access (false)</param>
     /// <returns>IUScans interface being capable to receive user commands.</returns>
-    IHeliosScans GetScans(bool exclusiveAccess);
+    IScans GetScans(bool exclusiveAccess);
 
     /// <summary>
     /// Get access to the acquisition interface.
     /// This property is the instrument-specific implementation for Fusion and Exploris-based instruments.
     /// </summary>  
-    IHeliosAcquisition Acquisition { get; }
+    IAcquisition Acquisition { get; }
 
-    IHeliosInstrumentValues InstrumentValues { get; }
+    IInstrumentValues InstrumentValues { get; }
+
+    /// <summary>
+    /// Only the Tribrid IAPI has access to this. Therefore it can be null when connected to an Exploris.
+    /// </summary>
+    ISyringePumpControl SyringePumpControl { get; }
   }
 
-  internal class HeliosControlExploris : IHeliosControl
+  internal class HeliosControlExploris : IControl
   {
     exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl control;
-    public IHeliosAcquisition Acquisition { get; }
-    public IHeliosInstrumentValues InstrumentValues { get; }
+    public IAcquisition Acquisition { get; }
+    public IInstrumentValues InstrumentValues { get; }
+    public ISyringePumpControl SyringePumpControl { get; } = null;
+
     public HeliosControlExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess ia)
     {
       control = ia.Control;
       Acquisition = new HeliosAcquisitionExploris(control);
       InstrumentValues = new HeliosInstrumentValues(control);
     }
-    public IHeliosScans GetScans(bool exclusiveAccess)
+    public IScans GetScans(bool exclusiveAccess)
     {
       return new HeliosScansExploris(control,exclusiveAccess);
     }
   }
 
-  internal class HeliosControlFusion : IHeliosControl
+  internal class HeliosControlFusion : IControl
   {
     fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl control;
-    public IHeliosAcquisition Acquisition { get; }
-    public IHeliosInstrumentValues InstrumentValues { get; }
+    public IAcquisition Acquisition { get; }
+    public IInstrumentValues InstrumentValues { get; }
+    public ISyringePumpControl SyringePumpControl { get; }
     public HeliosControlFusion(fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess ia)
     {
       control = ia.Control;
       Acquisition = new HeliosAcquisitionFusion(control);
       InstrumentValues = new HeliosInstrumentValues(control);
+      SyringePumpControl = new HeliosSyringePumpControlFusion(control);
     }
 
-    public IHeliosScans GetScans(bool exclusiveAccess)
+    public IScans GetScans(bool exclusiveAccess)
     {
       return new HeliosScansFusion(control, exclusiveAccess);
     }
   }
 
-  internal class HeliosControlVMS : IHeliosControl
+  internal class HeliosControlVMS : IControl
   {
-    public IHeliosAcquisition Acquisition { get; } = new HeliosAcquisitionVMS();
-    public IHeliosInstrumentValues InstrumentValues { get; } = new HeliosInstrumentValues();
+    public IAcquisition Acquisition { get; } = new HeliosAcquisitionVMS();
+    public IInstrumentValues InstrumentValues { get; } = new HeliosInstrumentValues();
+    public ISyringePumpControl SyringePumpControl { get; } = null;
 
     private readonly PipesClient pipesClient = null;
 
@@ -83,7 +94,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control
 
     }
 
-    public IHeliosScans GetScans(bool exclusiveAccess)
+    public IScans GetScans(bool exclusiveAccess)
     {
       return new HeliosScansVMS(pipesClient);
     }

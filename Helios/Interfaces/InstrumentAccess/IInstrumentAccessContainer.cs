@@ -18,7 +18,7 @@ namespace Helios.Interfaces.InstrumentAccess
   /// This interface is the central access point for a direct access of an instrument. 
   /// It covers both online functionality as well as offline manipulation of methods.
   /// </summary>
-  public interface IHeliosInstrumentAccessContainer : IDisposable
+  public interface IInstrumentAccessContainer : IDisposable
   {
       /// <summary>
       /// Check if connection to the instrument was successful.
@@ -33,7 +33,7 @@ namespace Helios.Interfaces.InstrumentAccess
       /// <returns>The return value allows access to a particular instrument. 
       /// If one service hosts several instruments in parallel, this value can be of a different type for each. 
       /// </returns>
-      IHeliosInstrumentAccess Get(int index);
+      IInstrumentAccess Get(int index);
 
       /// <summary>
       /// Currently used for UIAPI diagnostics. Likely to be removed at some point.
@@ -71,7 +71,7 @@ namespace Helios.Interfaces.InstrumentAccess
         
   }
 
-  internal class HeliosInstrumentAccessContainerExploris : IHeliosInstrumentAccessContainer
+  internal class HeliosInstrumentAccessContainerExploris : IInstrumentAccessContainer
   {
     private exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccessContainer cont;
     private bool check = false;
@@ -85,7 +85,7 @@ namespace Helios.Interfaces.InstrumentAccess
       {
         cont = ExplorisConnection.Get();
         cont.ServiceConnectionChanged += ServiceConnectionChangedExploris;
-        cont.MessagesArrived += MessagesArrivedExploris;  //Capturing messages before StartOnlineService() causes crashes.
+        cont.MessagesArrived += MessagesArrivedExploris;
         check = true;
       }
       catch
@@ -134,7 +134,7 @@ namespace Helios.Interfaces.InstrumentAccess
       OnServiceConnectionChanged(e);
     }
 
-    public IHeliosInstrumentAccess Get(int index)
+    public IInstrumentAccess Get(int index)
     {
       return new HeliosInstrumentAccessExploris(cont, index);
     }
@@ -172,7 +172,7 @@ namespace Helios.Interfaces.InstrumentAccess
 
   }
 
-  internal class HeliosInstrumentAccessContainerFusion : IHeliosInstrumentAccessContainer
+  internal class HeliosInstrumentAccessContainerFusion : IInstrumentAccessContainer
   {
     private fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer cont;
     private bool check = false;
@@ -231,7 +231,7 @@ namespace Helios.Interfaces.InstrumentAccess
           OnServiceConnectionChanged(e);
       }
 
-      public Helios.Interfaces.InstrumentAccess.IHeliosInstrumentAccess Get(int index)
+      public Helios.Interfaces.InstrumentAccess.IInstrumentAccess Get(int index)
       {
           return new HeliosInstrumentAccessFusion(cont, index);
       }
@@ -272,7 +272,7 @@ namespace Helios.Interfaces.InstrumentAccess
       }
   }
 
-  internal class HeliosInstrumentAccessContainerVMS : IHeliosInstrumentAccessContainer
+  internal class HeliosInstrumentAccessContainerVMS : IInstrumentAccessContainer
   {
 
     private HeliosInstrumentAccessVMS instAcc = null;
@@ -349,7 +349,7 @@ namespace Helios.Interfaces.InstrumentAccess
       OnServiceConnectionChanged(new EventArgs());
     }
 
-    public IHeliosInstrumentAccess Get(int index)
+    public IInstrumentAccess Get(int index)
     {
       return instAcc;
     }

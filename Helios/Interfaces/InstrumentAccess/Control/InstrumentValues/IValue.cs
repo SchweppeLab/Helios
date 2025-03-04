@@ -20,7 +20,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
   /// An instance of this class will be created by Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IInstrumentValues.Get(System.UInt64)
   /// or by Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IInstrumentValues.Get(System.String).
   /// </remarks>
-  public interface IHeliosValue
+  public interface IValue
   {  
     /// <summary>
     /// Get access to the ID of the value.
@@ -33,7 +33,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
     /// The commands will be null if the instrument is not connected or if the IValue is unknown to the instrument or if 
     /// Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IValue.Set(System.String) cannot be performed for this value.
     /// </summary>
-    IHeliosParameterDescription SetParameterDescription { get; }
+    IParameterDescription SetParameterDescription { get; }
    
     /// <summary>
     /// Set the content of the value. The command will be verified using Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues.IValue.SetParameterDescription.

@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Helios.Interfaces.InstrumentAccess.Control.Acquisition.Modes;
+using Helios.Interfaces.InstrumentAccess.Control.Acquisition.Workflow;
+using Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 {
@@ -16,7 +19,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
   /// to wait for contact closure or to extend the delay between the start of 
   /// the acquisition process and the real start of the first scan programmatically.
   /// </summary>
-  public interface IHeliosAcquisition
+  public interface IAcquisition
   {
 
     /// <summary>
@@ -58,9 +61,69 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     /// The individual information of a scan will reflect the information whether a scan belongs to an acquisition or not.
     /// </summary>
     event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
+
+    //
+    // Summary:
+    //     Create a new state change object that can put the instrument in the On state.
+    //     No data acquisition will be performed, a separate command/logic exists for this
+    //     purpose.
+    //
+    // Returns:
+    //     The created state change object can be used in Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition.SetMode(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Modes.IMode)
+    //     to set the new state.
+    IHeliosOnMode CreateOnMode();
+
+    //
+    // Summary:
+    //     Create a new state change object that can put the instrument in the Off state.
+    //
+    //
+    // Returns:
+    //     The created state change object can be used in Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition.SetMode(Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Modes.IMode)
+    //     to set the new mode.
+    IHeliosOffMode CreateOffMode();
+
+    //
+    // Summary:
+    //     Transport a new state change request to the instrument. Even if the command has
+    //     been submitted successfully to the instrument it may still be possible that the
+    //     instrument rejects the request because it has entered a different state in between.
+    //
+    //
+    // Parameters:
+    //   newMode:
+    //     The new mode that shall be assumed by the instrument.
+    //
+    // Exceptions:
+    //   T:System.ServiceModel.CommunicationException:
+    //     The connection to the instrument is not established.
+    //
+    //   T:System.ArgumentException:
+    //     The mode change request has illegal values.
+    //
+    //   T:System.FormatException:
+    //     The mode change request is of an unknown type. Use Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition
+    //     to generate a valid type.
+    //
+    //   T:System.AccessViolationException:
+    //     The instrument is under exclusive use of a different component or software package.
+    //
+    //
+    //   T:System.InvalidOperationException:
+    //     The instrument is not in the proper condition to accept the state change request.
+    void SetMode(IHeliosMode newMode);
+
+    IAcquisitionWorkflow CreatePermanentAcquisition();
+    void StartAcquisition(IAcquisitionWorkflow workflow);
+    void CancelAcquisition();
+    IAcquisitionLimitedByCount CreateAcquisitionLimitedByCount(int count);
+
+    IAcquisitionLimitedByTime CreateAcquisitionLimitedByDuration(TimeSpan duration);
+
+    IAcquisitionMethodRun CreateMethodAcquisition(string methodFileName);
   }
 
-  internal class HeliosAcquisitionExploris : IHeliosAcquisition
+  internal class HeliosAcquisitionExploris : IAcquisition
   {
     exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
     public event EventHandler<StateChangedEventArgs> StateChanged;
@@ -76,7 +139,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
       acquisition = c.Acquisition;
       acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingExploris;
       acquisition.AcquisitionStreamOpening += AcquisitionStreamOpeningExploris;
-      acquisition.StateChanged += StateChangedFusion;
+      acquisition.StateChanged += OnStateChanged;
 
       State = new HeliosStateExploris(acquisition.State);
       CanPause = acquisition.CanPause;
@@ -93,6 +156,51 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
             AcquisitionOpeningEventArgs args = new ExplorisAcquisitionOpeningEventArgs(e);
             OnAcquisitionStreamOpening(args);
         }
+
+    public void CancelAcquisition()
+    {
+      //not implemented in Exploris
+    }
+
+    public IAcquisitionLimitedByCount CreateAcquisitionLimitedByCount(int count)
+    {
+      return new HeliosAcquisitionLimitedByCount();
+    }
+
+    public IAcquisitionLimitedByTime CreateAcquisitionLimitedByDuration(TimeSpan duration)
+    {
+      return new HeliosAcquisitionLimitedByTime();
+    }
+
+    public IAcquisitionMethodRun CreateMethodAcquisition(string methodFileName)
+    {
+      return new HeliosAcquisitionMethodRun();
+    }
+
+    public IHeliosOffMode CreateOffMode()
+    {
+      return new HeliosOffModeExploris(acquisition.CreateOffMode());
+    }
+
+    public IHeliosOnMode CreateOnMode()
+    {
+      return new HeliosOnModeExploris(acquisition.CreateOnMode());
+    }
+
+    public IAcquisitionWorkflow CreatePermanentAcquisition()
+    {
+      return null; //not supported in Exploris
+    }
+
+    public void SetMode(IHeliosMode newMode)
+    {
+      acquisition.SetMode(new ExplorisMode(newMode));
+    }
+
+    public void StartAcquisition(IAcquisitionWorkflow workflow)
+    {
+      //not implemented in Exploris
+    }
 
         protected virtual void OnAcquisitionStreamClosing(EventArgs e)
         {
@@ -112,23 +220,14 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
             }
         }
 
-        protected virtual void OnStateChanged(StateChangedEventArgs e)
-        {
-            EventHandler<StateChangedEventArgs> handler = StateChanged;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
-        }
-
-        void StateChangedFusion(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
-        {
-      StateChangedEventArgs args = new ExplorisStateChangedEventArgs(e);
-            OnStateChanged(args);
-        }
+    protected virtual void OnStateChanged(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
+    {
+      StateChanged?.Invoke(this, new ExplorisStateChangedEventArgs(e));
     }
 
-  internal class HeliosAcquisitionFusion : IHeliosAcquisition
+  }
+
+  internal class HeliosAcquisitionFusion : IAcquisition
   {
     Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.IAcquisition acquisition;
     public event EventHandler<StateChangedEventArgs> StateChanged;
@@ -162,7 +261,41 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
             OnAcquisitionStreamOpening(args);
         }
 
-        protected virtual void OnAcquisitionStreamClosing(EventArgs e)
+    public void CancelAcquisition()
+    {
+      acquisition.CancelAcquisition();
+    }
+    public IAcquisitionLimitedByCount CreateAcquisitionLimitedByCount(int count)
+    {
+      return new HeliosAcquisitionLimitedByCount(acquisition.CreateAcquisitionLimitedByCount(count));
+    }
+
+    public IAcquisitionLimitedByTime CreateAcquisitionLimitedByDuration(TimeSpan duration)
+    {
+      return new HeliosAcquisitionLimitedByTime(acquisition.CreateAcquisitionLimitedByDuration(duration));
+    }
+
+    public IAcquisitionMethodRun CreateMethodAcquisition(string methodFileName)
+    {
+      return new HeliosAcquisitionMethodRun(acquisition.CreateMethodAcquisition(methodFileName));
+    }
+
+    public IHeliosOffMode CreateOffMode()
+    {
+      return new HeliosOffModeFusion(acquisition.CreateOffMode());
+    }
+
+    public IHeliosOnMode CreateOnMode()
+    {
+      return new HeliosOnModeFusion(acquisition.CreateOnMode());
+    }
+
+    public IAcquisitionWorkflow CreatePermanentAcquisition()
+    {
+      return new HeliosAcquisitionWorkflow();
+    }
+
+    protected virtual void OnAcquisitionStreamClosing(EventArgs e)
         {
             EventHandler handler = AcquisitionStreamClosing;
             if (handler != null)
@@ -189,14 +322,24 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
             }
         }
 
-        void StateChangedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
+    public void SetMode(IHeliosMode newMode)
+    {
+      acquisition.SetMode(new FusionMode(newMode));
+    }
+
+    public void StartAcquisition(IAcquisitionWorkflow workflow)
+    {
+      acquisition.StartAcquisition(new FusionAcquisitionWorkflow(workflow));
+    }
+
+    void StateChangedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)
         {
       StateChangedEventArgs args = new FusionStateChangedEventArgs(e);
             OnStateChanged(args);
         }
     }
 
-  internal class HeliosAcquisitionVMS : IHeliosAcquisition
+  internal class HeliosAcquisitionVMS : IAcquisition
   {
     public event EventHandler<StateChangedEventArgs> StateChanged;
     public event EventHandler AcquisitionStreamClosing;
@@ -205,6 +348,41 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     public IHeliosState State { get; } = new HeliosStateVMS();
     public bool CanPause { get; } = true;
     public bool CanResume { get; } = true;
+
+    public void CancelAcquisition()
+    {
+      //do nothing
+    }
+
+    public IAcquisitionLimitedByCount CreateAcquisitionLimitedByCount(int count)
+    {
+      return new HeliosAcquisitionLimitedByCount();
+    }
+
+    public IAcquisitionLimitedByTime CreateAcquisitionLimitedByDuration(TimeSpan duration)
+    {
+      return new HeliosAcquisitionLimitedByTime();
+    }
+
+    public IAcquisitionMethodRun CreateMethodAcquisition(string methodFileName)
+    {
+      return new HeliosAcquisitionMethodRun();
+    }
+
+    public IHeliosOffMode CreateOffMode()
+    {
+      return new HeliosOffModeVMS();
+    }
+
+    public IHeliosOnMode CreateOnMode()
+    {
+      return new HeliosOnModeVMS();
+    }
+
+    public IAcquisitionWorkflow CreatePermanentAcquisition()
+    {
+      return new HeliosAcquisitionWorkflow();
+    }
 
     public void OnStateChanged(StateChangedEventArgs e)
     {
@@ -221,10 +399,21 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
       AcquisitionStreamOpening?.Invoke(this, e);
     }
 
+    public void SetMode(IHeliosMode newMode)
+    {
+
+    }
+
     public void SetState(InstrumentState state)
     {
       ((HeliosStateVMS)State).SetSystemState(state);
       OnStateChanged(new VMSStateChangedEventArgs(State));
     }
+
+    public void StartAcquisition(IAcquisitionWorkflow workflow)
+    {
+      //do nothing
+    }
+
   }
 }

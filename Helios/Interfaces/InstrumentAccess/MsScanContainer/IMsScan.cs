@@ -25,7 +25,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
   /// Wrapper around IAPI IMsScan. Because the IMsScan interface could be ambiguous, I am 
   /// not sure yet how I want to play this out.
   /// </summary>
-  public interface IHeliosMsScan : IHeliosSpectrum, IDisposable
+  public interface IMsScan : IHeliosSpectrum, IDisposable
   {
     /// <summary>
     /// Get access to the information coming from the header. It is a set of name/value pairs. A pure name has a value of null.
@@ -65,7 +65,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
   }
 
-  internal class HeliosMsScanExploris : IHeliosMsScan
+  internal class HeliosMsScanExploris : IMsScan
   {
     //exploris.Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan msScan;
     public IDictionary<string, string> Header { get; }
@@ -149,7 +149,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
     }
   }
 
-  internal class HeliosMsScanFusion : IHeliosMsScan
+  internal class HeliosMsScanFusion : IMsScan
   {
     public IDictionary<string, string> Header { get; }
     public IHeliosInformationSourceAccess StatusLog { get; }
@@ -233,7 +233,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
     }
   }
 
-  internal class HeliosMsScanVMS : IHeliosMsScan
+  internal class HeliosMsScanVMS : IMsScan
   {
     public IDictionary<string, string> Header { get; }
     public IHeliosInformationSourceAccess StatusLog { get; }
@@ -252,10 +252,16 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
     public HeliosMsScanVMS(Spectrum m)
     {
       Header = new Dictionary<string, string>();
-      Header.Add("ScanNumber", m.ScanNumber.ToString());
+      Header.Add("Scan", m.ScanNumber.ToString());
       Header.Add("MSOrder", m.MsLevel.ToString());
-      Header.Add("RetentionTime", m.RetentionTime.ToString());
+      Header.Add("StartTime", m.RetentionTime.ToString());
+      Header.Add("FirstMass",m.StartMz.ToString());
+      Header.Add("LastMass",m.EndMz.ToString());
+      Header.Add("BasePeakIntensity",m.BasePeakIntensity.ToString());
+      Header.Add("TIC",m.TotalIonCurrent.ToString());
       Header.Add("Filter", m.ScanFilter.ToString());
+      if (m.Centroid) Header.Add("ScanData", "Centroid");
+      else Header.Add("ScanData", "Profile");
       if (m.Precursors.Count > 0)
       {
         Header.Add("PrecursorMass[0]", m.Precursors[0].IsolationMz.ToString());

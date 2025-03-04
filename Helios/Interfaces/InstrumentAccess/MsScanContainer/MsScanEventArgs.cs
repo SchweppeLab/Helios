@@ -18,7 +18,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
     {
     }
 
-    public abstract IHeliosMsScan GetScan();
+    public abstract IMsScan GetScan();
   }
 
   internal class ExplorisMsScanEventArgs : MsScanEventArgs
@@ -30,13 +30,13 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       eExploris = e;
     }
 
-    public override IHeliosMsScan GetScan()
+    public override IMsScan GetScan()
     {
       using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
       {
         writer.WriteLine("Getting Exploris Scan");
       }
-      IHeliosMsScan scan = new HeliosMsScanExploris(eExploris.GetScan());
+      IMsScan scan = new HeliosMsScanExploris(eExploris.GetScan());
       return scan;
     }
   }
@@ -50,9 +50,9 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       eFusion = e;
     }
 
-    public override IHeliosMsScan GetScan()
+    public override IMsScan GetScan()
     {
-      IHeliosMsScan scan = new HeliosMsScanFusion(eFusion.GetScan());
+      IMsScan scan = new HeliosMsScanFusion(eFusion.GetScan());
       return scan;
     }
   }
@@ -66,9 +66,9 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       spec.Deserialize(arr);
     }
 
-    public override IHeliosMsScan GetScan()
+    public override IMsScan GetScan()
     {
-      IHeliosMsScan scan = new HeliosMsScanVMS(spec);
+      IMsScan scan = new HeliosMsScanVMS(spec);
       return scan;
     }
   }

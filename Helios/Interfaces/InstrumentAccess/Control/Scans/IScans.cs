@@ -10,43 +10,54 @@ using System.Threading.Tasks;
 using Helios.Interfaces.InstrumentAccess.Control;
 using Pipes;
 using Thermo.Interfaces.InstrumentAccess_V1.Control;
+using Thermo.Interfaces.InstrumentAccess_V1.Control.Scans;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 {
-  public interface IHeliosScans //: exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans, fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans
+  public interface IScans : IDisposable//: exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans, fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans
   {
     bool CancelCustomScan();
-    //bool CancelRepetition();
-    IHeliosCustomScan CreateCustomScan();
-    //IURepeatingScan CreateRepeatingScan();
-    bool SetCustomScan(IHeliosCustomScan scan);
-    //bool SetRepetitionScan(IURepeatingScan scan);
+    bool CancelRepetition();
+    ICustomScan CreateCustomScan();
+    IRepeatingScan CreateRepeatingScan();
+    bool SetCustomScan(ICustomScan scan);
+    bool SetRepetitionScan(IRepeatingScan scan);
 
     /// <summary>
-    /// From IAPI: All possible parameters of a scan will be listed here.
+    /// All possible parameters of a scan specific to the currently connected instrument
     /// </summary>
-    IHeliosParameterDescription[] PossibleParameters { get; }
+    IParameterDescription[] PossibleParameters { get; }
+    IParameterDescription[] HeliosPossibleParameters { get; }
 
     event EventHandler<EventArgs> CanAcceptNextCustomScan;
     event EventHandler<EventArgs> PossibleParametersChanged;
   }
 
-  class HeliosScansExploris: IHeliosScans 
+  class HeliosScansExploris: IScans 
   {
     exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.IScans scans;
+    private bool _disposedValue;
 
-    public IHeliosParameterDescription[] PossibleParameters { get; }
+    public IParameterDescription[] PossibleParameters { get; private set; }
+    public IParameterDescription[] HeliosPossibleParameters { get; } = new IParameterDescription[HeliosCustomDictionary.HeliosLexicon.Count];
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
     public event EventHandler<EventArgs> PossibleParametersChanged;
     public HeliosScansExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c, bool exclusiveAccess)
     {
       scans = c.GetScans(exclusiveAccess);
-      PossibleParameters = new IHeliosParameterDescription[scans.PossibleParameters.Length];
+      PossibleParameters = new IParameterDescription[scans.PossibleParameters.Length];
       for (int i = 0; i < scans.PossibleParameters.Length; i++)
       {
         PossibleParameters[i] = new HeliosParameterDescription(scans.PossibleParameters[i].Name, scans.PossibleParameters[i].Selection, scans.PossibleParameters[i].DefaultValue, scans.PossibleParameters[i].Help);
+        HeliosCustomDictionary.AddExplorisParam(scans.PossibleParameters[i].Name);
       }
+
+      for(int i = 0; i<HeliosCustomDictionary.HeliosLexicon.Count; i++)
+      {
+        HeliosPossibleParameters[i] = new HeliosParameterDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID, "","",HeliosCustomDictionary.GetDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID));
+      }
+
       scans.CanAcceptNextCustomScan += CanAcceptNextCustomScanExploris;
       scans.PossibleParametersChanged += PossibleParametersChangedExploris;
     }
@@ -60,9 +71,39 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       return scans.CancelCustomScan();
     }
 
-    public IHeliosCustomScan CreateCustomScan()
+    public bool CancelRepetition()
+    {
+      return scans.CancelRepetition();
+    }
+
+    public ICustomScan CreateCustomScan()
     {
       return new HeliosCustomScan();
+    }
+
+    public IRepeatingScan CreateRepeatingScan()
+    {
+      return new HeliosRepeatingScan();
+    }
+
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+      if (!_disposedValue)
+      {
+        if (disposing)
+        {
+          scans?.Dispose();
+          scans = null;
+        }
+        // free native resources if there are any.
+        _disposedValue = true;
+      }
     }
 
     protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
@@ -76,6 +117,12 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 
     void PossibleParametersChangedExploris(object sender, EventArgs e)
     {
+      PossibleParameters = new IParameterDescription[scans.PossibleParameters.Length];
+      for (int i = 0; i < scans.PossibleParameters.Length; i++)
+      {
+        PossibleParameters[i] = new HeliosParameterDescription(scans.PossibleParameters[i].Name, scans.PossibleParameters[i].Selection, scans.PossibleParameters[i].DefaultValue, scans.PossibleParameters[i].Help);
+        HeliosCustomDictionary.AddExplorisParam(scans.PossibleParameters[i].Name);
+      }
       OnPossibleParametersChanged(e);
     }
 
@@ -88,28 +135,44 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       }
     }
 
-    public bool SetCustomScan(IHeliosCustomScan customScan)
+    public bool SetCustomScan(ICustomScan scan)
     {
-      return scans.SetCustomScan((exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Scans.ICustomScan)customScan);
+      return scans.SetCustomScan(new ExplorisCustomScan(scan));
+    }
+
+    public bool SetRepetitionScan(IRepeatingScan scan)
+    {
+      return scans.SetRepetitionScan(new ExplorisRepeatingScan(scan));
     }
   }
 
-  class HeliosScansFusion : IHeliosScans
+  class HeliosScansFusion : IScans
   {
     fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans scans;
-    
-    public IHeliosParameterDescription[] PossibleParameters { get; }
+
+    private bool _disposedValue;
+
+    public IParameterDescription[] PossibleParameters { get; }
+    public IParameterDescription[] HeliosPossibleParameters { get; } = new IParameterDescription[HeliosCustomDictionary.HeliosLexicon.Count];
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
     public event EventHandler<EventArgs> PossibleParametersChanged;
     public HeliosScansFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c, bool exclusiveAccess)
     {
       scans = (fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans)c.GetScans(exclusiveAccess);
-      PossibleParameters = new IHeliosParameterDescription[scans.PossibleParameters.Length];
+      
+      PossibleParameters = new IParameterDescription[scans.PossibleParameters.Length];
       for (int i = 0; i < scans.PossibleParameters.Length; i++)
       {
         PossibleParameters[i] = new HeliosParameterDescription(scans.PossibleParameters[i].Name,scans.PossibleParameters[i].Selection,scans.PossibleParameters[i].DefaultValue,scans.PossibleParameters[i].Help);
+        HeliosCustomDictionary.AddFusionParam(scans.PossibleParameters[i].Name);
       }
+
+      for (int i = 0; i < HeliosCustomDictionary.HeliosLexicon.Count; i++)
+      {
+        HeliosPossibleParameters[i] = new HeliosParameterDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID, "", "", HeliosCustomDictionary.GetDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID));
+      }
+
       scans.CanAcceptNextCustomScan += CanAcceptNextCustomScanFusion;
       scans.PossibleParametersChanged += PossibleParametersChangedFusion;
     }
@@ -123,10 +186,39 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     {
       return scans.CancelCustomScan();
     }
+    public bool CancelRepetition()
+    {
+      return scans.CancelRepetition();
+    }
 
-    public IHeliosCustomScan CreateCustomScan()
+    public ICustomScan CreateCustomScan()
     {
       return new HeliosCustomScan();
+    }
+
+    public IRepeatingScan CreateRepeatingScan()
+    {
+      return new HeliosRepeatingScan();
+    }
+
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+      if (!_disposedValue)
+      {
+        if (disposing)
+        {
+          scans?.Dispose();
+          scans = null;
+        }
+        // free native resources if there are any.
+        _disposedValue = true;
+      }
     }
 
     protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
@@ -152,16 +244,23 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       }
     }
 
-    public bool SetCustomScan(IHeliosCustomScan customScan)
+    public bool SetCustomScan(ICustomScan scan)
     {
-      return scans.SetCustomScan(customScan.ToFusion());
+      return scans.SetCustomScan(new FusionCustomScan(scan));
+    }
+
+    public bool SetRepetitionScan(IRepeatingScan scan)
+    {
+      return scans.SetRepetitionScan(new FusionRepeatingScan(scan));
     }
   }
 
-  class HeliosScansVMS : IHeliosScans
+  class HeliosScansVMS : IScans
   {
+    private bool _disposedValue;
 
-    public IHeliosParameterDescription[] PossibleParameters { get; } = new HeliosParameterDescription[10];
+    public IParameterDescription[] PossibleParameters { get; } = new HeliosParameterDescription[10];
+    public IParameterDescription[] HeliosPossibleParameters { get; } = new IParameterDescription[HeliosCustomDictionary.HeliosLexicon.Count];
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
     public event EventHandler<EventArgs> PossibleParametersChanged;
@@ -183,6 +282,11 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       PossibleParameters[7] = new HeliosParameterDescription("DataType", "Centroid,Profile", "Centroid", "The data type to collect the scan in.");
       PossibleParameters[8] = new HeliosParameterDescription("SrcRFLens", "string (0;150)", "60", "The RF Lens (%) for the source. " + multiVal);
       PossibleParameters[9] = new HeliosParameterDescription("SourceCIDEnergy", "0-100", "0", "Source CID Energy (0 = off).");
+
+      for (int i = 0; i < HeliosCustomDictionary.HeliosLexicon.Count; i++)
+      {
+        HeliosPossibleParameters[i] = new HeliosParameterDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID, "", "", HeliosCustomDictionary.GetDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID));
+      }
     }
 
     public bool CancelCustomScan()
@@ -190,10 +294,39 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       return true;
     }
 
-    public IHeliosCustomScan CreateCustomScan()
+    public bool CancelRepetition()
+    {
+      return true;
+    }
+
+    public ICustomScan CreateCustomScan()
     {
       return new HeliosCustomScan();
     }
+
+    public IRepeatingScan CreateRepeatingScan()
+    {
+      return new HeliosRepeatingScan();
+    }
+
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+      if (!_disposedValue)
+      {
+        if (disposing)
+        {
+        }
+        // free native resources if there are any.
+        _disposedValue = true;
+      }
+    }
+
 
     protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
     {
@@ -213,7 +346,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       }
     }
 
-    private byte[] Serialize(IHeliosCustomScan customScan)
+    private byte[] Serialize(ICustomScan customScan)
     {
       using (MemoryStream m = new MemoryStream())
       using (BinaryWriter writer = new BinaryWriter(m, System.Text.Encoding.Unicode))
@@ -233,7 +366,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     /// </summary>
     /// <param name="customScan"></param>
     /// <returns></returns>
-    public bool SetCustomScan(IHeliosCustomScan customScan)
+    public bool SetCustomScan(ICustomScan customScan)
     {
       using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
       {
@@ -244,6 +377,11 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       pm.MsgData = Serialize(customScan);
       pipesClient.Send(pm);
       return true;
+    }
+
+    public bool SetRepetitionScan(IRepeatingScan scan)
+    {
+      return false; //disabled for now
     }
 
   }

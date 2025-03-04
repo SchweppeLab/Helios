@@ -10,7 +10,7 @@ using Thermo.Interfaces.InstrumentAccess_V1.Control.InstrumentValues;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
 {
-  public interface IHeliosInstrumentValues
+  public interface IInstrumentValues
   {
     //
     // Summary:
@@ -35,7 +35,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
     // Remarks:
     //     Accessing the same internal object twice just increments an internal reference,
     //     a further object will not be returned.
-    IHeliosValue Get(string name);
+    IValue Get(string name);
 
     //
     // Summary:
@@ -52,10 +52,10 @@ namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
     // Remarks:
     //     Accessing the same internal object twice just increments an internal reference,
     //     a further object will not be returned.
-    IHeliosValue Get(ulong number);
+    IValue Get(ulong number);
   }
 
-  internal class HeliosInstrumentValues : IHeliosInstrumentValues
+  internal class HeliosInstrumentValues : IInstrumentValues
   {
     public string[] ValueNames { get; }
 
@@ -74,11 +74,11 @@ namespace Helios.Interfaces.InstrumentAccess.Control.InstrumentValues
       ValueNames = new string[0];
     }
 
-    public IHeliosValue Get(string name)
+    public IValue Get(string name)
     {
       return null;
     }
-    public IHeliosValue Get(ulong number)
+    public IValue Get(ulong number)
     {
       return null;
     }
