@@ -28,6 +28,8 @@
     /// </summary>
     private void InitializeComponent()
     {
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
       this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
       this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -100,9 +102,9 @@
       this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabel2});
-      this.statusStrip1.Location = new System.Drawing.Point(0, 529);
+      this.statusStrip1.Location = new System.Drawing.Point(0, 537);
       this.statusStrip1.Name = "statusStrip1";
-      this.statusStrip1.Size = new System.Drawing.Size(784, 32);
+      this.statusStrip1.Size = new System.Drawing.Size(784, 24);
       this.statusStrip1.TabIndex = 0;
       this.statusStrip1.Text = "statusStrip1";
       // 
@@ -110,14 +112,14 @@
       // 
       this.toolStripStatusLabel1.AutoSize = false;
       this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-      this.toolStripStatusLabel1.Size = new System.Drawing.Size(180, 27);
+      this.toolStripStatusLabel1.Size = new System.Drawing.Size(180, 19);
       this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
       this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       // 
       // toolStripStatusLabel2
       // 
       this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-      this.toolStripStatusLabel2.Size = new System.Drawing.Size(118, 27);
+      this.toolStripStatusLabel2.Size = new System.Drawing.Size(118, 19);
       this.toolStripStatusLabel2.Text = "toolStripStatusLabel2";
       this.toolStripStatusLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       // 
@@ -149,7 +151,7 @@
       // splitContainer1.Panel2
       // 
       this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
-      this.splitContainer1.Size = new System.Drawing.Size(784, 498);
+      this.splitContainer1.Size = new System.Drawing.Size(784, 506);
       this.splitContainer1.SplitterDistance = 230;
       this.splitContainer1.TabIndex = 2;
       // 
@@ -170,7 +172,7 @@
       // splitContainer2.Panel2
       // 
       this.splitContainer2.Panel2.Controls.Add(this.groupBox3);
-      this.splitContainer2.Size = new System.Drawing.Size(230, 498);
+      this.splitContainer2.Size = new System.Drawing.Size(230, 506);
       this.splitContainer2.SplitterDistance = 148;
       this.splitContainer2.TabIndex = 0;
       // 
@@ -192,6 +194,7 @@
       this.groupBox2.TabIndex = 1;
       this.groupBox2.TabStop = false;
       this.groupBox2.Text = "Activity";
+      this.groupBox2.Enter += new System.EventHandler(this.groupBox2_Enter);
       // 
       // label5
       // 
@@ -201,6 +204,7 @@
       this.label5.Size = new System.Drawing.Size(26, 17);
       this.label5.TabIndex = 8;
       this.label5.Text = "Off";
+      this.label5.Click += new System.EventHandler(this.label5_Click);
       // 
       // label4
       // 
@@ -210,6 +214,7 @@
       this.label4.Size = new System.Drawing.Size(51, 17);
       this.label4.TabIndex = 7;
       this.label4.Text = "Waiting";
+      this.label4.Click += new System.EventHandler(this.label4_Click);
       // 
       // label3
       // 
@@ -219,6 +224,7 @@
       this.label3.Size = new System.Drawing.Size(47, 17);
       this.label3.TabIndex = 6;
       this.label3.Text = "Spying";
+      this.label3.Click += new System.EventHandler(this.label3_Click);
       // 
       // cbOnAcquisition
       // 
@@ -229,6 +235,7 @@
       this.cbOnAcquisition.TabIndex = 5;
       this.cbOnAcquisition.Text = "On Acquisition";
       this.cbOnAcquisition.UseVisualStyleBackColor = true;
+      this.cbOnAcquisition.CheckedChanged += new System.EventHandler(this.cbOnAcquisition_CheckedChanged);
       // 
       // listenIndicatorOff
       // 
@@ -238,6 +245,7 @@
       this.listenIndicatorOff.Size = new System.Drawing.Size(16, 16);
       this.listenIndicatorOff.TabIndex = 4;
       this.listenIndicatorOff.UseVisualStyleBackColor = false;
+      this.listenIndicatorOff.Click += new System.EventHandler(this.listenIndicatorOff_Click);
       // 
       // listenIndicatorWait
       // 
@@ -247,6 +255,7 @@
       this.listenIndicatorWait.Size = new System.Drawing.Size(16, 16);
       this.listenIndicatorWait.TabIndex = 3;
       this.listenIndicatorWait.UseVisualStyleBackColor = false;
+      this.listenIndicatorWait.Click += new System.EventHandler(this.listenIndicatorWait_Click);
       // 
       // listenIndicatorOn
       // 
@@ -256,6 +265,7 @@
       this.listenIndicatorOn.Size = new System.Drawing.Size(16, 16);
       this.listenIndicatorOn.TabIndex = 2;
       this.listenIndicatorOn.UseVisualStyleBackColor = false;
+      this.listenIndicatorOn.Click += new System.EventHandler(this.listenIndicatorOn_Click);
       // 
       // buttonListen
       // 
@@ -411,8 +421,8 @@
       // splitContainer3.Panel2
       // 
       this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
-      this.splitContainer3.Size = new System.Drawing.Size(550, 498);
-      this.splitContainer3.SplitterDistance = 279;
+      this.splitContainer3.Size = new System.Drawing.Size(550, 506);
+      this.splitContainer3.SplitterDistance = 283;
       this.splitContainer3.TabIndex = 0;
       // 
       // plotSpectrum
@@ -421,7 +431,7 @@
       this.plotSpectrum.Dock = System.Windows.Forms.DockStyle.Fill;
       this.plotSpectrum.Location = new System.Drawing.Point(0, 34);
       this.plotSpectrum.Name = "plotSpectrum";
-      this.plotSpectrum.Size = new System.Drawing.Size(550, 245);
+      this.plotSpectrum.Size = new System.Drawing.Size(550, 249);
       this.plotSpectrum.TabIndex = 0;
       // 
       // lblScanFilter
@@ -454,7 +464,7 @@
       this.tabControl1.Location = new System.Drawing.Point(0, 0);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(550, 215);
+      this.tabControl1.Size = new System.Drawing.Size(550, 219);
       this.tabControl1.TabIndex = 0;
       // 
       // tabPage1
@@ -462,8 +472,8 @@
       this.tabPage1.Controls.Add(this.rtbLog);
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
       this.tabPage1.Name = "tabPage1";
-      this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-      this.tabPage1.Size = new System.Drawing.Size(542, 189);
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage1.Size = new System.Drawing.Size(542, 193);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Message Log";
       this.tabPage1.UseVisualStyleBackColor = true;
@@ -473,7 +483,7 @@
       this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
       this.rtbLog.Location = new System.Drawing.Point(3, 3);
       this.rtbLog.Name = "rtbLog";
-      this.rtbLog.Size = new System.Drawing.Size(536, 183);
+      this.rtbLog.Size = new System.Drawing.Size(536, 187);
       this.rtbLog.TabIndex = 0;
       this.rtbLog.Text = "";
       // 
@@ -482,8 +492,8 @@
       this.tabPage2.Controls.Add(this.rtbHeader);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
-      this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-      this.tabPage2.Size = new System.Drawing.Size(619, 194);
+      this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage2.Size = new System.Drawing.Size(542, 193);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Header";
       this.tabPage2.UseVisualStyleBackColor = true;
@@ -497,7 +507,7 @@
       this.rtbHeader.Name = "rtbHeader";
       this.rtbHeader.ReadOnly = true;
       this.rtbHeader.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-      this.rtbHeader.Size = new System.Drawing.Size(613, 188);
+      this.rtbHeader.Size = new System.Drawing.Size(536, 187);
       this.rtbHeader.TabIndex = 0;
       this.rtbHeader.Text = "";
       // 
@@ -506,8 +516,8 @@
       this.tabPage3.Controls.Add(this.dgvTrailers);
       this.tabPage3.Location = new System.Drawing.Point(4, 4);
       this.tabPage3.Name = "tabPage3";
-      this.tabPage3.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-      this.tabPage3.Size = new System.Drawing.Size(619, 194);
+      this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage3.Size = new System.Drawing.Size(542, 193);
       this.tabPage3.TabIndex = 2;
       this.tabPage3.Text = "Trailers";
       this.tabPage3.UseVisualStyleBackColor = true;
@@ -516,6 +526,14 @@
       // 
       this.dgvTrailers.AllowUserToAddRows = false;
       this.dgvTrailers.AllowUserToDeleteRows = false;
+      dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+      dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+      dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+      dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+      dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      this.dgvTrailers.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
       this.dgvTrailers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.dgvTrailers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TrailerA,
@@ -523,13 +541,21 @@
             this.TrailerC,
             this.TrailerD,
             this.TrailerE});
+      dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+      dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+      dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+      dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+      dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+      this.dgvTrailers.DefaultCellStyle = dataGridViewCellStyle2;
       this.dgvTrailers.Dock = System.Windows.Forms.DockStyle.Fill;
       this.dgvTrailers.Location = new System.Drawing.Point(3, 3);
       this.dgvTrailers.Name = "dgvTrailers";
       this.dgvTrailers.ReadOnly = true;
       this.dgvTrailers.RowHeadersVisible = false;
       this.dgvTrailers.RowHeadersWidth = 62;
-      this.dgvTrailers.Size = new System.Drawing.Size(613, 188);
+      this.dgvTrailers.Size = new System.Drawing.Size(536, 187);
       this.dgvTrailers.TabIndex = 0;
       // 
       // TrailerA
@@ -584,6 +610,7 @@
       this.Controls.Add(this.splitContainer1);
       this.Controls.Add(this.toolStrip1);
       this.Controls.Add(this.statusStrip1);
+      this.MinimumSize = new System.Drawing.Size(800, 600);
       this.Name = "ScanSpy";
       this.Text = "ScanSpy";
       this.statusStrip1.ResumeLayout(false);

@@ -123,11 +123,13 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 
     public static void AddExplorisParam(string param)
     {
+      if (ExplorisParams.ContainsKey(param)) return;
       ExplorisParams.Add(param, 0);
     }
 
     public static void AddFusionParam(string param)
     {
+      if (FusionParams.ContainsKey(param)) return;
       FusionParams.Add(param, 0);
     }
 
