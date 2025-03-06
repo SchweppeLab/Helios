@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Helios.Interfaces.InstrumentAccess.Control;
 using Pipes;
@@ -46,6 +47,27 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     public HeliosScansExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c, bool exclusiveAccess)
     {
       scans = c.GetScans(exclusiveAccess);
+
+      //I found this code in CustomScansTandemByCallbacks in the IAPI\Exploris\5_PlacingScans demo.
+      //Without it, the custom scan dictionary might not be built and available before the user
+      //attempts a custom scan.
+      ManualResetEvent wait = new ManualResetEvent(false);
+      EventHandler handler = (sender, e) => { wait.Set(); };
+      scans.PossibleParametersChanged += handler;
+      if ((scans.PossibleParameters != null) && (scans.PossibleParameters.Length > 0))
+      {
+        wait.Set();
+      }
+      wait.WaitOne(20000);
+      scans.PossibleParametersChanged -= handler;
+
+      if ((scans.PossibleParameters == null) || (scans.PossibleParameters.Length == 0))
+      {
+        //TODO: see if the exception is the best way, or if raising an event is better.
+        throw new TimeoutException("Not connected to the instrument or something else happened.");
+      }
+      //end IAPI\Exploris\5_PlacingScans demo code block
+
       PossibleParameters = new IParameterDescription[scans.PossibleParameters.Length];
       for (int i = 0; i < scans.PossibleParameters.Length; i++)
       {
