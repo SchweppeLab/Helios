@@ -101,10 +101,6 @@ namespace Helios.Interfaces.InstrumentAccess
 
     public void Dispose()
     {
-      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-      {
-        writer.WriteLine("Dispose called");
-      }
       Dispose(true);
       GC.SuppressFinalize(this);
     }
@@ -120,10 +116,6 @@ namespace Helios.Interfaces.InstrumentAccess
 
     void MessagesArrivedExploris(object sender, exploris.Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs e)
     {
-      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-      {
-        writer.WriteLine("MessagesArrivedExploris = " + e.ToString());
-      }
       MessagesArrivedEventArgs args = new MessagesArrivedEventArgs(e);
       OnMessagesArrived(args);
     }
@@ -184,10 +176,6 @@ namespace Helios.Interfaces.InstrumentAccess
     {
       try
       {
-      //using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-      //{
-      //  writer.WriteLine("Attempting Fusion");
-      //}
         cont = fusion.Thermo.TNG.Factory.Factory<fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccessContainer>.Create();
         cont.ServiceConnectionChanged += ServiceConnectionChangedFusion;
         cont.MessagesArrived += MessagesArrivedFusion;

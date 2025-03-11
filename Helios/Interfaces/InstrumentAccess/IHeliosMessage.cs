@@ -121,10 +121,6 @@ namespace Helios.Interfaces.InstrumentAccess
       InstrumentId = m.InstrumentId;
       InstrumentName = m.InstrumentName;
       Message = m.Message;
-      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-      {
-        writer.WriteLine("Post message: " + Message);
-      }
       MessageArgs = new string[m.MessageArgs.Length];
       for(int i = 0; i < m.MessageArgs.Length; i++) MessageArgs[i] = m.MessageArgs[i];
       MessageId = m.MessageId;
