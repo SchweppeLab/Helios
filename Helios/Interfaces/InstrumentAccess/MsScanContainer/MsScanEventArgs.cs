@@ -32,10 +32,6 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 
     public override IMsScan GetScan()
     {
-      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-      {
-        writer.WriteLine("Getting Exploris Scan");
-      }
       IMsScan scan = new HeliosMsScanExploris(eExploris.GetScan());
       return scan;
     }

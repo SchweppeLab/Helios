@@ -260,6 +260,11 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       Header.Add("BasePeakIntensity",m.BasePeakIntensity.ToString());
       Header.Add("TIC",m.TotalIonCurrent.ToString());
       Header.Add("Filter", m.ScanFilter.ToString());
+      Header.Add("MassAnalyzer", m.Analyzer.ToString());
+      Header.Add("InjectTime",m.IonInjectionTime.ToString());
+      Header.Add("ScanMode",m.ScanType.ToString());
+      if (m.Polarity) Header.Add("Polarity", "Positive");
+      else Header.Add("Polarity", "Negative");
       if (m.Centroid) Header.Add("ScanData", "Centroid");
       else Header.Add("ScanData", "Profile");
       if (m.Precursors.Count > 0)
@@ -272,10 +277,12 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
       //trailer.Add("Access ID", "UIAPIzoink");
       trailer.Add("Scan Description", m.ScanFilter.ToString());
+      trailer.Add("FAIMS Voltage On",m.FaimsState.ToString());
+      trailer.Add("FAIMS CV",m.FaimsCV.ToString());
       if (m.Precursors.Count > 0)
       {
-        trailer.Add("Monoisotopic M/Z", m.Precursors[0].MonoisotopicMz);
-        trailer.Add("Charge State", m.Precursors[0].Charge);
+        trailer.Add("Monoisotopic M/Z", m.Precursors[0].MonoisotopicMz.ToString());
+        trailer.Add("Charge State", m.Precursors[0].Charge.ToString());
       }
       Trailer = trailer;
 

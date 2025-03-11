@@ -28,6 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScanInjector));
       this.splitContainer1 = new System.Windows.Forms.SplitContainer();
       this.splitContainer2 = new System.Windows.Forms.SplitContainer();
       this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -113,6 +114,7 @@
       // 
       // splitContainer1.Panel2
       // 
+      this.splitContainer1.Panel2.BackColor = System.Drawing.SystemColors.Control;
       this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
       this.splitContainer1.Panel2.Controls.Add(this.statusStrip1);
       this.splitContainer1.Size = new System.Drawing.Size(784, 561);
@@ -413,31 +415,34 @@
       // 
       // comClearTarget
       // 
+      this.comClearTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("comClearTarget.BackgroundImage")));
+      this.comClearTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
       this.comClearTarget.Location = new System.Drawing.Point(249, 216);
       this.comClearTarget.Name = "comClearTarget";
       this.comClearTarget.Size = new System.Drawing.Size(28, 28);
       this.comClearTarget.TabIndex = 15;
-      this.comClearTarget.Text = "Clear";
       this.comClearTarget.UseVisualStyleBackColor = true;
       this.comClearTarget.Click += new System.EventHandler(this.comClearTarget_Click);
       // 
       // comRemoveTarget
       // 
+      this.comRemoveTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("comRemoveTarget.BackgroundImage")));
+      this.comRemoveTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
       this.comRemoveTarget.Location = new System.Drawing.Point(249, 182);
       this.comRemoveTarget.Name = "comRemoveTarget";
       this.comRemoveTarget.Size = new System.Drawing.Size(28, 28);
       this.comRemoveTarget.TabIndex = 14;
-      this.comRemoveTarget.Text = "Rem";
       this.comRemoveTarget.UseVisualStyleBackColor = true;
       this.comRemoveTarget.Click += new System.EventHandler(this.comRemoveTarget_Click);
       // 
       // comAddTarget
       // 
+      this.comAddTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("comAddTarget.BackgroundImage")));
+      this.comAddTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
       this.comAddTarget.Location = new System.Drawing.Point(249, 148);
       this.comAddTarget.Name = "comAddTarget";
       this.comAddTarget.Size = new System.Drawing.Size(28, 28);
       this.comAddTarget.TabIndex = 13;
-      this.comAddTarget.Text = "Add";
       this.comAddTarget.UseVisualStyleBackColor = true;
       this.comAddTarget.Click += new System.EventHandler(this.comAddTarget_Click);
       // 
@@ -616,6 +621,7 @@
       // 
       // tabPage2
       // 
+      this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
       this.tabPage2.Controls.Add(this.rtbLog);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
@@ -623,7 +629,6 @@
       this.tabPage2.Size = new System.Drawing.Size(776, 205);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Message Log";
-      this.tabPage2.UseVisualStyleBackColor = true;
       // 
       // rtbLog
       // 
@@ -636,6 +641,7 @@
       // 
       // tabPage1
       // 
+      this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
       this.tabPage1.Controls.Add(this.plotSpectrum);
       this.tabPage1.Controls.Add(this.labelScanFilter);
       this.tabPage1.Controls.Add(this.labelScanInfo);
@@ -645,7 +651,6 @@
       this.tabPage1.Size = new System.Drawing.Size(776, 205);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Spectrum";
-      this.tabPage1.UseVisualStyleBackColor = true;
       // 
       // plotSpectrum
       // 

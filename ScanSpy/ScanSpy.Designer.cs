@@ -28,8 +28,6 @@
     /// </summary>
     private void InitializeComponent()
     {
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
       this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
       this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -66,13 +64,6 @@
       this.rtbLog = new System.Windows.Forms.RichTextBox();
       this.tabPage2 = new System.Windows.Forms.TabPage();
       this.rtbHeader = new System.Windows.Forms.RichTextBox();
-      this.tabPage3 = new System.Windows.Forms.TabPage();
-      this.dgvTrailers = new System.Windows.Forms.DataGridView();
-      this.TrailerA = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TrailerB = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TrailerC = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TrailerD = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TrailerE = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.statusStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
@@ -92,8 +83,6 @@
       this.tabControl1.SuspendLayout();
       this.tabPage1.SuspendLayout();
       this.tabPage2.SuspendLayout();
-      this.tabPage3.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.dgvTrailers)).BeginInit();
       this.SuspendLayout();
       // 
       // statusStrip1
@@ -102,9 +91,9 @@
       this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabel2});
-      this.statusStrip1.Location = new System.Drawing.Point(0, 537);
+      this.statusStrip1.Location = new System.Drawing.Point(0, 529);
       this.statusStrip1.Name = "statusStrip1";
-      this.statusStrip1.Size = new System.Drawing.Size(784, 24);
+      this.statusStrip1.Size = new System.Drawing.Size(784, 32);
       this.statusStrip1.TabIndex = 0;
       this.statusStrip1.Text = "statusStrip1";
       // 
@@ -112,14 +101,14 @@
       // 
       this.toolStripStatusLabel1.AutoSize = false;
       this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-      this.toolStripStatusLabel1.Size = new System.Drawing.Size(180, 19);
+      this.toolStripStatusLabel1.Size = new System.Drawing.Size(180, 27);
       this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
       this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       // 
       // toolStripStatusLabel2
       // 
       this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-      this.toolStripStatusLabel2.Size = new System.Drawing.Size(118, 19);
+      this.toolStripStatusLabel2.Size = new System.Drawing.Size(118, 27);
       this.toolStripStatusLabel2.Text = "toolStripStatusLabel2";
       this.toolStripStatusLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       // 
@@ -151,7 +140,7 @@
       // splitContainer1.Panel2
       // 
       this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
-      this.splitContainer1.Size = new System.Drawing.Size(784, 506);
+      this.splitContainer1.Size = new System.Drawing.Size(784, 498);
       this.splitContainer1.SplitterDistance = 230;
       this.splitContainer1.TabIndex = 2;
       // 
@@ -172,7 +161,7 @@
       // splitContainer2.Panel2
       // 
       this.splitContainer2.Panel2.Controls.Add(this.groupBox3);
-      this.splitContainer2.Size = new System.Drawing.Size(230, 506);
+      this.splitContainer2.Size = new System.Drawing.Size(230, 498);
       this.splitContainer2.SplitterDistance = 148;
       this.splitContainer2.TabIndex = 0;
       // 
@@ -421,8 +410,8 @@
       // splitContainer3.Panel2
       // 
       this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
-      this.splitContainer3.Size = new System.Drawing.Size(550, 506);
-      this.splitContainer3.SplitterDistance = 283;
+      this.splitContainer3.Size = new System.Drawing.Size(550, 498);
+      this.splitContainer3.SplitterDistance = 277;
       this.splitContainer3.TabIndex = 0;
       // 
       // plotSpectrum
@@ -431,7 +420,7 @@
       this.plotSpectrum.Dock = System.Windows.Forms.DockStyle.Fill;
       this.plotSpectrum.Location = new System.Drawing.Point(0, 34);
       this.plotSpectrum.Name = "plotSpectrum";
-      this.plotSpectrum.Size = new System.Drawing.Size(550, 249);
+      this.plotSpectrum.Size = new System.Drawing.Size(550, 243);
       this.plotSpectrum.TabIndex = 0;
       // 
       // lblScanFilter
@@ -459,12 +448,11 @@
       this.tabControl1.Alignment = System.Windows.Forms.TabAlignment.Bottom;
       this.tabControl1.Controls.Add(this.tabPage1);
       this.tabControl1.Controls.Add(this.tabPage2);
-      this.tabControl1.Controls.Add(this.tabPage3);
       this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
       this.tabControl1.Location = new System.Drawing.Point(0, 0);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(550, 219);
+      this.tabControl1.Size = new System.Drawing.Size(550, 217);
       this.tabControl1.TabIndex = 0;
       // 
       // tabPage1
@@ -472,8 +460,8 @@
       this.tabPage1.Controls.Add(this.rtbLog);
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
       this.tabPage1.Name = "tabPage1";
-      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage1.Size = new System.Drawing.Size(542, 193);
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      this.tabPage1.Size = new System.Drawing.Size(542, 191);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Message Log";
       this.tabPage1.UseVisualStyleBackColor = true;
@@ -483,7 +471,7 @@
       this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
       this.rtbLog.Location = new System.Drawing.Point(3, 3);
       this.rtbLog.Name = "rtbLog";
-      this.rtbLog.Size = new System.Drawing.Size(536, 187);
+      this.rtbLog.Size = new System.Drawing.Size(536, 185);
       this.rtbLog.TabIndex = 0;
       this.rtbLog.Text = "";
       // 
@@ -492,8 +480,8 @@
       this.tabPage2.Controls.Add(this.rtbHeader);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
-      this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage2.Size = new System.Drawing.Size(542, 193);
+      this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      this.tabPage2.Size = new System.Drawing.Size(619, 195);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Header";
       this.tabPage2.UseVisualStyleBackColor = true;
@@ -507,100 +495,9 @@
       this.rtbHeader.Name = "rtbHeader";
       this.rtbHeader.ReadOnly = true;
       this.rtbHeader.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-      this.rtbHeader.Size = new System.Drawing.Size(536, 187);
+      this.rtbHeader.Size = new System.Drawing.Size(613, 189);
       this.rtbHeader.TabIndex = 0;
       this.rtbHeader.Text = "";
-      // 
-      // tabPage3
-      // 
-      this.tabPage3.Controls.Add(this.dgvTrailers);
-      this.tabPage3.Location = new System.Drawing.Point(4, 4);
-      this.tabPage3.Name = "tabPage3";
-      this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage3.Size = new System.Drawing.Size(542, 193);
-      this.tabPage3.TabIndex = 2;
-      this.tabPage3.Text = "Trailers";
-      this.tabPage3.UseVisualStyleBackColor = true;
-      // 
-      // dgvTrailers
-      // 
-      this.dgvTrailers.AllowUserToAddRows = false;
-      this.dgvTrailers.AllowUserToDeleteRows = false;
-      dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-      dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-      dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-      dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-      dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-      this.dgvTrailers.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-      this.dgvTrailers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-      this.dgvTrailers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.TrailerA,
-            this.TrailerB,
-            this.TrailerC,
-            this.TrailerD,
-            this.TrailerE});
-      dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-      dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-      dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-      dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-      dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-      this.dgvTrailers.DefaultCellStyle = dataGridViewCellStyle2;
-      this.dgvTrailers.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.dgvTrailers.Location = new System.Drawing.Point(3, 3);
-      this.dgvTrailers.Name = "dgvTrailers";
-      this.dgvTrailers.ReadOnly = true;
-      this.dgvTrailers.RowHeadersVisible = false;
-      this.dgvTrailers.RowHeadersWidth = 62;
-      this.dgvTrailers.Size = new System.Drawing.Size(536, 187);
-      this.dgvTrailers.TabIndex = 0;
-      // 
-      // TrailerA
-      // 
-      this.TrailerA.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.TrailerA.HeaderText = "Trailer";
-      this.TrailerA.MinimumWidth = 8;
-      this.TrailerA.Name = "TrailerA";
-      this.TrailerA.ReadOnly = true;
-      this.TrailerA.Width = 61;
-      // 
-      // TrailerB
-      // 
-      this.TrailerB.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.TrailerB.HeaderText = "MS Level";
-      this.TrailerB.MinimumWidth = 8;
-      this.TrailerB.Name = "TrailerB";
-      this.TrailerB.ReadOnly = true;
-      this.TrailerB.Width = 77;
-      // 
-      // TrailerC
-      // 
-      this.TrailerC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.TrailerC.HeaderText = "ExampleMS1";
-      this.TrailerC.MinimumWidth = 8;
-      this.TrailerC.Name = "TrailerC";
-      this.TrailerC.ReadOnly = true;
-      this.TrailerC.Width = 94;
-      // 
-      // TrailerD
-      // 
-      this.TrailerD.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.TrailerD.HeaderText = "ExampleMS2";
-      this.TrailerD.MinimumWidth = 8;
-      this.TrailerD.Name = "TrailerD";
-      this.TrailerD.ReadOnly = true;
-      this.TrailerD.Width = 94;
-      // 
-      // TrailerE
-      // 
-      this.TrailerE.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-      this.TrailerE.HeaderText = "ExampleMS3";
-      this.TrailerE.MinimumWidth = 8;
-      this.TrailerE.Name = "TrailerE";
-      this.TrailerE.ReadOnly = true;
       // 
       // ScanSpy
       // 
@@ -610,7 +507,7 @@
       this.Controls.Add(this.splitContainer1);
       this.Controls.Add(this.toolStrip1);
       this.Controls.Add(this.statusStrip1);
-      this.MinimumSize = new System.Drawing.Size(800, 600);
+      this.MinimumSize = new System.Drawing.Size(798, 594);
       this.Name = "ScanSpy";
       this.Text = "ScanSpy";
       this.statusStrip1.ResumeLayout(false);
@@ -637,8 +534,6 @@
       this.tabControl1.ResumeLayout(false);
       this.tabPage1.ResumeLayout(false);
       this.tabPage2.ResumeLayout(false);
-      this.tabPage3.ResumeLayout(false);
-      ((System.ComponentModel.ISupportInitialize)(this.dgvTrailers)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -673,13 +568,6 @@
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.Label label4;
     private System.Windows.Forms.Label label3;
-    private System.Windows.Forms.TabPage tabPage3;
-    private System.Windows.Forms.DataGridView dgvTrailers;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerA;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerB;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerC;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerD;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TrailerE;
     private System.Windows.Forms.RichTextBox rtbHeader;
     private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
     private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;

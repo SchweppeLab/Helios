@@ -333,7 +333,7 @@ namespace ScanSpy
             plotSpectrum.Plot.Axes.SetLimitsX(firstMass, lastMass);
           }
 
-          lblScanFilter.Text = scanFilter;
+          //lblScanFilter.Text = scanFilter;
           lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString("#.00") + "  NL:" + basePeakIntensity.ToString("E2"); ;
           refreshSpectrum = true;
           lastTicks = curTicks;
@@ -382,6 +382,8 @@ namespace ScanSpy
       string injectTime;
       string tic;
       string basePeakIntensity;
+      string firstMass;
+      string lastMass;
 
       string header = "==== SCAN HEADER ====" + System.Environment.NewLine;
 
@@ -398,6 +400,8 @@ namespace ScanSpy
       if (!scan.TryHeader("InjectTime", out injectTime)) injectTime="";
       if (!scan.TryHeader("TIC", out tic)) tic="";
       if (!scan.TryHeader("BasePeakIntensity", out basePeakIntensity)) basePeakIntensity="";
+      if (!scan.TryHeader("LowMass", out firstMass)) firstMass = "";
+      if (!scan.TryHeader("HighMass", out lastMass)) lastMass = "";
 
       header += "Scan Number: " + scanNumber + System.Environment.NewLine;
       header += "Start Time: " + startTime + System.Environment.NewLine;
@@ -408,6 +412,7 @@ namespace ScanSpy
       header += "Scan Level: " + msOrder + System.Environment.NewLine;
       header += "Scan Mode: " + scanMode + System.Environment.NewLine;
       header += "Data Type: " + scanData + System.Environment.NewLine;
+      header += "M/Z Range: " + firstMass + " - " + lastMass + System.Environment.NewLine;
       header += System.Environment.NewLine + "---- Scan Statistics ----" + System.Environment.NewLine;
       header += "Injection Time: " + injectTime + " ms" + System.Environment.NewLine;
       header += "Total Ion Current: " + tic + System.Environment.NewLine;
@@ -537,7 +542,7 @@ namespace ScanSpy
         if (msIAC.ServiceConnected)
         {
           toolStripStatusLabel1.Text = "Connected";
-          if (msIA != null) toolStripStatusLabel1.Text += ": " + msIA.InstrumentName;
+          if (msIA != null) toolStripStatusLabel1.Text += ": " + "Exploris 480"; // msIA.InstrumentName;
         }
         else
         {

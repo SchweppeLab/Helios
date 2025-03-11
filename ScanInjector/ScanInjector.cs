@@ -51,6 +51,7 @@ namespace ScanInjector
       plotSpectrum.Plot.YLabel("Relative Intensity");
       plotSpectrum.Plot.XLabel("m/z");
       plotSpectrum.Plot.HideGrid();
+      plotSpectrum.Plot.FigureBackground.Color = Colors.White;
       plotSpectrum.Refresh();
 
       UpdateConnection();
@@ -410,14 +411,14 @@ namespace ScanInjector
         comAddTarget.Enabled = false;
         comRemoveTarget.Enabled = false;
         comClearTarget.Enabled = false;
-        comNCE.Enabled = true;
+        comNCE.Enabled = false;
       } else
       {
         comTargets.Enabled = true;
         comAddTarget.Enabled = true;
         comRemoveTarget.Enabled = true;
         comClearTarget.Enabled = true;
-        comNCE.Enabled = false;
+        comNCE.Enabled = true;
       }
       CheckScanSettings();
     }
@@ -452,29 +453,43 @@ namespace ScanInjector
       cs.SingleProcessingDelay = 0;
       cs.RunningNumber = 99;
 
+      //Setting some default Tribrid parameters, just in case...
+      if (!msIA.InstrumentName.Contains("Exploris"))
+      {
+        cs.Values["ScanRate"] = "Normal";
+        cs.Values["Polarity"] = "Positive";
+        cs.Values["DataType"] = "Centroid";
+        cs.Values["SrcRFLens"] = "30";
+        cs.Values["SourceCIDEnergy"] = "0";
+        cs.Values["SourceCIDScalingFactor"] = "0";
+        cs.Values["IsolationMode"] = "Quadrupole";
+        cs.Values["ActivationQ"] = "0.25";
+        cs.Values["Microscans"] = "1";
+        cs.Values["ReactionTime"] = "10";
+      }
+
       if (comScanType.Text.Equals("MS1"))
       {
         cs.Values["ScanType"] = "Full";
         cs.Values["CollisionEnergy"] = "0";
         cs.Values["NCE"] = "0";
         cs.Values["AGCTarget"]= comAGC.Value.ToString();
+        cs.Values["AGC_Target"] = comAGC.Value.ToString();
       }
       else
       {
-        cs.Values["CollisonEnergy"]=comNCE.Value.ToString();
+        cs.Values["CollisionEnergy"]=comNCE.Value.ToString();
         cs.Values["ScanType"] = "MSn";
         cs.Values["IsolationWidth"] = "1.5";
         cs.Values["PrecursorMass"] = comTargets.Items[0].ToString();
         cs.Values["ChargeStates"] = "0";
-        cs.Values["MSXTargets"] = comAGC.Value.ToString();
-        cs.Values["IsolationRangeLow"] = (Convert.ToDouble(comTargets.Items[0])-0.75).ToString();
-        cs.Values["IsolationRangeHigh"] = (Convert.ToDouble(comTargets.Items[0]) + 0.75).ToString();
         if (comTargets.Items.Count > 1)
         {
           cs.Values["MsxInjectRanges"] = ProcessRangesEclipse();
           cs.Values["MsxInjectTargets"] = ProcessInjectTargetsEclipse();
           cs.Values["MsxInjectMaxITs"] = ProcessMaxITEclipse();
           cs.Values["MsxInjectNCEs"] = ProcessNCEEclipse();
+          cs.Values["MSXTargets"] = comAGC.Value.ToString();
           for(int i = 1;i< comTargets.Items.Count; i++)
           {
             cs.Values["PrecursorMass"] += ("," + comTargets.Items[i].ToString());
@@ -483,6 +498,14 @@ namespace ScanInjector
             cs.Values["MSXTargets"] += ("," + comAGC.Value.ToString());
 
           }
+        } 
+        else
+        {
+          cs.Values["AGCTarget"] = comAGC.Value.ToString();
+          cs.Values["AGC_Target"] = comAGC.Value.ToString();
+          cs.Values["NCE"] = comNCE.Value.ToString();
+          cs.Values["IsolationRangeLow"] = (Convert.ToDouble(comTargets.Items[0])-0.75).ToString();
+          cs.Values["IsolationRangeHigh"] = (Convert.ToDouble(comTargets.Items[0]) + 0.75).ToString();
         }
       }
       cs.Values["Resolution"] = comRes.Text.ToString();
@@ -496,7 +519,8 @@ namespace ScanInjector
       cs.Values["ActivationType"] = "HCD";
       cs.Values["FirstMass"]=comMassLow.Value.ToString();
       cs.Values["LastMass"]=comMassHigh.Value.ToString();
-      //cs.Values["MaxIT"]=comIT.Value.ToString();
+      cs.Values["MaxIT"]=comIT.Value.ToString();
+      cs.Values["ScanDescription"] = "Helios";
 
       foreach (KeyValuePair<string, string> pair in cs.Values)
       {

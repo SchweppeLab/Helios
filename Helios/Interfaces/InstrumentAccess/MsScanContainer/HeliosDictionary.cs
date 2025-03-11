@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Thermo.Interfaces.InstrumentAccess_V1.Control.Scans;
@@ -43,33 +44,35 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       AddHeader("Scan", "Scan", "Scan", "Scan", "The scan number of the spectrum.");
       AddHeader("StartTime", "StartTime", "StartTime", "StartTime", "The run time when the scan was acquired.");
       AddHeader("MassAnalyzer", "MassAnalyzer", "MassAnalyzer", "MassAnalyzer", "The mass analyzer used to acquire the scan.");
-      AddHeader("IonizationMode", "IonizationMode", "IonizationMode", "IonizationMode", null);
+      AddHeader("IonizationMode", "IonizationMode", "IonizationMode", "IonizationMode", "Typically electrospray (ESI) or nanospray (NSI)");
       AddHeader("ScanRate", null, "ScanRate", "ScanRate", null);
-      AddHeader("ScanMode", "ScanMode", "ScanMode", "ScanMode", null);
+      AddHeader("ScanMode", "ScanMode", "ScanMode", "ScanMode", "The scan mode that was set.");
       AddHeader("TIC", "TIC", "TIC", "TIC", "Total Ion Current of the spectrum.");
-      AddHeader("BasePeakIntensity", "BasePeakIntensity", "BasePeakIntensity", "BasePeakIntensity", null);
-      AddHeader("BasePeakMass", "BasePeakMass", "BasePeakMass", "BasePeakMass", null);
+      AddHeader("BasePeakIntensity", "BasePeakIntensity", "BasePeakIntensity", "BasePeakIntensity", "The intensity value of the most abundant scan peak.");
+      AddHeader("BasePeakMass", "BasePeakMass", "BasePeakMass", "BasePeakMass", "The m/z value of the most abundant scan peak.");
       AddHeader("CycleNumber", "CycleNumber", "CycleNumber", "CycleNumber", null);
-      AddHeader("Polarity", "Polarity", "Polarity", "Polarity", null);
-      AddHeader("Microscans", "Microscans", "Microscans", "Microscans", null);
-      AddHeader("InjectTime", "InjectTime", "InjectTime", "InjectTime", null);
-      AddHeader("ScanData", "ScanData", "ScanData", "ScanData", null);
+      AddHeader("Polarity", "Polarity", "Polarity", "Polarity", "Typically positive (or 0) or negative (1).");
+      AddHeader("Microscans", "Microscans", "Microscans", "Microscans", "Number of microscans.");
+      AddHeader("InjectTime", "InjectTime", "InjectTime", "InjectTime", "The ion injection time in milliseconds.");
+      AddHeader("ScanData", "ScanData", "ScanData", "ScanData", "The peak representation, typically profile or centroid.");
       AddHeader("Segments", null, "Segments", null, null);
       AddHeader("Monoisotopic", null, "Monoisotopic", "Monoisotopic", null);
-      AddHeader("MasterScan", null, "MasterScan", "MasterScan", null);
-      AddHeader("FirstMass", "LowMass", "FirstMass", "FirstMass", null);
-      AddHeader("LastMass", "HighMass", "LastMass", "LastMass", null);
-      AddHeader("Checksum", null, "Checksum", "Checksum", null);
-      AddHeader("MSOrder", "MSOrder", "MSOrder", "MSOrder", null);
+      AddHeader("MasterScan", null, "MasterScan", "MasterScan", "The parent scan number of");
+      AddHeader("FirstMass", "LowMass", "FirstMass", "FirstMass", "The lower boundary m/z in the scan.");
+      AddHeader("LastMass", "HighMass", "LastMass", "LastMass", "The upper boundary m/z of the scan.");
+      AddHeader("Checksum", null, "Checksum", "Checksum", "A data validation value.");
+      AddHeader("MSOrder", "MSOrder", "MSOrder", "MSOrder", "The MS level of the scan, i.e., whether MS1 or MS2, etc.");
       AddHeader("Average", null, "Average", "Average", null);
       AddHeader("Dependent", "Dependent", "Dependent", "Dependent", null);
-      AddHeader("MSX", null, "MSX", "MSX", null);
+      AddHeader("MSX", null, "MSX", "MSX", "Indicates if multiple precursors were combined in a single scan.");
       AddHeader("SourceFragmentation", "SourceFragmentation", "SourceFragmentation", "SourceFragmentation", null);
       AddHeader("SourceFragmentationEnergy", null, "SourceFragmentationEnergy", "SourceFragmentationEnergy", null);
       AddHeader("RawOvFtT", null, "RawOvFtT", "RawOvFtT", null);
       AddHeader("Injection t0", null, "Injection t0", null, null);
 
-      AddTrailer("Access ID", "Access Id:", "Access ID", "Access ID", null);
+      AddTrailer("Access ID", "Access Id:", "Access ID", "Access ID", "The identification number of an IAPI custom scan.");
+      AddTrailer("FAIMS Voltage On", "FAIMS Voltage On", "FAIMS Voltage On", "FAIMS Voltage On", "Indicates if FAIMS was used.");
+      AddTrailer("FAIMS CV", "FAIMS CV", "FAIMS CV", "FAIMS CV", "The compensation voltage for FAIMS.");
     }
 
     private static void AddHeader(string heliosID, string explorisTerm, string fusionTerm, string vmsTerm, string definition)
@@ -183,6 +186,16 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
         default:
           return null;
       }
+    }
+
+    public static List<HeliosTerm> GetHeliosHeaders()
+    {
+      List<HeliosTerm> heliosTerms = new List<HeliosTerm>();
+      foreach(HeliosTerm h in HeliosLexiconHeader)
+      {
+        heliosTerms.Add(h);
+      }
+      return heliosTerms;
     }
   }
 }

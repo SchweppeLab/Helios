@@ -390,10 +390,6 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     /// <returns></returns>
     public bool SetCustomScan(ICustomScan customScan)
     {
-      using (StreamWriter writer = new StreamWriter("uiapiLog.txt", true))
-      {
-        writer.WriteLine("Custom scan with " + customScan.Values.Count.ToString() + " Values.");
-      }
       PipeMessage pm = new PipeMessage();
       pm.MsgCode = 'A';
       pm.MsgData = Serialize(customScan);
