@@ -22,4 +22,5 @@ we recommend using NuGet in Visual Studio to manage ScottPlot and its requiremen
 
 #### Authors
 [Michael Hoopmann](https://github.com/mhoopmann), University of Washington
+
 Helios is Copyright Schweppe Lab 2025
