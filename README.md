@@ -5,8 +5,7 @@ instruments from a single code base.
 
 ## Repository Contents
 Helios is developed in C# and contains C# solutions that were developed in Visual Studio 2022. The solution contains three projects: the Helios API library, ScanSpy: a
-demonstration application for real-time data monitoring, and ScanInjector: a demonstration application for real-time instrument control. Additionally, example data collected
-from use of ScanInjector are provided. Windows builds are also provided.
+demonstration application for real-time data monitoring, and ScanInjector: a demonstration application for real-time instrument control. 
 
 ### Software Requirements
 * The Helios API library requires [Thermo Fisher Scientific IAPI](https://github.com/thermofisherlsms/iapi) and [Nova](https://github.com/SchweppeLab/Nova).
