@@ -2,12 +2,7 @@
 extern alias fusion;
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nova.Data.Spectrum;
+using Nova.Data;
 
 namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 {

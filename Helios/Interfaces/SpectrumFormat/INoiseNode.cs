@@ -12,12 +12,12 @@ namespace Helios.Interfaces.SpectrumFormat
   /// <summary>
   /// From IAPI: Baseline of the noise node. The value will be null if no baseline is available.
   /// </summary>
-  public interface IHeliosNoiseNode : IHeliosMassIntensity
+  public interface INoiseNode : IMassIntensity
   {
     double? Baseline { get; }
   }
 
-  internal class HeliosNoiseNode : IHeliosNoiseNode
+  internal class HeliosNoiseNode : INoiseNode
   {
     public double? Baseline { get; }
     public double Mz { get; }

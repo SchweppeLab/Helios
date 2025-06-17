@@ -18,7 +18,7 @@ namespace Helios.Interfaces.InstrumentAccess
   /// The instruments sends message = "Just a message {0}.", messageArgs = null should be formatted as "Just a message ." because missing elements will be ignored.<br/>
   /// The instruments sends message= "Just a message {0}.", messageArgs={ "for you" } should be formatted as "Just a message for you.".
   /// </summary>
-  public interface IHeliosMessage : IHeliosClient
+  public interface IMessage : IClient
   {
     //
     // Summary:
@@ -97,7 +97,7 @@ namespace Helios.Interfaces.InstrumentAccess
     string[] MessageArgs { get; }
   }
 
-  internal class HeliosMessage : IHeliosMessage
+  internal class HeliosMessage : IMessage
   {
     public string AccountName { get; }
     public string ApplicationName { get; }
@@ -155,7 +155,7 @@ namespace Helios.Interfaces.InstrumentAccess
     /// <summary>
     /// Get access to the messages that have arrived from all instrument and the transport layer.
     /// </summary>
-    public IList<IHeliosMessage> Messages { get; protected set; } = new List<IHeliosMessage>();
+    public IList<IMessage> Messages { get; protected set; } = new List<IMessage>();
 
     /// <summary>
     /// Create a new Exploris Thermo.Interfaces.InstrumentAccess_V1.MessagesArrivedEventArgs.

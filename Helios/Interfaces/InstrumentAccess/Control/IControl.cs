@@ -5,7 +5,7 @@ using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.Control.Scans;
 using Helios.Interfaces.InstrumentAccess.Control.InstrumentValues;
 using Helios.Interfaces.InstrumentAccess.Control.Peripherals;
-using Pipes;
+using Nova.IPC.Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess.Control
 {

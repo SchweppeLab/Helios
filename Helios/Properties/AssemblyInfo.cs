@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("UIAPI")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Helios")]
+[assembly: AssemblyDescription("Universal API for real-time mass spectrometer control.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("UIAPI")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyCompany("University of Washington, Schweppe Lab")]
+[assembly: AssemblyProduct("Helios")]
+[assembly: AssemblyCopyright("Copyright © 2025, Michael Hoopmann, Devin Schweppe")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,8 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.3")]
+[assembly: AssemblyFileVersion("1.0.0.3")]
+
+//Suggested for packing from command line:
+//nuget pack .\Helios.csproj -Prop Configuration=Release

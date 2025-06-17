@@ -11,7 +11,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
   /// From IAPI: This interface covers the functionality to define a custom or repeating scan.
   /// <remarks>This is a base interface of UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUCustomScan and UIAPI.Interfaces.InstrumentAccess.Control.Scans.IURepeatingScan.</remarks>
   /// </summary>
-  public interface IHeliosScanDefinition
+  public interface IScanDefinition
   {
     /// <summary>
     /// From IAPI: This number will be passed along with the scan job and can be used to identify it later when the acquired scan results arrive. 0 is a reserved value. The default value is 1.<br/>

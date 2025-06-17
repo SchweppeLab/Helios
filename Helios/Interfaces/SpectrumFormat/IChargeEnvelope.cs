@@ -13,7 +13,7 @@ namespace Helios.Interfaces.SpectrumFormat
   // Summary:
   //     This interface covers charge envelopes. All isotopes just having a different
   //     charge belong to the same charge envelope.
-  public interface IHeliosChargeEnvelope
+  public interface IChargeEnvelope
   {
     //
     // Summary:
@@ -50,7 +50,7 @@ namespace Helios.Interfaces.SpectrumFormat
     int TopPeakCentroidId { get; }
   }
 
-  internal class HeliosChargeEnvelope : IHeliosChargeEnvelope
+  internal class HeliosChargeEnvelope : IChargeEnvelope
   {
     public double MonoisotopicMass { get; } = 0.0;
     public double CrossCorrelation { get; } = 0.0;

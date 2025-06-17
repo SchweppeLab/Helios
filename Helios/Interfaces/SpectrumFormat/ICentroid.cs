@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace Helios.Interfaces.SpectrumFormat
 {
-  public interface IHeliosCentroid : IHeliosMassIntensity
+  public interface ICentroid : IMassIntensity
   {
     bool? IsExceptional { get; }
     bool? IsReferenced { get; }
     bool? IsMerged { get; }
     bool? IsFragmented { get; }
     int? Charge { get; }
-    IHeliosMassIntensity[] Profile { get; }
+    IMassIntensity[] Profile { get; }
     double? Resolution { get; }
     int? ChargeEnvelopeIndex { get; }
     bool? IsMonoisotopic { get; }
@@ -26,7 +26,7 @@ namespace Helios.Interfaces.SpectrumFormat
 
   }
 
-  class HeliosCentroid : IHeliosCentroid
+  class Centroid : ICentroid
   {
     public bool? IsExceptional => throw new NotImplementedException();
 
@@ -38,7 +38,7 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public int? Charge => throw new NotImplementedException();
 
-    public IHeliosMassIntensity[] Profile => throw new NotImplementedException();
+    public IMassIntensity[] Profile => throw new NotImplementedException();
 
     public double? Resolution => throw new NotImplementedException();
 
@@ -56,13 +56,13 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public double Intensity { get; }
 
-    public HeliosCentroid(double mz, double intensity)
+    public Centroid(double mz, double intensity)
     {
       Mz = mz;
       Intensity = intensity;
     }
 
-    public HeliosCentroid(exploris.Thermo.Interfaces.SpectrumFormat_V1.ICentroid c)
+    public Centroid(exploris.Thermo.Interfaces.SpectrumFormat_V1.ICentroid c)
     {
       Mz = c.Mz;
       Intensity = c.Intensity;

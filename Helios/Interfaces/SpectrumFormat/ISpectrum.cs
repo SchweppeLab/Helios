@@ -12,7 +12,7 @@ namespace Helios.Interfaces.SpectrumFormat
   /// <summary>
   /// From IAPI: This class describes a spectrum without information coming alongh with it.
   /// </summary>
-  public interface IHeliosSpectrum 
+  public interface ISpectrum 
   { 
     /// <summary>
     /// Get access to the name of the detector that acquired this scan.<br/>
@@ -32,7 +32,7 @@ namespace Helios.Interfaces.SpectrumFormat
     /// Get access to the noise information. The noise nodes form a polygon that covers the noise area. 
     /// An empty enumeration is returned if noise information is not present. This value will not be null.
     /// </summary>
-    IEnumerable<IHeliosNoiseNode> NoiseBand { get; }
+    IEnumerable<INoiseNode> NoiseBand { get; }
  
     /// <summary>
     /// Get access to the number of centroids in this scan. The value is null if the detector is not capable to provide centroids. 
@@ -44,13 +44,13 @@ namespace Helios.Interfaces.SpectrumFormat
     /// Get access to the centroids and further information to those peaks. An empty enumeration is returned if centroid information is not present. 
     /// This value will not be null.
     /// </summary>
-    IEnumerable<IHeliosCentroid> Centroids { get; }
+    IEnumerable<ICentroid> Centroids { get; }
 
     //
     // Summary:
     //     Access to the array of all charge envelopes found in the spectrum. An empty array
     //     will be returned if nothing had been found. null will be returned if the detector's
     //     processing software doesn't support detection of charge envelopes for this scan.
-    IHeliosChargeEnvelope[] ChargeEnvelopes { get; }
+    IChargeEnvelope[] ChargeEnvelopes { get; }
   }
 }

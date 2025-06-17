@@ -4,14 +4,8 @@ extern alias fusion;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Helios.Interfaces.InstrumentAccess.Control;
-using Pipes;
-using Thermo.Interfaces.InstrumentAccess_V1.Control;
-using Thermo.Interfaces.InstrumentAccess_V1.Control.Scans;
+using Nova.IPC.Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 {

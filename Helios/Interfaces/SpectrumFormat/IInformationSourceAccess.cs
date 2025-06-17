@@ -14,7 +14,7 @@ namespace Helios.Interfaces.SpectrumFormat
   /// <summary>
   /// From IAPI: This interface defines the functionality to access a particular information source which is usually TuneData, Trailer or StatusLog (wording known to Xcalibur users).
   /// </summary>
-  public interface IHeliosInformationSourceAccess
+  public interface IInformationSourceAccess
   {
     //
     // Summary:
@@ -65,7 +65,7 @@ namespace Helios.Interfaces.SpectrumFormat
     bool TryGetValue(string name, out string value);
   }
 
-  internal class HeliosInformationSourceAccessExploris : IHeliosInformationSourceAccess
+  internal class HeliosInformationSourceAccessExploris : IInformationSourceAccess
   {
     private readonly exploris.Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess isa;
 
@@ -89,7 +89,7 @@ namespace Helios.Interfaces.SpectrumFormat
     }
   }
 
-  internal class HeliosInformationSourceAccessFusion : IHeliosInformationSourceAccess
+  internal class HeliosInformationSourceAccessFusion : IInformationSourceAccess
   {
     private readonly Thermo.Interfaces.SpectrumFormat_V1.IInformationSourceAccess isa;
 
@@ -118,7 +118,7 @@ namespace Helios.Interfaces.SpectrumFormat
   /// in a string,object pair, where the object is probably a string anyway, but leaves open the possibility it isn't. I *think* this
   /// is how IAPI implements its own trailers, but it really is a guess.
   /// </summary>
-  internal class HeliosInformationSourceAccess : IHeliosInformationSourceAccess
+  internal class HeliosInformationSourceAccess : IInformationSourceAccess
   {
     /// <summary>
     /// The actual contents of the trailer, where object can possibly hold any data structure, but probably usually holds a string

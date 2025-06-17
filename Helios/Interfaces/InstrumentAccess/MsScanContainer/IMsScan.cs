@@ -3,11 +3,7 @@ extern alias fusion;
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nova.Data.Spectrum;
+using Nova.Data;
 using Helios.Interfaces.SpectrumFormat;
 
 namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
@@ -25,7 +21,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
   /// Wrapper around IAPI IMsScan. Because the IMsScan interface could be ambiguous, I am 
   /// not sure yet how I want to play this out.
   /// </summary>
-  public interface IMsScan : IHeliosSpectrum, IDisposable
+  public interface IMsScan : ISpectrum, IDisposable
   {
     /// <summary>
     /// Get access to the information coming from the header. It is a set of name/value pairs. A pure name has a value of null.
@@ -35,17 +31,17 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
     /// <summary>
     /// Get access to the StatusLog information source. Text representation of numbers will always appear in the independent (US) locale.
     /// </summary>
-    IHeliosInformationSourceAccess StatusLog { get; }
+    IInformationSourceAccess StatusLog { get; }
 
     /// <summary>
     /// Get access to the Trailer information source. Text representation of numbers will always appear in the independent (US) locale.
     /// </summary>
-    IHeliosInformationSourceAccess Trailer { get; }
+    IInformationSourceAccess Trailer { get; }
 
     /// <summary>
     /// Get access to the TuneData information source. This is mostly accessible at acquisition start. Text representation of numbers will always appear in the independent (US) locale.
     /// </summary>
-    IHeliosInformationSourceAccess TuneData { get; }
+    IInformationSourceAccess TuneData { get; }
 
     /// <summary>
     /// Get the string value of a header identifier using a universal dictionary.
@@ -69,17 +65,17 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
   {
     //exploris.Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan msScan;
     public IDictionary<string, string> Header { get; }
-    public IHeliosInformationSourceAccess StatusLog { get; }
-    public IHeliosInformationSourceAccess Trailer { get; }
-    public IHeliosInformationSourceAccess TuneData { get; }
+    public IInformationSourceAccess StatusLog { get; }
+    public IInformationSourceAccess Trailer { get; }
+    public IInformationSourceAccess TuneData { get; }
     public string DetectorName { get; }
     public int? NoiseCount { get; }
-    public IEnumerable<IHeliosNoiseNode> NoiseBand => NoiseList;
-    private List<IHeliosNoiseNode> NoiseList { get; } = new List<IHeliosNoiseNode>();
+    public IEnumerable<INoiseNode> NoiseBand => NoiseList;
+    private List<INoiseNode> NoiseList { get; } = new List<INoiseNode>();
     public int? CentroidCount { get; }
-    public IEnumerable<IHeliosCentroid> Centroids => CentroidList;
-    private List<IHeliosCentroid> CentroidList { get; } = new List<IHeliosCentroid>();
-    public IHeliosChargeEnvelope[] ChargeEnvelopes { get; } = null;
+    public IEnumerable<ICentroid> Centroids => CentroidList;
+    private List<ICentroid> CentroidList { get; } = new List<ICentroid>();
+    public IChargeEnvelope[] ChargeEnvelopes { get; } = null;
 
     private ScanSource scanSource { get; } = ScanSource.Exploris;
 
@@ -92,7 +88,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       //is a copy what we really want to do? Maybe find a way to just recast a reference?
       foreach (exploris.Thermo.Interfaces.SpectrumFormat_V1.ICentroid centroid in m.Centroids)
       {
-        CentroidList.Add(new HeliosCentroid(centroid));
+        CentroidList.Add(new Centroid(centroid));
       }
       foreach (exploris.Thermo.Interfaces.SpectrumFormat_V1.INoiseNode n in m.NoiseBand)
       {
@@ -100,7 +96,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       }
       if (m.ChargeEnvelopes != null)
       {
-        ChargeEnvelopes = new IHeliosChargeEnvelope[m.ChargeEnvelopes.Length];
+        ChargeEnvelopes = new IChargeEnvelope[m.ChargeEnvelopes.Length];
         for (int i = 0; i < ChargeEnvelopes.Length; i++)
         {
           ChargeEnvelopes[i] = new HeliosChargeEnvelope(m.ChargeEnvelopes[i]);
@@ -152,19 +148,19 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
   internal class HeliosMsScanFusion : IMsScan
   {
     public IDictionary<string, string> Header { get; }
-    public IHeliosInformationSourceAccess StatusLog { get; }
-    public IHeliosInformationSourceAccess Trailer { get; }
-    public IHeliosInformationSourceAccess TuneData { get; }
+    public IInformationSourceAccess StatusLog { get; }
+    public IInformationSourceAccess Trailer { get; }
+    public IInformationSourceAccess TuneData { get; }
 
     public string DetectorName { get; }
     public int? NoiseCount { get; }
-    public IEnumerable<IHeliosNoiseNode> NoiseBand => NoiseList;
-    private List<IHeliosNoiseNode> NoiseList { get; } = new List<IHeliosNoiseNode>();
+    public IEnumerable<INoiseNode> NoiseBand => NoiseList;
+    private List<INoiseNode> NoiseList { get; } = new List<INoiseNode>();
     public int? CentroidCount { get; } = null;
-    public IEnumerable<IHeliosCentroid> Centroids => CentroidList;
-    public IHeliosChargeEnvelope[] ChargeEnvelopes { get; } = null;
+    public IEnumerable<ICentroid> Centroids => CentroidList;
+    public IChargeEnvelope[] ChargeEnvelopes { get; } = null;
 
-    private List<IHeliosCentroid> CentroidList { get; } = new List<IHeliosCentroid>();
+    private List<ICentroid> CentroidList { get; } = new List<ICentroid>();
     private ScanSource scanSource { get; } = ScanSource.Fusion;
 
     public HeliosMsScanFusion(Thermo.Interfaces.InstrumentAccess_V1.MsScanContainer.IMsScan m)
@@ -176,11 +172,11 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       //is a copy what we really want to do? Maybe find a way to just recast a reference?
       foreach(Thermo.Interfaces.SpectrumFormat_V1.ICentroid centroid in m.Centroids)
       {
-        CentroidList.Add(new HeliosCentroid(centroid.Mz,centroid.Intensity));
+        CentroidList.Add(new Centroid(centroid.Mz,centroid.Intensity));
       }
       if (m.ChargeEnvelopes != null)
       {
-        ChargeEnvelopes = new IHeliosChargeEnvelope[m.ChargeEnvelopes.Length];
+        ChargeEnvelopes = new IChargeEnvelope[m.ChargeEnvelopes.Length];
         for (int i = 0; i < ChargeEnvelopes.Length; i++)
         {
           ChargeEnvelopes[i] = new HeliosChargeEnvelope(m.ChargeEnvelopes[i]);
@@ -236,18 +232,18 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
   internal class HeliosMsScanVMS : IMsScan
   {
     public IDictionary<string, string> Header { get; }
-    public IHeliosInformationSourceAccess StatusLog { get; }
-    public IHeliosInformationSourceAccess Trailer { get; }
-    public IHeliosInformationSourceAccess TuneData { get; }
+    public IInformationSourceAccess StatusLog { get; }
+    public IInformationSourceAccess Trailer { get; }
+    public IInformationSourceAccess TuneData { get; }
 
     public string DetectorName { get; }
     public int? NoiseCount { get; }
-    public IEnumerable<IHeliosNoiseNode> NoiseBand { get; }
+    public IEnumerable<INoiseNode> NoiseBand { get; }
     public int? CentroidCount { get; } = null;
-    public IEnumerable<IHeliosCentroid> Centroids => CentroidList;
-    public IHeliosChargeEnvelope[] ChargeEnvelopes { get; }
+    public IEnumerable<ICentroid> Centroids => CentroidList;
+    public IChargeEnvelope[] ChargeEnvelopes { get; }
 
-    private List<IHeliosCentroid> CentroidList { get; } = new List<IHeliosCentroid>();
+    private List<ICentroid> CentroidList { get; } = new List<ICentroid>();
     private ScanSource scanSource { get; } = ScanSource.VMS;
     public HeliosMsScanVMS(Spectrum m)
     {
@@ -289,7 +285,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       CentroidCount = m.Count;
       foreach (var dp in m.DataPoints)
       {
-        CentroidList.Add(new HeliosCentroid(dp.Mz, dp.Intensity));
+        CentroidList.Add(new Centroid(dp.Mz, dp.Intensity));
       }
     }
 

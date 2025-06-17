@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Helios.Interfaces.SpectrumFormat
 {
-  public interface IHeliosMassIntensity
+  public interface IMassIntensity
   {
     //
     // Summary:

@@ -15,7 +15,7 @@ namespace Helios.Interfaces.InstrumentAccess
   //     except for Thermo.Interfaces.InstrumentAccess_V1.IClient.ComputerName, which
   //     will be the name of the instrument. The Thermo.Interfaces.InstrumentAccess_V1.IClient.ProcessId
   //     will be negative in that case.
-  public interface IHeliosClient
+  public interface IClient
   {
     //
     // Summary:

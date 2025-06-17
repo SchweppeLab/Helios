@@ -18,7 +18,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
   /// See UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans for an example how this interface can be used.<br/>
   /// An instance of this class will be created by UIAPI.Interfaces.InstrumentAccess.Control.Scans.IUScans.CreateCustomScan.
   /// </remarks>
-  public interface ICustomScan : IHeliosScanDefinition
+  public interface ICustomScan : IScanDefinition
   {
     bool IsPAGCScan { get; set; }
 

@@ -542,7 +542,7 @@ namespace ScanSpy
         if (msIAC.ServiceConnected)
         {
           toolStripStatusLabel1.Text = "Connected";
-          if (msIA != null) toolStripStatusLabel1.Text += ": " + "Exploris 480"; // msIA.InstrumentName;
+          if (msIA != null) toolStripStatusLabel1.Text += ": " + msIA.InstrumentName;
         }
         else
         {

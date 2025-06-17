@@ -2,14 +2,10 @@
 extern alias exploris;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.Interfaces.InstrumentAccess.AnalogTraceContainer;
 using Helios.Interfaces.InstrumentAccess.Control;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
-using Pipes;
+using Nova.IPC.Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess
 {
@@ -278,7 +274,7 @@ namespace Helios.Interfaces.InstrumentAccess
       CountMsDetectors = 1;
       DetectorClasses = new string[1] { "dunno" };
       InstrumentId = 1;
-      InstrumentName = "VirtualMS";
+      InstrumentName = "Corona VirtualMS";
       
     }
 

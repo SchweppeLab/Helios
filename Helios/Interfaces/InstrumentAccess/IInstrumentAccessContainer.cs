@@ -2,12 +2,8 @@
 extern alias fusion;
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Pipes;
+using Nova.IPC.Pipes;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
 
@@ -271,10 +267,10 @@ namespace Helios.Interfaces.InstrumentAccess
 
     public HeliosInstrumentAccessContainerVMS()
     {
-      var exists = System.Diagnostics.Process.GetProcessesByName("VirtualMS").Count() > 0;
+      var exists = System.Diagnostics.Process.GetProcessesByName("Corona").Count() > 0;
       if (exists)
       {
-        pipeClient = new PipesClient("VirtualMS");
+        pipeClient = new PipesClient("Corona");
         pipeClient.ServerMessage += OnServerMessage;
         pipeClient.Error += OnError;
         instAcc = new HeliosInstrumentAccessVMS(pipeClient);
@@ -309,7 +305,7 @@ namespace Helios.Interfaces.InstrumentAccess
 
     public string InstrumentType()
     {
-      return "VirtualMS";
+      return "Corona VirtualMS";
     }
 
     protected virtual void OnMessagesArrived(MessagesArrivedEventArgs e)
@@ -360,6 +356,7 @@ namespace Helios.Interfaces.InstrumentAccess
           break;
         case '3':
           ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamClosing(new EventArgs());
+          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.ReadyForRun);
           break;
         default:
           Console.WriteLine("Server sent unrecognized message code: {0}", message.MsgCode);

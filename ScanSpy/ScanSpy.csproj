@@ -64,10 +64,6 @@
     <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\Helios\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
     </Reference>
-    <Reference Include="Pipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Pipes\bin\x64\Release\Pipes.dll</HintPath>
-    </Reference>
     <Reference Include="ScottPlot, Version=5.0.54.0, Culture=neutral, PublicKeyToken=86698dc10387c39e, processorArchitecture=MSIL">
       <HintPath>..\Helios\packages\ScottPlot.5.0.54\lib\net462\ScottPlot.dll</HintPath>
     </Reference>

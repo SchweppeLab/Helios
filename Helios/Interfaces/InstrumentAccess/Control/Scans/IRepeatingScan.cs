@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 {
-  public interface IRepeatingScan : IHeliosScanDefinition
+  public interface IRepeatingScan : IScanDefinition
   {
   }
 

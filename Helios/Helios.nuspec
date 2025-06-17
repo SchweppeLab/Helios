@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Michael Hoopmann, University of Washington</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <!-- <icon>icon.png</icon> -->
+    <projectUrl>https://github.com/SchweppeLab/Helios</projectUrl>
+    <description>A universal API wrapper around the various flavors of IAPI from Thermo Fisher Scientific for real time mass spectrometer control and data analysis.</description>
+    <releaseNotes>First release.</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>mass spectrometry spectrometer IAPI Thermo Fisher Scientific real time instrument control</tags>
+
+    <dependencies>
+      <group targetFramework="net48">
+        <dependency id="Nova" version="1.0.0.4" />
+	  </group>
+    </dependencies>
+
+  </metadata>
+</package>

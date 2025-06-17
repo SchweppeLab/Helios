@@ -47,6 +47,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <DocumentationFile>bin\x64\Release\Helios.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="API-2.0">
@@ -56,12 +57,8 @@
       <HintPath>..\..\..\..\Other\IAPI\lib\tribrid\Fusion.API-1.0.dll</HintPath>
       <Aliases>fusion</Aliases>
     </Reference>
-    <Reference Include="Nova">
-      <HintPath>..\..\Nova\Nova\bin\x64\Release\Nova.dll</HintPath>
-    </Reference>
-    <Reference Include="Pipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Pipes\bin\x64\Release\Pipes.dll</HintPath>
+    <Reference Include="Nova, Version=1.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Nova.1.0.0.8\lib\net48\Nova.dll</HintPath>
     </Reference>
     <Reference Include="Spectrum-1.0">
       <HintPath>..\..\..\..\Other\IAPI\lib\Spectrum-1.0.dll</HintPath>
@@ -123,26 +120,28 @@
     <Compile Include="Interfaces\InstrumentAccess\Control\Scans\HeliosCustomDictionary.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Scans\ICustomScan.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IRepeatingScan.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IHeliosScanDefinition.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IScanDefinition.cs" />
     <Compile Include="Interfaces\InstrumentAccess\Control\Scans\IScans.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\IHeliosClient.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\IClient.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IInstrumentAccess.cs" />
     <Compile Include="Interfaces\InstrumentAccess\IInstrumentAccessContainer.cs" />
-    <Compile Include="Interfaces\InstrumentAccess\IHeliosMessage.cs" />
+    <Compile Include="Interfaces\InstrumentAccess\IMessage.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IMsScan.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\IMsScanContainer.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\MsScanEventArgs.cs" />
     <Compile Include="Interfaces\InstrumentAccess\MsScanContainer\HeliosDictionary.cs" />
     <Compile Include="Interfaces\Interfaces.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IHeliosCentroid.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IHeliosChargeEnvelope.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IHeliosInformationSourceAccess.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IHeliosMassIntensity.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IHeliosNoiseNode.cs" />
-    <Compile Include="Interfaces\SpectrumFormat\IHeliosSpectrum.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\ICentroid.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IChargeEnvelope.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IInformationSourceAccess.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\IMassIntensity.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\INoiseNode.cs" />
+    <Compile Include="Interfaces\SpectrumFormat\ISpectrum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helios.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
