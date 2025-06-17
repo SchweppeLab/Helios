@@ -16,7 +16,9 @@
     <a id="skip-to-content" href="#content">Skip to the content.</a>
 
     <header class="page-header" role="banner">
-      <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
+		<div id="header" style="margin-top: -3.0rem; margin-bottom: -1.0rem;">
+		  <img src="./assets/gfx/helios_inverted3.png" alt="logo" width="30%" height="30%" />
+		</div> 
       <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
       {% if site.show_downloads %}
         <a href="./index.html" class="btn">Helios</a>
