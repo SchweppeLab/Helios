@@ -11,9 +11,9 @@ The Helios source code can be obtained from [its GitHub repository](https://gith
 Helios is developed in C# and contains a C# solution that was developed in Visual Studio 2022. 
 The solution contains three projects: 
 
-1. the Helios API library
+1. Helios API library
 2. ScanSpy: a demonstration application for real-time data monitoring
-3. ScanInjector: a demonstration application for real-time instrument control. 
+3. ScanInjector: a demonstration application for real-time instrument control
 
 Note that Helios must remain in .NET Framework 4.8 to be compatible with IAPI and connect to mass spectrometers.
 Do not upgrade the project files in the Helios source tree. 
