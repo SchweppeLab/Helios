@@ -36,11 +36,11 @@ to obtain and correctly reference these supporting dll files.
 	* Spectrum-1.0.dll: in the file properties, leave the alias as "global"
 	* Fusion.API-1.0.dll: in the file properties, set the alias as "fusion"
 	* Thermo.TNG.Factory.dll: in the file properties, set the alias as "fusion"
-	* Thermo.API.NetStd-1.0: in the file properties, set the alias as "exploris"
-	* Thermo.API.Exploris.NetStd-1.0: in the file properties, set the alias as "exploris"
-	* Thermo.API.Spectrum.NetStd-1.0: in the file properties, set the alias as "exploris"
+	* Thermo.API.NetStd-1.0.dll: in the file properties, set the alias as "exploris"
+	* Thermo.API.Exploris.NetStd-1.0.dll: in the file properties, set the alias as "exploris"
+	* Thermo.API.Spectrum.NetStd-1.0.dll: in the file properties, set the alias as "exploris"
 5. In the ScanSpy and ScanInjector projects, refresh the NuGet package manager to assure all dependencies are established.
 6. Build the solution.	
 
-Additional note: If Nova and IAPI references exist in a broken state, try deleting them from the reference list and readding them using steps 2 and 3 above.
+Additional note: If Nova and IAPI references exist in a broken state, try deleting them from the reference list and then adding them back using steps 2 and 3 above.
 	
