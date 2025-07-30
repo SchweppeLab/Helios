@@ -65,7 +65,7 @@ private void button1_Click(object sender, EventArgs e)
   {
 
     msContainer = InstrumentAccessContainerFactory.Create();
-    if (_container == null) {
+    if (msContainer == null) {
       MessageBox.Show("No instrument or virtual MS found.");
     }
     else
@@ -74,6 +74,7 @@ private void button1_Click(object sender, EventArgs e)
 	  msContainer.MessagesArrived += MessagesArrived;
 	  msContainer.StartOnlineAccess();
     }
+  }
   catch (Exception ex)
   {
     MessageBox.Show("Helios create InstrumentAccessContainer failed: " + ex.Message);
