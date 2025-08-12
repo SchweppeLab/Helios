@@ -358,6 +358,9 @@ namespace Helios.Interfaces.InstrumentAccess
           ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamClosing(new EventArgs());
           ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.ReadyForRun);
           break;
+        case '4':
+          ((HeliosMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScanEx(message.MsgData);
+          break;
         default:
           Console.WriteLine("Server sent unrecognized message code: {0}", message.MsgCode);
           break;
