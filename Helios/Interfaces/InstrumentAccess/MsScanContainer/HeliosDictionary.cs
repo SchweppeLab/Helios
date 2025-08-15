@@ -69,10 +69,14 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       AddHeader("SourceFragmentationEnergy", null, "SourceFragmentationEnergy", "SourceFragmentationEnergy", null);
       AddHeader("RawOvFtT", null, "RawOvFtT", "RawOvFtT", null);
       AddHeader("Injection t0", null, "Injection t0", null, null);
+      AddHeader("CollisionEnergy[0]", null, "CollisionEnergy[0]", null, null);
 
       AddTrailer("Access ID", "Access Id:", "Access ID", "Access ID", "The identification number of an IAPI custom scan.");
+      AddTrailer("Charge State", "Charge State", "Charge State", "Charge State", null);
       AddTrailer("FAIMS Voltage On", "FAIMS Voltage On", "FAIMS Voltage On", "FAIMS Voltage On", "Indicates if FAIMS was used.");
       AddTrailer("FAIMS CV", "FAIMS CV", "FAIMS CV", "FAIMS CV", "The compensation voltage for FAIMS.");
+      AddTrailer("Monoisotopic M/Z", "Monoisotopic M/Z", "Monoisotopic M/Z", "Monoisotopic M/Z", null);
+      AddTrailer("Scan Description", "Scan Description", "Scan Description", "Scan Description", null);
     }
 
     private static void AddHeader(string heliosID, string explorisTerm, string fusionTerm, string vmsTerm, string definition)

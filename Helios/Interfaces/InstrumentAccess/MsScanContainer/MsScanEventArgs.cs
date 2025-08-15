@@ -2,6 +2,7 @@
 extern alias fusion;
 
 using System;
+using System.IO;
 using Nova.Data;
 
 namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
