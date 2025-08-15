@@ -40,7 +40,7 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public IMassIntensity[] Profile => throw new NotImplementedException();
 
-    public double? Resolution => throw new NotImplementedException();
+    public double? Resolution { get; }
 
     public int? ChargeEnvelopeIndex => throw new NotImplementedException();
 
@@ -56,10 +56,11 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public double Intensity { get; }
 
-    public Centroid(double mz, double intensity)
+    public Centroid(double mz, double intensity, double? resolution)
     {
       Mz = mz;
       Intensity = intensity;
+      Resolution = resolution;
     }
 
     public Centroid(exploris.Thermo.Interfaces.SpectrumFormat_V1.ICentroid c)

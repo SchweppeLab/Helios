@@ -94,6 +94,11 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       MsScanArrived?.Invoke(this, new VMSMsScanEventArgs(arr));
     }
 
+    public void ReceiveScanEx(byte[] arr)
+    {
+      MsScanArrived?.Invoke(this, new VMSMsScanExEventArgs(arr));
+    }
+
     protected virtual void OnMsScanArrived(MsScanEventArgs e)
     {
       LastScan = e.GetScan();

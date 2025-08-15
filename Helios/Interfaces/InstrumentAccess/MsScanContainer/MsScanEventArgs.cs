@@ -65,4 +65,20 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
     }
   }
 
+  internal class VMSMsScanExEventArgs : MsScanEventArgs
+  {
+    private SpectrumEx spec = null;
+    public VMSMsScanExEventArgs(byte[] arr)
+    {
+      this.spec = new SpectrumEx();
+      spec.Deserialize(arr);
+    }
+
+    public override IMsScan GetScan()
+    {
+      IMsScan scan = new HeliosMsScanVMS(spec);
+      return scan;
+    }
+  }
+
 }
