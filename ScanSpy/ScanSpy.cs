@@ -18,6 +18,8 @@ using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.Control.Scans;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
 using ScottPlot.Colormaps;
+using System.IO;
+using System.Diagnostics.Eventing.Reader;
 
 
 namespace ScanSpy
@@ -280,7 +282,7 @@ namespace ScanSpy
             if (tmp == "Centroid") isCentroid = true;
           }
 
-          string scanFilter = ProcessScanHeader(msScan);          
+          string scanFilter = ProcessScanHeader(msScan);
 
           double[] x;
           double[] y;

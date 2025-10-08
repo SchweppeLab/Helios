@@ -75,6 +75,8 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       AddTrailer("Charge State", "Charge State", "Charge State", "Charge State", null);
       AddTrailer("FAIMS Voltage On", "FAIMS Voltage On", "FAIMS Voltage On", "FAIMS Voltage On", "Indicates if FAIMS was used.");
       AddTrailer("FAIMS CV", "FAIMS CV", "FAIMS CV", "FAIMS CV", "The compensation voltage for FAIMS.");
+      AddTrailer("Master Index", "Master Index:", "Master Index", "Master Index", null);
+      AddTrailer("Master Scan Number", "Master Scan Number:", "Master Scan Number", "Master Scan Number", null);
       AddTrailer("Monoisotopic M/Z", "Monoisotopic M/Z", "Monoisotopic M/Z", "Monoisotopic M/Z", null);
       AddTrailer("Scan Description", "Scan Description", "Scan Description", "Scan Description", null);
     }

@@ -36,7 +36,7 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public bool? IsFragmented => throw new NotImplementedException();
 
-    public int? Charge => throw new NotImplementedException();
+    public int? Charge { get; }
 
     public IMassIntensity[] Profile => throw new NotImplementedException();
 
@@ -56,17 +56,21 @@ namespace Helios.Interfaces.SpectrumFormat
 
     public double Intensity { get; }
 
-    public Centroid(double mz, double intensity, double? resolution)
+    public Centroid(double mz, double intensity, int? charge, double? resolution, bool? isMonoisotopic)
     {
       Mz = mz;
       Intensity = intensity;
+      Charge = charge;
       Resolution = resolution;
+      IsMonoisotopic = IsMonoisotopic;
     }
 
     public Centroid(exploris.Thermo.Interfaces.SpectrumFormat_V1.ICentroid c)
     {
       Mz = c.Mz;
       Intensity = c.Intensity;
+      Charge = c.Charge;
+      Resolution = c.Resolution;
       IsMonoisotopic = c.IsMonoisotopic;
     }
   }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Nova.Data;
 using Helios.Interfaces.SpectrumFormat;
+using System.IO;
 
 namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
 {
@@ -172,7 +173,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       //is a copy what we really want to do? Maybe find a way to just recast a reference?
       foreach(Thermo.Interfaces.SpectrumFormat_V1.ICentroid centroid in m.Centroids)
       {
-        CentroidList.Add(new Centroid(centroid.Mz,centroid.Intensity,centroid.Resolution));
+        CentroidList.Add(new Centroid(centroid.Mz,centroid.Intensity,centroid.Charge,centroid.Resolution,centroid.IsMonoisotopic));
       }
       if (m.ChargeEnvelopes != null)
       {
@@ -259,6 +260,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       Header.Add("MassAnalyzer", m.Analyzer.ToString());
       Header.Add("InjectTime",m.IonInjectionTime.ToString());
       Header.Add("ScanMode",m.ScanType.ToString());
+      Header.Add("MasterScan", m.PrecursorMasterScanNumber.ToString());
       if (m.Polarity) Header.Add("Polarity", "Positive");
       else Header.Add("Polarity", "Negative");
       if (m.Centroid) Header.Add("ScanData", "Centroid");
@@ -274,6 +276,8 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
       //trailer.Add("Access ID", "UIAPIzoink");
       trailer.Add("Scan Description", m.ScanDescription.ToString());
+      trailer.Add("Master Index", m.MasterIndex.ToString());
+      trailer.Add("Master Scan Number", m.PrecursorMasterScanNumber.ToString());
       trailer.Add("FAIMS Voltage On",m.FaimsState?"On":"Off"); //Note that these are Yes/No in raw file trailers.
       trailer.Add("FAIMS CV",m.FaimsCV.ToString());
       if (m.Precursors.Count > 0)
@@ -286,54 +290,56 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       CentroidCount = m.Count;
       foreach (var dp in m.DataPoints)
       {
-        CentroidList.Add(new Centroid(dp.Mz, dp.Intensity,null));
+        CentroidList.Add(new Centroid(dp.Mz, dp.Intensity,null,null,null));
       }
     }
 
     public HeliosMsScanVMS(SpectrumEx m)
     {
-        Header = new Dictionary<string, string>();
-        Header.Add("Scan", m.ScanNumber.ToString());
-        Header.Add("MSOrder", m.MsLevel.ToString());
-        Header.Add("StartTime", m.RetentionTime.ToString());
-        Header.Add("FirstMass", m.StartMz.ToString());
-        Header.Add("LastMass", m.EndMz.ToString());
-        Header.Add("BasePeakIntensity", m.BasePeakIntensity.ToString());
-        Header.Add("TIC", m.TotalIonCurrent.ToString());
-        Header.Add("Filter", m.ScanFilter.ToString());
-        Header.Add("MassAnalyzer", m.Analyzer.ToString());
-        Header.Add("InjectTime", m.IonInjectionTime.ToString());
-        Header.Add("ScanMode", m.ScanType.ToString());
-        if (m.Polarity) Header.Add("Polarity", "Positive");
-        else Header.Add("Polarity", "Negative");
-        if (m.Centroid) Header.Add("ScanData", "Centroid");
-        else Header.Add("ScanData", "Profile");
-        if (m.Precursors.Count > 0)
-        {
-            Header.Add("PrecursorMass[0]", m.Precursors[0].IsolationMz.ToString());
-            Header.Add("IsolationWidth[0]", m.Precursors[0].IsolationWidth.ToString());
-            Header.Add("CollisionEnergy[0]", m.CollisionEnergy.ToString());
-            
-        }
+      Header = new Dictionary<string, string>();
+      Header.Add("Scan", m.ScanNumber.ToString());
+      Header.Add("MSOrder", m.MsLevel.ToString());
+      Header.Add("StartTime", m.RetentionTime.ToString());
+      Header.Add("FirstMass", m.StartMz.ToString());
+      Header.Add("LastMass", m.EndMz.ToString());
+      Header.Add("BasePeakIntensity", m.BasePeakIntensity.ToString());
+      Header.Add("TIC", m.TotalIonCurrent.ToString());
+      Header.Add("Filter", m.ScanFilter.ToString());
+      Header.Add("MassAnalyzer", m.Analyzer.ToString());
+      Header.Add("InjectTime", m.IonInjectionTime.ToString());
+      Header.Add("ScanMode", m.ScanType.ToString());
+      Header.Add("MasterScan", m.PrecursorMasterScanNumber.ToString());
+      if (m.Polarity) Header.Add("Polarity", "Positive");
+      else Header.Add("Polarity", "Negative");
+      if (m.Centroid) Header.Add("ScanData", "Centroid");
+      else Header.Add("ScanData", "Profile");
+      if (m.Precursors.Count > 0)
+      {
+        Header.Add("PrecursorMass[0]", m.Precursors[0].IsolationMz.ToString());
+        Header.Add("IsolationWidth[0]", m.Precursors[0].IsolationWidth.ToString());
+        Header.Add("CollisionEnergy[0]", m.CollisionEnergy.ToString()); 
+      }
 
-        HeliosInformationSourceAccess trailer = new HeliosInformationSourceAccess();
-        //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
-        //trailer.Add("Access ID", "UIAPIzoink");
-        trailer.Add("Scan Description", m.ScanFilter.ToString());
-        trailer.Add("FAIMS Voltage On", m.FaimsState.ToString());
-        trailer.Add("FAIMS CV", m.FaimsCV.ToString());
-        if (m.Precursors.Count > 0)
-        {
-            trailer.Add("Monoisotopic M/Z", m.Precursors[0].MonoisotopicMz.ToString());
-            trailer.Add("Charge State", m.Precursors[0].Charge.ToString());
-        }
-        Trailer = trailer;
+      HeliosInformationSourceAccess trailer = new HeliosInformationSourceAccess();
+      //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
+      //trailer.Add("Access ID", "UIAPIzoink");
+      trailer.Add("Scan Description", m.ScanFilter.ToString());
+      trailer.Add("Master Index", m.MasterIndex.ToString());
+      trailer.Add("Master Scan Number", m.PrecursorMasterScanNumber.ToString());
+      trailer.Add("FAIMS Voltage On", m.FaimsState.ToString());
+      trailer.Add("FAIMS CV", m.FaimsCV.ToString());
+      if (m.Precursors.Count > 0)
+      {  
+        trailer.Add("Monoisotopic M/Z", m.Precursors[0].MonoisotopicMz.ToString());
+        trailer.Add("Charge State", m.Precursors[0].Charge.ToString());
+      }
+      Trailer = trailer;
 
-        CentroidCount = m.Count;
-        foreach (var dp in m.DataPoints)
-        {
-            CentroidList.Add(new Centroid(dp.Mz, dp.Intensity, dp.Resolution));
-        }
+      CentroidCount = m.Count;
+      foreach (var dp in m.DataPoints)
+      {
+        CentroidList.Add(new Centroid(dp.Mz, dp.Intensity, dp.Charge, dp.Resolution, null));
+      }
     }
 
     public void Dispose()

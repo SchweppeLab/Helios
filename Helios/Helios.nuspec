@@ -6,7 +6,7 @@
     <title>$title$</title>
     <authors>Michael Hoopmann, University of Washington</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <license type="expression">Apache-2.0</license>
+    <license type="file">LICENSE.txt</license>
     <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/SchweppeLab/Helios</projectUrl>
     <description>A universal API wrapper around the various flavors of IAPI from Thermo Fisher Scientific for real time mass spectrometer control and data analysis.</description>
@@ -21,4 +21,7 @@
     </dependencies>
 
   </metadata>
+  <files>
+    <file src="..\LICENSE.txt" target="" />
+  </files>
 </package>
