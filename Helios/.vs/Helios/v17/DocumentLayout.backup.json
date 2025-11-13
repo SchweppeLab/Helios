@@ -1,0 +1,206 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|d:\\software\\schweppelab\\heliosdev\\helios\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\msscancontainer\\imsscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\msscancontainer\\imsscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8BF7886F-DCCB-4BA8-A2AC-E553835755B0}|..\\ScanSpy\\ScanSpy.csproj|d:\\software\\schweppelab\\heliosdev\\scanspy\\scanspy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\msscancontainer\\heliosdictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\msscancontainer\\heliosdictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\msscancontainer\\imsscancontainer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\msscancontainer\\imsscancontainer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\control\\scans\\helioscustomdictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\control\\scans\\helioscustomdictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\msscancontainer\\msscaneventargs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\msscancontainer\\msscaneventargs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|d:\\software\\schweppelab\\heliosdev\\helios\\interfaces\\spectrumformat\\icentroid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\spectrumformat\\icentroid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\explorisconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:explorisconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\control\\scans\\iscans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\control\\scans\\iscans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\interfaces\\instrumentaccess\\control\\scans\\icustomscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\control\\scans\\icustomscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 10,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ScanSpy.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\ScanSpy\\ScanSpy.cs",
+              "RelativeDocumentMoniker": "..\\ScanSpy\\ScanSpy.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\ScanSpy\\ScanSpy.cs",
+              "RelativeToolTip": "..\\ScanSpy\\ScanSpy.cs",
+              "ViewState": "AgIAAA4BAAAAAAAAAAAYwBwBAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T18:04:51.079Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ICentroid.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\SpectrumFormat\\ICentroid.cs",
+              "RelativeDocumentMoniker": "Interfaces\\SpectrumFormat\\ICentroid.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\SpectrumFormat\\ICentroid.cs",
+              "RelativeToolTip": "Interfaces\\SpectrumFormat\\ICentroid.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAAwCYAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T18:15:56.772Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ExplorisConnection.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\ExplorisConnection.cs",
+              "RelativeDocumentMoniker": "ExplorisConnection.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\ExplorisConnection.cs",
+              "RelativeToolTip": "ExplorisConnection.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-15T21:35:34.765Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MsScanEventArgs.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAmwDAAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:43:22.424Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IMsScanContainer.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAkwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:42:53.032Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "IMsScan.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScan.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScan.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScan.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScan.cs",
+              "ViewState": "AgIAADYBAAAAAAAAAAAuwEoBAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:41:46.435Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IScans.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\Control\\Scans\\IScans.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\Control\\Scans\\IScans.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\Control\\Scans\\IScans.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\Control\\Scans\\IScans.cs",
+              "ViewState": "AgIAAB0BAAAAAAAAAAAowCsBAAB+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:25:54.984Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "HeliosDictionary.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\HeliosDictionary.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\HeliosDictionary.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\HeliosDictionary.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\MsScanContainer\\HeliosDictionary.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAgwE0AAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:24:26.13Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ICustomScan.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\Control\\Scans\\ICustomScan.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\Control\\Scans\\ICustomScan.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\Control\\Scans\\ICustomScan.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\Control\\Scans\\ICustomScan.cs",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:24:08.064Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "HeliosCustomDictionary.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\Control\\Scans\\HeliosCustomDictionary.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\Control\\Scans\\HeliosCustomDictionary.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Interfaces\\InstrumentAccess\\Control\\Scans\\HeliosCustomDictionary.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\Control\\Scans\\HeliosCustomDictionary.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T22:23:46.06Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Properties\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "Properties\\AssemblyInfo.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\HeliosDev\\Helios\\Properties\\AssemblyInfo.cs*",
+              "RelativeToolTip": "Properties\\AssemblyInfo.cs*",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAB8AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T22:23:51.586Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
