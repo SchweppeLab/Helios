@@ -3,11 +3,15 @@
   "WorkspaceRootPath": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\interfaces\\instrumentaccess\\msscancontainer\\imsscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|d:\\software\\schweppelab\\thermo2025\\helios\\helios\\interfaces\\instrumentaccess\\msscancontainer\\imsscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\msscancontainer\\imsscan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|d:\\software\\schweppelab\\thermo2025\\helios\\helios\\interfaces\\instrumentaccess\\iinstrumentaccesscontainer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\interfaces\\instrumentaccess\\iinstrumentaccesscontainer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\iinstrumentaccesscontainer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -19,11 +23,11 @@
       "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\msscancontainer\\msscaneventargs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|d:\\software\\schweppelab\\thermo2025\\helios\\helios\\interfaces\\instrumentaccess\\iinstrumentaccess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\interfaces\\instrumentaccess\\iinstrumentaccess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\iinstrumentaccess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|d:\\software\\schweppelab\\thermo2025\\helios\\helios\\interfaces\\instrumentaccess\\iclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\interfaces\\instrumentaccess\\iclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:interfaces\\instrumentaccess\\iclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -39,10 +43,6 @@
     },
     {
       "AbsoluteMoniker": "D:0:0:{343A2693-A98D-4988-A593-69B58FA7751F}|..\\ScanInjector\\ScanInjector.csproj|d:\\software\\schweppelab\\thermo2025\\helios\\scaninjector\\scaninjector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|solutionrelative:properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7B4C1E72-AB3C-4C84-A4E7-E50009B567C1}|Helios.csproj|D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\interfaces\\instrumentaccess\\control\\scans\\iscans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -83,24 +83,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "IInstrumentAccessContainer.cs",
-              "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
-              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
-              "ToolTip": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
-              "RelativeToolTip": "Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
-              "ViewState": "AgIAAFQBAAAAAAAAAIA7wGkBAABNAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-23T22:32:25.308Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "IInstrumentAccess.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\IInstrumentAccess.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\IInstrumentAccess.cs",
@@ -108,12 +95,11 @@
               "RelativeToolTip": "Interfaces\\InstrumentAccess\\IInstrumentAccess.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-23T22:19:33.475Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-23T22:19:33.475Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "IClient.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\IClient.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\IClient.cs",
@@ -121,12 +107,11 @@
               "RelativeToolTip": "Interfaces\\InstrumentAccess\\IClient.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-23T22:19:26.902Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-23T22:19:26.902Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "IAcquisition.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\Control\\Acquisition\\IAcquisition.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\Control\\Acquisition\\IAcquisition.cs",
@@ -134,12 +119,11 @@
               "RelativeToolTip": "Interfaces\\InstrumentAccess\\Control\\Acquisition\\IAcquisition.cs",
               "ViewState": "AgIAAAwAAAAAAAAAAAAAAPcAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-19T22:31:57.658Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-19T22:31:57.658Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "ScanInjector.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\ScanInjector\\ScanInjector.cs",
               "RelativeDocumentMoniker": "..\\ScanInjector\\ScanInjector.cs",
@@ -147,12 +131,11 @@
               "RelativeToolTip": "..\\ScanInjector\\ScanInjector.cs",
               "ViewState": "AgIAAMwBAAAAAAAAAAAAANkBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T21:11:59.865Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-15T21:11:59.865Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "IMsScanContainer.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
@@ -160,12 +143,11 @@
               "RelativeToolTip": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScanContainer.cs",
               "ViewState": "AgIAAEoAAAAAAAAAAAA6wGAAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-02T22:42:53.032Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-02T22:42:53.032Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "IMsScan.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScan.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\IMsScan.cs",
@@ -190,7 +172,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Properties\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "Properties\\AssemblyInfo.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Properties\\AssemblyInfo.cs",
+              "RelativeToolTip": "Properties\\AssemblyInfo.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAACMAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T22:23:51.586Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IInstrumentAccessContainer.cs",
+              "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
+              "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
+              "ToolTip": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
+              "RelativeToolTip": "Interfaces\\InstrumentAccess\\IInstrumentAccessContainer.cs",
+              "ViewState": "AgIAAFQBAAAAAAAAAIA7wGkBAABNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T22:32:25.308Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "MsScanEventArgs.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
@@ -198,12 +205,11 @@
               "RelativeToolTip": "Interfaces\\InstrumentAccess\\MsScanContainer\\MsScanEventArgs.cs",
               "ViewState": "AgIAADMAAAAAAAAAAAA/wDkAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-02T22:43:22.424Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-02T22:43:22.424Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "ScanInjector.cs [Design]",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\ScanInjector\\ScanInjector.cs",
               "RelativeDocumentMoniker": "..\\ScanInjector\\ScanInjector.cs",
@@ -214,19 +220,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "AssemblyInfo.cs",
-              "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Properties\\AssemblyInfo.cs",
-              "RelativeDocumentMoniker": "Properties\\AssemblyInfo.cs",
-              "ToolTip": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Properties\\AssemblyInfo.cs",
-              "RelativeToolTip": "Properties\\AssemblyInfo.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAAB8AAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-27T22:23:51.586Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Acquisition.cs",
               "DocumentMoniker": "D:\\Software\\SchweppeLab\\Thermo2025\\Helios\\Helios\\Interfaces\\InstrumentAccess\\Control\\Acquisition\\Acquisition.cs",
               "RelativeDocumentMoniker": "Interfaces\\InstrumentAccess\\Control\\Acquisition\\Acquisition.cs",
@@ -234,8 +228,7 @@
               "RelativeToolTip": "Interfaces\\InstrumentAccess\\Control\\Acquisition\\Acquisition.cs",
               "ViewState": "AgIAACUAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-19T23:20:46.057Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-19T23:20:46.057Z"
             },
             {
               "$type": "Document",
