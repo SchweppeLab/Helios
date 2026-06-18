@@ -19,6 +19,9 @@ we recommend using NuGet in Visual Studio to manage ScottPlot and its requiremen
 * Helios applications will only connect to instruments with a valid IAPI license.
 * Make sure your instrument Tune software is in sync with the IAPI releases.
 
+### Cite:
+Hoopmann, M. R., McGann, C. D., Canterbury, J. D., von Haller, P. D., and Schweppe, D. K. (2025). “Real-Time Instrument Control across Multiple Orbitrap Platforms through a Single Software Interface.” *J. Proteome Res.*, 24(10). DOI: 10.1021/acs.jproteome.5c00269. [Link](https://pubmed.ncbi.nlm.nih.gov/40939636/)
+
 #### Authors
 [Michael Hoopmann](https://github.com/mhoopmann), University of Washington
 
