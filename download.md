@@ -6,7 +6,7 @@ description: Yes, it's for you.
 
 ## Latest Release
 
-[Version 1.0.0.14](https://github.com/SchweppeLab/Helios/releases/download/v1.0.0.14/Helios.1.0.0.14.nupkg) - March 9, 2025
+[Version 1.0.0.14](https://github.com/SchweppeLab/Helios/releases/download/v1.0.0.14/Helios.1.0.0.14.nupkg) - March 9, 2026
 
 Helios is provided as a NuGet package. To obtain the code, head to our [source repository](https://github.com/SchweppeLab/Helios).
 

@@ -16,11 +16,13 @@ description: Getting started.
 4. In the project references, add the IAPI dll files:
 	* API-2.0.dll: in the file properties, leave the alias as "global"
 	* Spectrum-1.0.dll: in the file properties, leave the alias as "global"
-	* Fusion.API-1.0.dll: in the file properties, set the alias as "fusion"
+	* Fusion.API-2.0.dll: in the file properties, set the alias as "fusion"
 	* Thermo.TNG.Factory.dll: in the file properties, set the alias as "fusion"
 	* Thermo.API.NetStd-1.0.dll: in the file properties, set the alias as "exploris"
 	* Thermo.API.Exploris.NetStd-1.0.dll: in the file properties, set the alias as "exploris"
 	* Thermo.API.Spectrum.NetStd-1.0.dll: in the file properties, set the alias as "exploris"
+	
+**Note that Helios uses IAPI for Tribrid Series 4.3**
 	
 ## Quick Test Application
 
