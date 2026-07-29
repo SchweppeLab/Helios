@@ -44,6 +44,10 @@
       this.connectionIndicator = new System.Windows.Forms.Button();
       this.buttonConnect = new System.Windows.Forms.Button();
       this.groupBox2 = new System.Windows.Forms.GroupBox();
+      this.hasIRTMT = new System.Windows.Forms.CheckBox();
+      this.hasMS3 = new System.Windows.Forms.CheckBox();
+      this.spsAddTarget = new System.Windows.Forms.Button();
+      this.spsTargets = new System.Windows.Forms.ListBox();
       this.comIT = new System.Windows.Forms.NumericUpDown();
       this.comAGC = new System.Windows.Forms.NumericUpDown();
       this.comRes = new System.Windows.Forms.ComboBox();
@@ -77,6 +81,7 @@
       this.labelScanFilter = new System.Windows.Forms.Label();
       this.labelScanInfo = new System.Windows.Forms.Label();
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+      this.hasIRMPD = new System.Windows.Forms.CheckBox();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
       this.splitContainer1.Panel2.SuspendLayout();
@@ -117,7 +122,7 @@
       this.splitContainer1.Panel2.BackColor = System.Drawing.SystemColors.Control;
       this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
       this.splitContainer1.Panel2.Controls.Add(this.statusStrip1);
-      this.splitContainer1.Size = new System.Drawing.Size(784, 561);
+      this.splitContainer1.Size = new System.Drawing.Size(979, 549);
       this.splitContainer1.SplitterDistance = 304;
       this.splitContainer1.TabIndex = 0;
       // 
@@ -137,7 +142,7 @@
       // splitContainer2.Panel2
       // 
       this.splitContainer2.Panel2.Controls.Add(this.groupBox2);
-      this.splitContainer2.Size = new System.Drawing.Size(784, 304);
+      this.splitContainer2.Size = new System.Drawing.Size(979, 304);
       this.splitContainer2.SplitterDistance = 220;
       this.splitContainer2.TabIndex = 0;
       // 
@@ -267,6 +272,11 @@
       // 
       // groupBox2
       // 
+      this.groupBox2.Controls.Add(this.hasIRMPD);
+      this.groupBox2.Controls.Add(this.hasIRTMT);
+      this.groupBox2.Controls.Add(this.hasMS3);
+      this.groupBox2.Controls.Add(this.spsAddTarget);
+      this.groupBox2.Controls.Add(this.spsTargets);
       this.groupBox2.Controls.Add(this.comIT);
       this.groupBox2.Controls.Add(this.comAGC);
       this.groupBox2.Controls.Add(this.comRes);
@@ -294,10 +304,50 @@
       this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.groupBox2.Location = new System.Drawing.Point(0, 0);
       this.groupBox2.Name = "groupBox2";
-      this.groupBox2.Size = new System.Drawing.Size(560, 304);
+      this.groupBox2.Size = new System.Drawing.Size(755, 304);
       this.groupBox2.TabIndex = 1;
       this.groupBox2.TabStop = false;
       this.groupBox2.Text = "Custom Scan Settings";
+      // 
+      // hasIRTMT
+      // 
+      this.hasIRTMT.AutoSize = true;
+      this.hasIRTMT.Location = new System.Drawing.Point(424, 121);
+      this.hasIRTMT.Name = "hasIRTMT";
+      this.hasIRTMT.Size = new System.Drawing.Size(102, 21);
+      this.hasIRTMT.TabIndex = 28;
+      this.hasIRTMT.Text = "IRTMT Mode";
+      this.hasIRTMT.UseVisualStyleBackColor = true;
+      // 
+      // hasMS3
+      // 
+      this.hasMS3.AutoSize = true;
+      this.hasMS3.Location = new System.Drawing.Point(362, 121);
+      this.hasMS3.Name = "hasMS3";
+      this.hasMS3.Size = new System.Drawing.Size(53, 21);
+      this.hasMS3.TabIndex = 27;
+      this.hasMS3.Text = "MS3";
+      this.hasMS3.UseVisualStyleBackColor = true;
+      // 
+      // spsAddTarget
+      // 
+      this.spsAddTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("spsAddTarget.BackgroundImage")));
+      this.spsAddTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+      this.spsAddTarget.Location = new System.Drawing.Point(517, 148);
+      this.spsAddTarget.Name = "spsAddTarget";
+      this.spsAddTarget.Size = new System.Drawing.Size(28, 28);
+      this.spsAddTarget.TabIndex = 26;
+      this.spsAddTarget.UseVisualStyleBackColor = true;
+      this.spsAddTarget.Click += new System.EventHandler(this.spsAddTarget_Click);
+      // 
+      // spsTargets
+      // 
+      this.spsTargets.FormattingEnabled = true;
+      this.spsTargets.ItemHeight = 17;
+      this.spsTargets.Location = new System.Drawing.Point(362, 148);
+      this.spsTargets.Name = "spsTargets";
+      this.spsTargets.Size = new System.Drawing.Size(149, 89);
+      this.spsTargets.TabIndex = 25;
       // 
       // comIT
       // 
@@ -452,7 +502,7 @@
       this.comTargets.ItemHeight = 17;
       this.comTargets.Location = new System.Drawing.Point(94, 148);
       this.comTargets.Name = "comTargets";
-      this.comTargets.Size = new System.Drawing.Size(149, 106);
+      this.comTargets.Size = new System.Drawing.Size(149, 89);
       this.comTargets.TabIndex = 12;
       // 
       // label10
@@ -580,7 +630,7 @@
       this.panel1.Controls.Add(this.comScanCollection);
       this.panel1.Controls.Add(this.label4);
       this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-      this.panel1.Location = new System.Drawing.Point(357, 21);
+      this.panel1.Location = new System.Drawing.Point(552, 21);
       this.panel1.Name = "panel1";
       this.panel1.Size = new System.Drawing.Size(200, 280);
       this.panel1.TabIndex = 2;
@@ -616,7 +666,7 @@
       this.tabControl1.Location = new System.Drawing.Point(0, 0);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(784, 231);
+      this.tabControl1.Size = new System.Drawing.Size(979, 219);
       this.tabControl1.TabIndex = 1;
       // 
       // tabPage2
@@ -626,7 +676,7 @@
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
       this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage2.Size = new System.Drawing.Size(776, 205);
+      this.tabPage2.Size = new System.Drawing.Size(971, 193);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Message Log";
       // 
@@ -635,7 +685,7 @@
       this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
       this.rtbLog.Location = new System.Drawing.Point(3, 3);
       this.rtbLog.Name = "rtbLog";
-      this.rtbLog.Size = new System.Drawing.Size(770, 199);
+      this.rtbLog.Size = new System.Drawing.Size(965, 187);
       this.rtbLog.TabIndex = 0;
       this.rtbLog.Text = "";
       // 
@@ -648,7 +698,7 @@
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
       this.tabPage1.Name = "tabPage1";
       this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage1.Size = new System.Drawing.Size(776, 205);
+      this.tabPage1.Size = new System.Drawing.Size(971, 193);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Spectrum";
       // 
@@ -658,7 +708,7 @@
       this.plotSpectrum.Dock = System.Windows.Forms.DockStyle.Fill;
       this.plotSpectrum.Location = new System.Drawing.Point(3, 29);
       this.plotSpectrum.Name = "plotSpectrum";
-      this.plotSpectrum.Size = new System.Drawing.Size(770, 173);
+      this.plotSpectrum.Size = new System.Drawing.Size(965, 161);
       this.plotSpectrum.TabIndex = 0;
       // 
       // labelScanFilter
@@ -683,19 +733,30 @@
       // 
       // statusStrip1
       // 
-      this.statusStrip1.Location = new System.Drawing.Point(0, 231);
+      this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
+      this.statusStrip1.Location = new System.Drawing.Point(0, 219);
       this.statusStrip1.Name = "statusStrip1";
-      this.statusStrip1.Size = new System.Drawing.Size(784, 22);
+      this.statusStrip1.Size = new System.Drawing.Size(979, 22);
       this.statusStrip1.TabIndex = 2;
       this.statusStrip1.Text = "statusStrip1";
+      // 
+      // hasIRMPD
+      // 
+      this.hasIRMPD.AutoSize = true;
+      this.hasIRMPD.Location = new System.Drawing.Point(424, 97);
+      this.hasIRMPD.Name = "hasIRMPD";
+      this.hasIRMPD.Size = new System.Drawing.Size(66, 21);
+      this.hasIRMPD.TabIndex = 29;
+      this.hasIRMPD.Text = "IRMPD";
+      this.hasIRMPD.UseVisualStyleBackColor = true;
       // 
       // ScanInjector
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(784, 561);
+      this.ClientSize = new System.Drawing.Size(979, 549);
       this.Controls.Add(this.splitContainer1);
-      this.MinimumSize = new System.Drawing.Size(800, 600);
+      this.MinimumSize = new System.Drawing.Size(995, 543);
       this.Name = "ScanInjector";
       this.Text = "ScanInjector";
       this.splitContainer1.Panel1.ResumeLayout(false);
@@ -778,6 +839,11 @@
     private System.Windows.Forms.Label labelScanInfo;
     private ScottPlot.WinForms.FormsPlot plotSpectrum;
     private System.Windows.Forms.Label labelScanFilter;
+    private System.Windows.Forms.CheckBox hasMS3;
+    private System.Windows.Forms.Button spsAddTarget;
+    private System.Windows.Forms.ListBox spsTargets;
+    private System.Windows.Forms.CheckBox hasIRTMT;
+    private System.Windows.Forms.CheckBox hasIRMPD;
   }
 }
 

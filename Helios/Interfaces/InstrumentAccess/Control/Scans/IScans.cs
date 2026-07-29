@@ -4,6 +4,8 @@ extern alias fusion;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Threading;
 using Nova.IPC.Pipes;
 
@@ -275,7 +277,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
   {
     private bool _disposedValue;
 
-    public IParameterDescription[] PossibleParameters { get; } = new HeliosParameterDescription[10];
+    public IParameterDescription[] PossibleParameters { get; } = new HeliosParameterDescription[15];
     public IParameterDescription[] HeliosPossibleParameters { get; } = new IParameterDescription[HeliosCustomDictionary.HeliosLexicon.Count];
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
@@ -283,6 +285,8 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 
     private readonly PipesClient pipesClient = null;
 
+
+    //TODO: Add ability to emulate different instrument IAPI. Current setup emulates Tribrid.
     public HeliosScansVMS(PipesClient pc = null)
     {
       pipesClient = pc;
@@ -298,7 +302,12 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       PossibleParameters[7] = new HeliosParameterDescription("DataType", "Centroid,Profile", "Centroid", "The data type to collect the scan in.");
       PossibleParameters[8] = new HeliosParameterDescription("SrcRFLens", "string (0;150)", "60", "The RF Lens (%) for the source. " + multiVal);
       PossibleParameters[9] = new HeliosParameterDescription("SourceCIDEnergy", "0-100", "0", "Source CID Energy (0 = off).");
-
+      PossibleParameters[10] = new HeliosParameterDescription("ScanRangeMode","Auto,DefineFirstMass,DefineMZRange","Auto","The scan range mode: auto, define first mass, or define m / z range");
+      PossibleParameters[11] = new HeliosParameterDescription("SourceCIDScalingFactor", "0.01-1", "0", "Source CID ScalingFactor(0 = off)");
+      PossibleParameters[12] = new HeliosParameterDescription("IsolationMode", "None,Quadrupole,IonTrap", "Quadrupole", "Isolate using the quadrupole or ion trap");
+      PossibleParameters[13] = new HeliosParameterDescription("OrbitrapResolution", "7500,15000,22500,30000,45000,60000,75000,90000,120000,240000,480000", "120000", "The Orbitrap Resolution");
+      PossibleParameters[14] = new HeliosParameterDescription("IsolationWidth", "string (0.4;2000)", "0.7", "The isolation width(full - width) for a given MS stage." + multiVal);
+      
       for (int i = 0; i < HeliosCustomDictionary.HeliosLexicon.Count; i++)
       {
         HeliosPossibleParameters[i] = new HeliosParameterDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID, "", "", HeliosCustomDictionary.GetDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID));
