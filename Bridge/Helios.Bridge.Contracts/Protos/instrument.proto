@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package helios.bridge.v1;
+
+import "common.proto";
+
+option csharp_namespace = "Helios.Bridge.Contracts";
+
+// Connection lifecycle and instrument-level status/events. Common to Fusion and Exploris.
+service InstrumentService {
+  // Starts online access to the configured instrument backend (Fusion, Exploris, or Simulated).
+  rpc Connect(ConnectRequest) returns (StatusResponse);
+
+  // Point-in-time snapshot of connection state and instrument capabilities.
+  rpc GetStatus(Empty) returns (StatusResponse);
+
+  // Releases the underlying instrument access container.
+  rpc DisposeInstrument(Empty) returns (Empty);
+
+  // Server-streaming push of connection/message events. One long-lived call per client.
+  rpc StreamServiceEvents(Empty) returns (stream ServiceEvent);
+}
+
+message ConnectRequest {
+  int32 instrument_index = 1; // 1-based, matches IAPI's IInstrumentAccessContainer.Get(index).
+}
+
+message StatusResponse {
+  InstrumentFamily family = 1;
+  bool service_connected = 2;
+  bool instrument_connected = 3;
+  int32 instrument_id = 4;
+  string instrument_name = 5;
+  int32 count_ms_detectors = 6;
+  int32 count_analog_channels = 7;
+  repeated string detector_classes = 8;
+  bool has_syringe_pump = 9;   // Fusion-only capability.
+  bool has_analog_channels = 10;
+}
+
+message ServiceEvent {
+  oneof event {
+    ServiceConnectionChangedEvent service_connection_changed = 1;
+    InstrumentConnectionChangedEvent instrument_connection_changed = 2;
+    MessagesArrivedEvent messages_arrived = 3;
+    ContactClosureChangedEvent contact_closure_changed = 4;
+  }
+}
+
+message ServiceConnectionChangedEvent {
+  bool service_connected = 1;
+}
+
+message InstrumentConnectionChangedEvent {
+  bool connected = 1;
+}
+
+message MessagesArrivedEvent {
+  repeated InstrumentMessage messages = 1;
+}
+
+message ContactClosureChangedEvent {
+  int32 rising_edges = 1;
+  int32 falling_edges = 2;
+}

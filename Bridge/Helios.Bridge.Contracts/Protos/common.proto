@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package helios.bridge.v1;
+
+option csharp_namespace = "Helios.Bridge.Contracts";
+
+// An empty acknowledgement.
+message Empty {
+}
+
+// Which backend the InstrumentHost is currently wired up to.
+enum InstrumentFamily {
+  INSTRUMENT_FAMILY_UNSPECIFIED = 0;
+  FUSION = 1;
+  EXPLORIS = 2;
+  SIMULATED = 3;
+}
+
+// Mirrors Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.SystemMode.
+enum SystemMode {
+  SYSTEM_MODE_UNSPECIFIED = 0;
+  MALCONFIGURED = 1;
+  DISCONNECTED = 2;
+  ON = 3;
+  STANDBY = 4;
+  OFF = 5;
+  REMOTE_CONTROL = 6;
+  DIRECT_CONTROL = 7;
+  MAINTENANCE = 8;
+  CALIBRATION = 9;
+  EVALUATION = 10;
+  BAKEOUT = 11;
+  AUTO_TUNE = 12;
+  CALIBRATION_PAUSED = 13;
+  EVALUATION_PAUSED = 14;
+  BAKEOUT_PAUSED = 15;
+  AUTO_TUNE_PAUSED = 16;
+  DIRECT_CONTROL_PAUSED = 17;
+}
+
+// Mirrors Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.InstrumentState.
+enum InstrumentState {
+  INSTRUMENT_STATE_UNSPECIFIED = 0;
+  INITIALIZING = 1;
+  READY_TO_DOWNLOAD = 2;
+  DOWNLOADING = 3;
+  PREPARING_FOR_RUN = 4;
+  READY_FOR_RUN = 5;
+  WAITING_FOR_CONTACT_CLOSURE = 6;
+  RUNNING = 7;
+  POST_RUN = 8;
+  ERROR = 9;
+  BUSY = 10;
+  NOT_CONNECTED = 11;
+  STAND_BY = 12;
+  INSTRUMENT_OFF = 13;
+  SERVER_FAILED = 14;
+  LAMP_WARMUP = 15;
+  NOT_READY = 16;
+  INSTRUMENT_DIRECT_CONTROL = 17;
+}
+
+// One entry of IScans.PossibleParameters (IAPI's IParameterDescription).
+message ScanParameterDescriptor {
+  string name = 1;
+  string selection = 2;
+  string default_value = 3;
+  string help = 4;
+}
+
+// A single instrument message/log entry (IAPI's IMessage).
+message InstrumentMessage {
+  int32 instrument_id = 1;
+  string instrument_name = 2;
+  uint32 message_id = 3;
+  int64 creation_time_unix_ms = 4;
+  int32 status = 5;
+  string message = 6;
+  repeated string message_args = 7;
+}

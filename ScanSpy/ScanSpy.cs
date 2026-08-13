@@ -1,32 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ScottPlot.Plottables;
-using ScottPlot;
 
-using Helios.Interfaces;
-using Helios.Interfaces.InstrumentAccess;
-using Helios.Interfaces.InstrumentAccess.Control;
-using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
-using Helios.Interfaces.InstrumentAccess.Control.Scans;
-using Helios.Interfaces.InstrumentAccess.MsScanContainer;
-using ScottPlot.Colormaps;
-using System.IO;
-using System.Diagnostics.Eventing.Reader;
-
+using Helios.Client;
 
 namespace ScanSpy
 {
-  public partial class ScanSpy: Form
+  public partial class ScanSpy : Form
   {
-    private IInstrumentAccessContainer msIAC;
     private IInstrumentAccess msIA;
     private IControl msControl;
     private IAcquisition msAcquisition;
@@ -44,7 +30,6 @@ namespace ScanSpy
     readonly Scatter plotSpec;
     private long lastTicks = 0;
     private volatile bool refreshSpectrum = false;
-    //private VMsStats stats = new VMsStats();
 
     private int curSimCount = 0;
     private double curSimRT = 0;
@@ -60,13 +45,13 @@ namespace ScanSpy
       UpdatePlotTimer.Interval = 100;
       UpdatePlotTimer.Enabled = true;
 
-      Coordinates[] co = new Coordinates[1];
+      ScottPlot.Coordinates[] co = new ScottPlot.Coordinates[1];
       co[0].X = 0;
       co[0].Y = 0;
 
       plotSpec = plotSpectrum.Plot.Add.Scatter(co);
       plotSpec.MarkerSize = 1;
-      plotSpectrum.Plot.Axes.SetLimitsY(0,100);
+      plotSpectrum.Plot.Axes.SetLimitsY(0, 100);
       plotSpectrum.Plot.YLabel("Relative Intensity");
       plotSpectrum.Plot.XLabel("m/z");
       plotSpectrum.Plot.HideGrid();
@@ -87,7 +72,16 @@ namespace ScanSpy
       lastTicks = DateTime.Now.Ticks;
     }
 
-    private void buttonConnect_Click(object sender, EventArgs e)
+    // Marshals onto the UI thread when needed -- IInstrumentAccess's events (unlike the
+    // in-process Helios API ScanSpy used to talk to directly) are always raised from a background
+    // Task draining a gRPC stream, never the UI thread.
+    private void UiInvoke(Action action)
+    {
+      if (IsHandleCreated && InvokeRequired) BeginInvoke(action);
+      else action();
+    }
+
+    private async void buttonConnect_Click(object sender, EventArgs e)
     {
       //Step #1, disable the buttons so that they can't be clicked while this
       //function is executing.
@@ -101,16 +95,13 @@ namespace ScanSpy
         if (listener) StopListening();
         if (msIA != null)
         {
-          msIA.AcquisitionErrorsArrived -= AcquisitionErrorsArrived;
           msIA.ConnectionChanged -= ConnectionChanged;
           msIA.ContactClosureChanged -= ContactClosureChanged;
+          msIA.MessagesArrived -= MessagesArrived;
+          await msIA.DisposeAsync();
           msIA = null;
         }
-        if (msIAC != null)
-        {
-          msIAC.Dispose();
-          msIAC = null;
-        }
+        connected = false;
         Log("Disconnected");
       }
 
@@ -119,30 +110,23 @@ namespace ScanSpy
       {
         try
         {
-          Log("Attempting to connect to instrument or VMS.");
+          Log("Attempting to connect to Helios.Bridge.Host at 127.0.0.1:50100.");
 
-          msIAC = InstrumentAccessContainerFactory.Create();
-          if (msIAC == null) Log("Failed to connect to instrument or VMS.");
-          else
-          {
-            Log("Instrument ID: " + msIAC.InstrumentType());
-            try
-            {
-              msIAC.ServiceConnectionChanged += ServiceConnectionChanged;
-              msIAC.MessagesArrived += MessagesArrived;
-              Log("Attempting to start online access, already at " + msIAC.ServiceConnected.ToString());
-              msIAC.StartOnlineAccess();
-              Log("StartOnlineAccess() happened. This message appears in lieu of a more natural message.");
-            }
-            catch (Exception exx)
-            {
-              Log(exx.Message);
-            }
-          }
+          msIA = await HeliosClient.ConnectAsync();
+          Log("Instrument family: " + msIA.Family);
+
+          msIA.ConnectionChanged += ConnectionChanged;
+          msIA.ContactClosureChanged += ContactClosureChanged;
+          msIA.MessagesArrived += MessagesArrived;
+
+          connected = true;
+          Log("Connected to " + msIA.InstrumentName);
         }
         catch (Exception ex)
         {
-          Log("InstrumentAccessContainerFactory.Get() " + ex.Message);
+          Log("HeliosClient.ConnectAsync() " + ex.Message);
+          msIA = null;
+          connected = false;
         }
       }
 
@@ -150,44 +134,40 @@ namespace ScanSpy
       UpdateConnection();
     }
 
-    void AcquisitionErrorsArrived(object sender, AcquisitionErrorsArrivedEventArgs e)
-    {
-      Log("Acquisition Error: " + e.ToString());
-    }
-
     private void AcquisitionStreamClosing(object sender, EventArgs e)
     {
-      Log("AcquisitionStreamClosing.");
-      if (listener && cbOnAcquisition.Checked)
+      UiInvoke(() =>
       {
-        listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
-        listenIndicatorWait.BackColor = System.Drawing.Color.Yellow;
-        listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
-        ignoreScan = true;
-      }
+        Log("AcquisitionStreamClosing.");
+        if (listener && cbOnAcquisition.Checked)
+        {
+          listenIndicatorOn.BackColor = Color.Gray;
+          listenIndicatorWait.BackColor = Color.Yellow;
+          listenIndicatorOff.BackColor = Color.Gray;
+          ignoreScan = true;
+        }
+      });
     }
 
-    private void AcquisitionStreamOpening(object sender, AcquisitionOpeningEventArgs e)
+    private void AcquisitionStreamOpening(object sender, AcquisitionStreamOpeningEventArgs e)
     {
-      ignoreScan = false;
-      listenIndicatorOn.BackColor = System.Drawing.Color.Lime;
-      listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
-      listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
-
-      string str = "AcquisitionStreamOpening: ";
-      Invoke(new Action(() =>
+      UiInvoke(() =>
       {
+        ignoreScan = false;
+        listenIndicatorOn.BackColor = Color.Lime;
+        listenIndicatorWait.BackColor = Color.Gray;
+        listenIndicatorOff.BackColor = Color.Gray;
+
+        string str = "AcquisitionStreamOpening: ";
         foreach (var de in e.StartingInformation)
         {
-          //For documentation
-          //Log("Key: '" + de.Key + "'");
           if (de.Key.CompareTo("RawFileName") == 0 || de.Key.CompareTo("RawFile") == 0)
           {
             str += de.Value;
           }
         }
-      }));
-      Log(str);
+        Log(str);
+      });
     }
 
     private void CheckDictionary(string key, string value, int msLevel, DataGridView dgv)
@@ -223,12 +203,12 @@ namespace ScanSpy
 
     void ContactClosureChanged(object sender, ContactClosureEventArgs e)
     {
-      Log("Contact Closure changed: " + e.ToString() + " " + e.DidRise.ToString() + " " + e.DidFall.ToString());
+      Log("Contact Closure changed: RisingEdges=" + e.RisingEdges + " FallingEdges=" + e.FallingEdges);
     }
 
     void Log(string s)
     {
-      rtbLog.AppendText(s + System.Environment.NewLine);
+      UiInvoke(() => rtbLog.AppendText(s + System.Environment.NewLine));
     }
 
     void MessagesArrived(object sender, MessagesArrivedEventArgs e)
@@ -237,10 +217,10 @@ namespace ScanSpy
       foreach (var message in e.Messages)
       {
         string msg = string.Format("[{0}] ID: {1} Status: {2} Msg: {3}",
-            message.CreationTime,
+            message.CreationTimeUtc,
             message.MessageId,
             message.Status,
-            string.Format(message.Message, message.MessageArgs));
+            string.Format(message.Message, message.MessageArgs.ToArray()));
 
         sb.AppendLine(msg);
       }
@@ -252,123 +232,137 @@ namespace ScanSpy
       if (ignoreScan) return;
 
       string tmp;
-      using (IMsScan msScan = e.GetScan())
+      IMsScan msScan = e.Scan;
+
+      double rt = 0;
+      if (msScan.Header.TryGetValue("StartTime", out tmp)) rt = Convert.ToDouble(tmp);
+      scanHistory.Enqueue(rt);
+      while (scanHistory.Count() > 0 && rt - scanHistory.First() > 0.1)
       {
-        double rt = 0;
-        if (msScan.TryHeader("StartTime", out tmp)) rt = Convert.ToDouble(tmp);
-        scanHistory.Enqueue(rt);
-        while (scanHistory.Count()>0 && rt - scanHistory.First() > 0.1)
+        scanHistory.Dequeue();
+      }
+      double hz = scanHistory.Count() * 0.1 / (rt - scanHistory.First()) / 6;
+
+      long curTicks = DateTime.Now.Ticks;
+      long tickDif = curTicks - lastTicks;
+      bool refreshNow = tickDif > 1e6; //only refresh at intervals
+
+      int scanNumber = 0;
+      double firstMass = 0;
+      double lastMass = 100;
+      double basePeakIntensity = 0;
+      bool isCentroid = false;
+      double[] x = null;
+      double[] y = null;
+      string scanFilter = null;
+      string header = null;
+
+      if (refreshNow)
+      {
+        if (msScan.Header.TryGetValue("Scan", out tmp)) scanNumber = Convert.ToInt32(tmp);
+        if (msScan.Header.TryGetValue("FirstMass", out tmp)) firstMass = Convert.ToDouble(tmp);
+        if (msScan.Header.TryGetValue("LastMass", out tmp)) lastMass = Convert.ToDouble(tmp);
+        if (msScan.Header.TryGetValue("BasePeakIntensity", out tmp)) basePeakIntensity = Convert.ToDouble(tmp);
+        if (msScan.Header.TryGetValue("ScanData", out tmp))
         {
-          scanHistory.Dequeue();
+          if (tmp == "Centroid") isCentroid = true;
         }
-        double hz = scanHistory.Count() * 0.1/(rt - scanHistory.First()) / 6;
-        labelScanSpeed.Text = hz.ToString() + " Hz";
 
-        long curTicks = DateTime.Now.Ticks;
-        long tickDif = curTicks - lastTicks;
-        if (tickDif > 1e6) //only refresh at intervals
+        scanFilter = ProcessScanHeader(msScan, out header);
+
+        var centroids = msScan.Centroids;
+        int n = centroids.Mz.Length;
+        int a = 0;
+        if (isCentroid)
         {
-          int scanNumber = 0;
-          double firstMass = 0;
-          double lastMass = 100;
-          double basePeakIntensity = 0;
-          bool isCentroid = false;
-          if (msScan.TryHeader("Scan", out tmp)) scanNumber = Convert.ToInt32(tmp);
-          if (msScan.TryHeader("FirstMass", out tmp)) firstMass = Convert.ToDouble(tmp);
-          if (msScan.TryHeader("LastMass", out tmp)) lastMass = Convert.ToDouble(tmp);
-          if (msScan.TryHeader("BasePeakIntensity", out tmp)) basePeakIntensity = Convert.ToDouble(tmp);
-          if (msScan.TryHeader("ScanData", out tmp))
+          x = new double[n * 3 + 2];
+          y = new double[n * 3 + 2];
+          x[a] = firstMass;
+          y[a++] = 0;
+          for (int j = 0; j < n; j++)
           {
-            if (tmp == "Centroid") isCentroid = true;
-          }
-
-          string scanFilter = ProcessScanHeader(msScan);
-
-          double[] x;
-          double[] y;
-          int a = 0;
-          if (isCentroid)
-          {
-            x = new double[msScan.Centroids.Count()*3+2];
-            y = new double[msScan.Centroids.Count()*3+2];
-            x[a] = firstMass;
+            double cmz = centroids.Mz[j];
+            double cintensity = centroids.Intensity[j];
+            //centroided peaks need to be plotted with 3 points
+            x[a] = cmz;
             y[a++] = 0;
-            foreach (var centroid in msScan.Centroids)
-            {
-              //centroided peaks need to be plotted with 3 points 
-              x[a] = centroid.Mz;
-              y[a++] = 0;
-              x[a] = centroid.Mz;
-              y[a++] = centroid.Intensity/basePeakIntensity*100;
-              x[a] = centroid.Mz;
-              y[a++] = 0;
-            }
-            x[a] = lastMass;
-            y[a] = 0;
-          } 
-          else
-          {
-            x = new double[msScan.Centroids.Count()+2];
-            y = new double[msScan.Centroids.Count()+2];
-            x[a] = firstMass;
+            x[a] = cmz;
+            y[a++] = basePeakIntensity == 0 ? 0 : cintensity / basePeakIntensity * 100;
+            x[a] = cmz;
             y[a++] = 0;
-            foreach (var centroid in msScan.Centroids)
-            {
-              x[a] = centroid.Mz;
-              y[a] = centroid.Intensity/basePeakIntensity*100;
-              //if (centroid.IsMonoisotopic != null)
-              //{
-              //  Log("IsMonoisotopic is not null: " + centroid.IsMonoisotopic.ToString() + " mz: " + centroid.Mz.ToString() + " in scan " + scanNumber.ToString());
-              //} 
-              a++;
-            }
-            x[a]=lastMass;
-            y[a] = 0;
           }
-          
+          x[a] = lastMass;
+          y[a] = 0;
+        }
+        else
+        {
+          x = new double[n + 2];
+          y = new double[n + 2];
+          x[a] = firstMass;
+          y[a++] = 0;
+          for (int j = 0; j < n; j++)
+          {
+            x[a] = centroids.Mz[j];
+            y[a] = basePeakIntensity == 0 ? 0 : centroids.Intensity[j] / basePeakIntensity * 100;
+            a++;
+          }
+          x[a] = lastMass;
+          y[a] = 0;
+        }
+      }
+
+      //Count run statistics
+      scanCount[0]++;
+      totalScanCount[0]++;
+      msScan.Header.TryGetValue("MSOrder", out tmp);
+      if (tmp != null)
+      {
+        if (tmp.Equals("MS2") || tmp.Equals("2"))
+        {
+          scanCount[2]++;
+          totalScanCount[2]++;
+        }
+        else if (tmp.Equals("MS") || tmp.Equals("1"))
+        {
+          scanCount[1]++;
+          totalScanCount[1]++;
+        }
+        else if (tmp.Equals("3"))
+        {
+          scanCount[3]++;
+          totalScanCount[3]++;
+        }
+      }
+
+      UiInvoke(() =>
+      {
+        labelScanSpeed.Text = hz.ToString("F1") + " Hz";
+
+        if (refreshNow)
+        {
           lock (plotSpectrum.Plot.Sync)
           {
             plotSpectrum.Plot.Clear();
             var scat = plotSpectrum.Plot.Add.Scatter(x, y);
             scat.MarkerSize = 1;
-            //plotSpectrum.Plot.Axes.AutoScaleY();
             plotSpectrum.Plot.Axes.SetLimitsX(firstMass, lastMass);
           }
 
-          //lblScanFilter.Text = scanFilter;
-          lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString("#.00") + "  NL:" + basePeakIntensity.ToString("E2"); ;
+          rtbHeader.Text = header;
+          lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString("#.00") + "  NL:" + basePeakIntensity.ToString("E2");
           refreshSpectrum = true;
           lastTicks = curTicks;
         }
 
-        //Count run statistics
-        scanCount[0]++;
-        totalScanCount[0]++;
-        msScan.Header.TryGetValue("MSOrder", out tmp);
-        if (tmp != null)
-        {
-          if (tmp.Equals("MS2") || tmp.Equals("2"))
-          {
-            scanCount[2]++;
-            totalScanCount[2]++;
-          }
-          else if (tmp.Equals("MS") || tmp.Equals("1"))
-          {
-            scanCount[1]++;
-            totalScanCount[1]++;
-          } 
-          else if (tmp.Equals("3"))
-          {
-            scanCount[3]++;
-            totalScanCount[3]++;
-          }
-        }
-      }
-
-      RefreshStats();
+        RefreshStats();
+      });
     }
 
-    string ProcessScanHeader(IMsScan scan)
+    // Unlike Helios's own IMsScan.TryHeader, Helios.Client's IMsScan exposes plain resolved
+    // dictionaries -- Helios.Bridge.Host's HeliosMsScanChannelAdapter already resolves the
+    // canonical ("universal dictionary") IDs used below into Header/Trailer regardless of which
+    // instrument family answered, so a straight TryGetValue by canonical name is enough here.
+    string ProcessScanHeader(IMsScan scan, out string header)
     {
       string tmp;
       string filter;
@@ -387,53 +381,53 @@ namespace ScanSpy
       string firstMass;
       string lastMass;
 
-      string header = "==== SCAN HEADER ====" + System.Environment.NewLine;
+      string h = "==== SCAN HEADER ====" + System.Environment.NewLine;
 
-      if(!scan.TryHeader("Scan", out scanNumber)) scanNumber="";
-      if (!scan.TryHeader("StartTime", out startTime)) startTime="";
-      if (!scan.TryHeader("MassAnalyzer", out tmp)) tmp="";
+      if (!scan.Header.TryGetValue("Scan", out scanNumber)) scanNumber = "";
+      if (!scan.Header.TryGetValue("StartTime", out startTime)) startTime = "";
+      if (!scan.Header.TryGetValue("MassAnalyzer", out tmp)) tmp = "";
       if (tmp.Contains("FTMS")) massAnalyzer = "FTMS";
       else if (tmp.Contains("I")) massAnalyzer = "ITMS";
-      if (!scan.TryHeader("Polarity", out polarity)) polarity="";
-      if (!scan.TryHeader("MSOrder", out msOrder)) msOrder="";
-      if (!scan.TryHeader("ScanMode", out scanMode)) scanMode="";
-      if (!scan.TryHeader("IonizationMode", out ionizationMode)) ionizationMode="";
-      if (!scan.TryHeader("ScanData", out scanData)) scanData="";
-      if (!scan.TryHeader("InjectTime", out injectTime)) injectTime="";
-      if (!scan.TryHeader("TIC", out tic)) tic="";
-      if (!scan.TryHeader("BasePeakIntensity", out basePeakIntensity)) basePeakIntensity="";
-      if (!scan.TryHeader("LowMass", out firstMass)) firstMass = "";
-      if (!scan.TryHeader("HighMass", out lastMass)) lastMass = "";
+      if (!scan.Header.TryGetValue("Polarity", out polarity)) polarity = "";
+      if (!scan.Header.TryGetValue("MSOrder", out msOrder)) msOrder = "";
+      if (!scan.Header.TryGetValue("ScanMode", out scanMode)) scanMode = "";
+      if (!scan.Header.TryGetValue("IonizationMode", out ionizationMode)) ionizationMode = "";
+      if (!scan.Header.TryGetValue("ScanData", out scanData)) scanData = "";
+      if (!scan.Header.TryGetValue("InjectTime", out injectTime)) injectTime = "";
+      if (!scan.Header.TryGetValue("TIC", out tic)) tic = "";
+      if (!scan.Header.TryGetValue("BasePeakIntensity", out basePeakIntensity)) basePeakIntensity = "";
+      if (!scan.Header.TryGetValue("FirstMass", out firstMass)) firstMass = "";
+      if (!scan.Header.TryGetValue("LastMass", out lastMass)) lastMass = "";
 
-      header += "Scan Number: " + scanNumber + System.Environment.NewLine;
-      header += "Start Time: " + startTime + System.Environment.NewLine;
-      if(massAnalyzer=="FTMS") header += "Mass Analyzer: Orbitrap" + System.Environment.NewLine;
-      else if(massAnalyzer=="ITMS") header += "Mass Analyzer: Ion Trap" + System.Environment.NewLine;
-      else header += "Mass Analyzer: Unknown" + System.Environment.NewLine;   
-      header += "Polarity: " + polarity + System.Environment.NewLine;
-      header += "Scan Level: " + msOrder + System.Environment.NewLine;
-      header += "Scan Mode: " + scanMode + System.Environment.NewLine;
-      header += "Data Type: " + scanData + System.Environment.NewLine;
-      header += "M/Z Range: " + firstMass + " - " + lastMass + System.Environment.NewLine;
-      header += System.Environment.NewLine + "---- Scan Statistics ----" + System.Environment.NewLine;
-      header += "Injection Time: " + injectTime + " ms" + System.Environment.NewLine;
-      header += "Total Ion Current: " + tic + System.Environment.NewLine;
-      header += "Base Peak Intensity: " + basePeakIntensity + System.Environment.NewLine;
+      h += "Scan Number: " + scanNumber + System.Environment.NewLine;
+      h += "Start Time: " + startTime + System.Environment.NewLine;
+      if (massAnalyzer == "FTMS") h += "Mass Analyzer: Orbitrap" + System.Environment.NewLine;
+      else if (massAnalyzer == "ITMS") h += "Mass Analyzer: Ion Trap" + System.Environment.NewLine;
+      else h += "Mass Analyzer: Unknown" + System.Environment.NewLine;
+      h += "Polarity: " + polarity + System.Environment.NewLine;
+      h += "Scan Level: " + msOrder + System.Environment.NewLine;
+      h += "Scan Mode: " + scanMode + System.Environment.NewLine;
+      h += "Data Type: " + scanData + System.Environment.NewLine;
+      h += "M/Z Range: " + firstMass + " - " + lastMass + System.Environment.NewLine;
+      h += System.Environment.NewLine + "---- Scan Statistics ----" + System.Environment.NewLine;
+      h += "Injection Time: " + injectTime + " ms" + System.Environment.NewLine;
+      h += "Total Ion Current: " + tic + System.Environment.NewLine;
+      h += "Base Peak Intensity: " + basePeakIntensity + System.Environment.NewLine;
 
       filter = massAnalyzer;
       if (polarity == "Positive") filter += " +";
-      else filter += " -";     
+      else filter += " -";
       if (scanData == "Profile") filter += " p";
       else filter += " c";
       if (ionizationMode.Contains('N')) filter += " NSI";
       else filter += " ESI?";
 
-      rtbHeader.Text = header;
+      header = h;
       return filter;
     }
 
     private void RefreshStats()
-    { 
+    {
       string a = String.Format("{0}{1,10}", scanCount[0], totalScanCount[0]);
       string b = String.Format("{0}{1,10}", scanCount[1], totalScanCount[1]);
       string c = String.Format("{0}{1,10}", scanCount[2], totalScanCount[2]);
@@ -441,40 +435,9 @@ namespace ScanSpy
       labelStats.Text = String.Format("{0}\n{1}\n{2}\n{3}", a, b, c, d);
     }
 
-    void ServiceConnectionChanged(object sender, EventArgs e)
-    {
-      if (msIAC != null)
-      {
-        connected = msIAC.ServiceConnected;
-        string st = msIAC.ServiceConnected ? "connected" : "disconnected";
-        Log("ServiceConnectionChanged: Service is now " + st);
-
-        if (msIAC.ServiceConnected)
-        {
-
-          try
-          {
-            msIA = msIAC.Get(1);
-            msIA.AcquisitionErrorsArrived += AcquisitionErrorsArrived;
-            msIA.ConnectionChanged += ConnectionChanged;
-            msIA.ContactClosureChanged += ContactClosureChanged;
-            Log("Connected to " + msIA.InstrumentName);
-          }
-          catch (Exception ex)
-          {
-            Log("Failed to get instrument access: " + ex.Message);
-          }
-
-        }
-      }
-
-      UpdateConnection();
-
-    }
-
     private void StateChanged(object sender, StateChangedEventArgs e)
     {
-      Log("Acquisition State Chaged: " + e.State);
+      Log("Acquisition State Changed: mode=" + e.State.Mode + " state=" + e.State.State);
     }
 
     /// <summary>
@@ -496,7 +459,7 @@ namespace ScanSpy
           msAcquisition.AcquisitionStreamOpening += AcquisitionStreamOpening;
           msAcquisition.AcquisitionStreamClosing += AcquisitionStreamClosing;
 
-          msScans = msControl.GetScans(false);
+          msScans = msControl.Scans;
 
           return true;
         }
@@ -522,8 +485,6 @@ namespace ScanSpy
           msMSSC.MsScanArrived -= MsScanArrived;
           msMSSC = null;
         }
-
-        //msControl = null;
       }
       listener = false;
     }
@@ -536,26 +497,18 @@ namespace ScanSpy
     /// </summary>
     private void UpdateConnection()
     {
-      if (msIAC != null)
+      if (msIA != null)
       {
-        connectionIndicator.BackColor = msIAC.ServiceConnected ? System.Drawing.Color.Lime : System.Drawing.Color.Gray;
-        disconnectionIndicator.BackColor = msIAC.ServiceConnected ? System.Drawing.Color.Gray : System.Drawing.Color.Red;
-        buttonConnect.Text = msIAC.ServiceConnected ? "Disconnect" : "Connect";
-        if (msIAC.ServiceConnected)
-        {
-          toolStripStatusLabel1.Text = "Connected";
-          if (msIA != null) toolStripStatusLabel1.Text += ": " + msIA.InstrumentName;
-        }
-        else
-        {
-          toolStripStatusLabel1.Text = "Not Connected";
-        }
-        connected = msIAC.ServiceConnected ? true : false;
+        connectionIndicator.BackColor = msIA.Connected ? Color.Lime : Color.Gray;
+        disconnectionIndicator.BackColor = msIA.Connected ? Color.Gray : Color.Red;
+        buttonConnect.Text = "Disconnect";
+        toolStripStatusLabel1.Text = "Connected: " + msIA.InstrumentName;
+        connected = true;
       }
       else
       {
-        connectionIndicator.BackColor = System.Drawing.Color.Gray;
-        disconnectionIndicator.BackColor = System.Drawing.Color.Red;
+        connectionIndicator.BackColor = Color.Gray;
+        disconnectionIndicator.BackColor = Color.Red;
         buttonConnect.Text = "Connect";
         toolStripStatusLabel1.Text = "Not Connected";
         connected = false;
@@ -575,13 +528,13 @@ namespace ScanSpy
     /// </summary>
     private void UpdateListener()
     {
-      if (msIAC == null || !msIAC.ServiceConnected)
+      if (msIA == null)
       {
         buttonListen.Text = "Activate";
         buttonListen.Enabled = false;
-        listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
-        listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
-        listenIndicatorOff.BackColor = System.Drawing.Color.Red;
+        listenIndicatorOn.BackColor = Color.Gray;
+        listenIndicatorWait.BackColor = Color.Gray;
+        listenIndicatorOff.BackColor = Color.Red;
         toolStripStatusLabel2.Text = "Status: Idle";
         labelScanSpeed.Text = "0 Hz";
       }
@@ -591,18 +544,18 @@ namespace ScanSpy
         if (listener)
         {
           buttonListen.Text = "Pause";
-          listenIndicatorOn.BackColor = cbOnAcquisition.Checked ? System.Drawing.Color.Gray : System.Drawing.Color.Lime;
-          listenIndicatorWait.BackColor = cbOnAcquisition.Checked ? System.Drawing.Color.Yellow : System.Drawing.Color.Gray;
-          listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
+          listenIndicatorOn.BackColor = cbOnAcquisition.Checked ? Color.Gray : Color.Lime;
+          listenIndicatorWait.BackColor = cbOnAcquisition.Checked ? Color.Yellow : Color.Gray;
+          listenIndicatorOff.BackColor = Color.Gray;
           ignoreScan = cbOnAcquisition.Checked ? true : false;
           toolStripStatusLabel2.Text = "Status: Spying";
         }
         else
         {
           buttonListen.Text = "Activate";
-          listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
-          listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
-          listenIndicatorOff.BackColor = System.Drawing.Color.Red;
+          listenIndicatorOn.BackColor = Color.Gray;
+          listenIndicatorWait.BackColor = Color.Gray;
+          listenIndicatorOff.BackColor = Color.Red;
           toolStripStatusLabel2.Text = "Status: Idle";
           labelScanSpeed.Text = "0 Hz";
         }

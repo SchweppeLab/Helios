@@ -1,0 +1,18 @@
+<Project>
+
+  <!--
+    Scoped to Bridge/ on purpose. MSBuild walks up from each project looking for the nearest
+    Directory.Build.props, and Helios/, ScanSpy/, and ScanInjector/ live at the repo root, one
+    level above this folder, so none of those old-style net48 projects ever see this file or
+    its Nullable/ImplicitUsings/LangVersion settings, which target the SDK-style projects here.
+  -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

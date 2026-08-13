@@ -1,0 +1,292 @@
+# History
+
+An append-only log of completed work on the `Core8` branch. Newest entries at the top. Each entry
+records what was finished, verified, or fixed. Update this file whenever a component reaches
+"done" (built, builds clean, and -- where applicable -- verified live), rather than rewriting or
+deleting past entries.
+
+---
+
+## 2026-08-13 -- Documentation pass: README, CLAUDE.md, and NuGet packaging metadata
+
+**Status: done.** With the bridge merge landed and verified live (ScanSpy <-> Corona confirmed
+working end to end), brought the docs up to date with what actually exists now rather than what
+was planned:
+
+- **`README.md`** (root) — added the "Two ways to use Helios" section (in-process net48 vs. the
+  gRPC bridge for net8), documented `Helios.Bridge.Host`'s `Auto`/`Real`/`Simulated`
+  `InstrumentFamily` config, listed `Bridge/`'s four projects under Repository Contents, and noted
+  the .NET 8 SDK requirement.
+- **`CLAUDE.md`** (root) — rewritten from a forward-looking plan into a description of the
+  landed architecture: a `Commands` section (build/run, the `Nova` package fresh-clone gotcha), the
+  full `Bridge/` project breakdown, the `HeliosMsScanVMS`/`Centroid` gaps found while getting
+  Corona scans flowing (so the next person touching VMS code doesn't rediscover them the hard way),
+  `CallbackGuard`'s rationale, `ScanSpy`'s porting notes, and an updated known-gaps list.
+- **`Helios.nuspec`** reviewed, left unchanged — `Helios.dll`'s public contract didn't change, so
+  its packaging story hasn't either. Added NuGet metadata (`PackageId`, `Description`, license,
+  etc.) directly to `Helios.Client.csproj` instead of writing it a separate `.nuspec` -- SDK-style
+  projects don't need one, `dotnet pack` generates it from csproj properties. Packing isn't wired
+  into any build step; this only makes `dotnet pack` produce something sensible if `Helios.Client`
+  is ever published.
+
+---
+
+## 2026-08-13 -- Fourth live-testing fix: HeliosMsScanVMS.DetectorName is also never assigned
+
+**Status: confirmed live.** Spectra now flow end-to-end: Corona -> Helios.dll (VMS) ->
+Helios.Bridge.Host -> gRPC -> Helios.Client -> ScanSpy, including correct
+AcquisitionStreamOpening/Closing across multiple runs. This closes out the four-fix chain below
+(Auto fallback, StatusLog/TuneData null, Centroid stubs, DetectorName null) -- all four were
+required together for real Corona scan data to reach ScanSpy at all.
+
+Same family of bug as the StatusLog/TuneData one two entries down: `HeliosMsScanVMS`'s
+constructors (Helios.dll, both the `Spectrum` and `SpectrumEx` overloads) never assign
+`DetectorName`, so it's `null` for every VMS/Corona scan. Unlike a plain C# property,
+`Helios.Bridge.Contracts.MsScanData.DetectorName` is a protobuf string field, which throws
+`ArgumentNullException` on a null assignment rather than silently accepting it -- `CallbackGuard`
+caught it (connection survived), but every scan still failed to reach the wire.
+
+`HeliosMsScanChannelAdapter.ToSnapshot` now takes the already-known `DetectorClass` (from
+`IMsScanContainer.DetectorClass`, itself hardcoded `"VMS DetectorClass"` in Helios.dll for VMS) as
+a fallback and uses `scan.DetectorName ?? fallbackDetectorName` instead of passing the null
+through. Same non-fix-Helios.dll-directly approach as every other gap found this session.
+
+If there's a fifth null/stub gap in `HeliosMsScanVMS` waiting after this one, the pattern so far
+suggests checking there first before looking anywhere else.
+
+---
+
+## 2026-08-13 -- Third live-testing fix: Helios.dll's stub Centroid properties were killing every scan
+
+**Status: confirmed progress, superseded by the DetectorName issue above** -- this fix is
+confirmed working (no more `NotImplementedException` in the log after it), but scan data still
+didn't reach ScanSpy because of the separate DetectorName gap above, found immediately after.
+
+With the previous fix's `CallbackGuard` in place, Corona's dispatch loop kept running, but the
+host's console showed a `NotImplementedException` on literally every single scan:
+
+```
+System.NotImplementedException: The method or operation is not implemented.
+   at Helios.Interfaces.SpectrumFormat.Centroid.get_IsExceptional()
+```
+
+This one is different from the previous two: it's **existing Helios.dll code, not this branch's**.
+`Helios.Interfaces.SpectrumFormat.Centroid` -- the generic `ICentroid` implementation used by both
+Fusion and VMS/Corona (Exploris has its own) -- stubs several properties with
+`throw new NotImplementedException()`: `IsExceptional`, `IsReferenced`, `IsMerged`,
+`IsFragmented`, `Profile`, `ChargeEnvelopeIndex`, `IsClusterTop`. `Mz`/`Intensity`/`Charge`/
+`Resolution` are real (constructor-backed). `HeliosMsScanChannelAdapter.ToSnapshot`'s centroid
+loop read all four boolean flags unconditionally, so every scan's conversion failed before it
+could reach the wire, `CallbackGuard` just kept it from taking the connection down with it.
+
+Per the branch's bug-reporting policy this is reported here rather than silently patched in
+Helios.dll itself. Worked around on the bridge side only: the four flag reads are now wrapped in a
+single try/catch defaulting all four to `false` on `NotImplementedException`, so a scan's real
+data (Mz/Intensity/Charge/Resolution) still makes it through -- those four quality flags just read
+as `false` for centroids sourced from this `Centroid` implementation until/unless Helios.dll's own
+class is finished.
+
+---
+
+## 2026-08-13 -- Two live-testing-driven fixes: Auto instrument-family fallback, and a VMS/Corona crash-the-pipe null reference
+
+**Status: both verified live against a running Corona.** Found through actual use against Corona
+(not by inspection) -- exactly the kind of thing this branch's plan flagged real hardware/Corona
+testing would surface.
+
+### 1. No fallback chain when the Simulated backend was turned off
+
+Turning off `Helios.Bridge.Host`'s Simulated backend left ScanSpy with nothing to connect to at
+all. The old in-process ScanSpy never had this problem: it called
+`InstrumentAccessContainerFactory.Create()` directly, which auto-probes Fusion, then Exploris,
+then VMS/Corona, and returns whichever answers. That auto-probe got lost in the port -- the host's
+`Program.cs` picked one gateway at startup from a static `Simulated`/`Real` config value, with no
+detection and no fallback.
+
+Fixed: `HeliosInstrumentGateway` now takes an already-probed `IInstrumentAccessContainer` instead
+of calling `Create()` itself inside `ConnectAsync` -- `Program.cs` does that probe once at host
+startup (cheap `Check()` calls only, no online access started, so it doesn't violate "connection
+is client-driven"). A new `Auto` mode (the new default) tries Fusion/Exploris/VMS first and falls
+back to `SimulatedInstrumentGateway` only if none answered, restoring the original in-process
+behavior. `Real` still exists for forcing hardware-only testing (fails loudly instead of silently
+falling back); `Simulated` still forces the synthetic generator. Also fixed a mislabeling bug
+found in the same code: a VMS/Corona connection was being reported as `InstrumentFamily =
+"Simulated"` (copy-paste artifact from before the two backends were distinct) -- now reports
+`"VMS"`.
+
+### 2. VMS/Corona scans never reached ScanSpy, and every event after the first scan went dark
+
+Symptom: `AcquisitionStreamOpening` logged fine, but no scan data ever arrived, and neither
+`AcquisitionStreamClosing` nor the next run's `AcquisitionStreamOpening` fired either.
+
+Root cause: `HeliosMsScanVMS`'s constructor (Helios.dll, VMS-specific) never assigns `StatusLog`
+or `TuneData` -- both stay `null` for every scan Corona sends (only `Header`/`Trailer` get set;
+Exploris/Fusion always wrap a real, if possibly-empty, source for all four).
+`HeliosMsScanChannelAdapter.ToSnapshot` (written earlier this branch) called
+`ToDictionary(scan.StatusLog)` unconditionally with no null check, so it threw a
+`NullReferenceException` on literally the first scan -- synchronously, inside Corona's own
+pipe-message dispatch chain (`PipesClient` read loop -> `HeliosMsScanContainerVMS.ReceiveScan` ->
+`MsScanArrived` -> this method). That silently killed the dispatch loop for the rest of the
+connection, which is why nothing after the first scan -- not just scan data -- worked anymore.
+
+Fixed in two parts:
+- `ToDictionary` now null-checks its `IInformationSourceAccess` argument.
+- Every Helios/IAPI event subscription in `HeliosInstrumentGateway.cs` now runs through a new
+  `CallbackGuard.Run(name, action)` wrapper (try/catch + `Console.Error`) rather than invoking the
+  forwarded event directly. This isn't just for the bug just found -- for VMS specifically, an
+  unhandled exception in *any* mapping callback kills Corona's entire pipe dispatch, not just that
+  one event, so a single unnoticed bug anywhere in this file could silently end a whole session.
+  Now it logs and the connection keeps running.
+
+---
+
+## 2026-08-13 -- ScanSpy ported to Core 8; a real bridge gap found and fixed along the way
+
+**Status: builds clean, launches and runs live against Helios.Bridge.Host's Simulated backend
+without crashing.** Full interactive click-through (Connect, Activate, watching the plot update)
+was left to manual testing rather than claimed here -- there's no way to drive a WinForms UI or
+capture what it renders from this session, and the request for a screenshot was declined in favor
+of hands-on testing.
+
+- `ScanSpy.csproj` retargeted in place from a net48 old-style project to SDK-style
+  `net8.0-windows` (`UseWindowsForms`, `PackageReference` for `ScottPlot.WinForms` instead of the
+  old packages.config + manually-imported native-asset `.targets` files). `ProjectReference`
+  swapped from `Helios.csproj` to `Bridge/Helios.Client/Helios.Client.csproj`. Removed now-unused
+  net48-only files (`Properties/AssemblyInfo.cs`, `Resources.*`, `Settings.*`, `packages.config`,
+  `OpenTK.dll.config`, `App.config` -- none had real content beyond boilerplate; confirmed by
+  grep before deleting).
+- `ScanSpy.cs` rewritten against `Helios.Client`'s interfaces: the old two-step
+  `InstrumentAccessContainerFactory.Create()` -> `ServiceConnectionChanged` -> `Get(1)` connect
+  flow collapsed into a single `await HeliosClient.ConnectAsync()` (the client's factory doesn't
+  return until the instrument is actually reachable). `IMsScan.TryHeader`/`TryTrailer` calls
+  became `Header`/`Trailer` dictionary lookups (see the gap below for why that's safe). Centroid
+  iteration changed from `foreach (ICentroid c in scan.Centroids)` to indexing the columnar
+  `CentroidBlock` arrays directly. Event handlers now marshal onto the UI thread via `Invoke`/
+  `BeginInvoke` where they touch controls -- `Helios.Client`'s events always fire from a background
+  `Task` draining a gRPC stream, same as the direct-IAPI events ScanSpy used to subscribe to did,
+  but that made the pre-existing unguarded UI touches (e.g. `labelScanSpeed.Text` set with no
+  `Invoke` at all) a real risk for a live test rather than something to carry over unfixed.
+- `ScanSpy.Designer.cs` and `ScanSpy.resx` needed no changes -- ordinary WinForms controls, TFM-
+  agnostic.
+- `AcquisitionErrorsArrived` isn't in `Helios.Client`'s `IInstrumentAccess` (no wire support for it
+  in `Helios.Bridge.Contracts` -- ProjectA's proto never carried it either), so that subscription
+  and handler were dropped rather than ported.
+
+### Real gap found and fixed (in code from this branch, not pre-existing Helios/ScanSpy code)
+
+`HeliosMsScanChannelAdapter` (written earlier this branch) was raw-copying `IMsScan.Header`/
+`Trailer` into the wire snapshot. That's not equivalent to what `IMsScan.TryHeader`/`TryTrailer`
+give a caller in-process: Helios's internal `HeliosDictionary` resolves a family-independent
+canonical ID (e.g. `"FirstMass"`) to whichever raw key spelling the connected instrument family
+actually uses (Exploris spells it `"LowMass"`; Fusion and the canonical form both say
+`"FirstMass"`). A raw copy loses that resolution -- `ScanSpy.MsScanArrived`'s
+`TryHeader("FirstMass", ...)` calls would have silently returned nothing on real Exploris
+hardware, and returned nothing on this branch's own Simulated backend regardless of family, since
+the simulator's synthetic `Header` never had `"StartTime"`/`"FirstMass"`/`"BasePeakIntensity"`/
+etc. at all -- confirmed by tracing through what ScanSpy's port would actually receive before
+writing a single line of its UI code, not discovered by trial and error live.
+
+Fixed in `HeliosInstrumentGateway.cs`: `HeliosMsScanChannelAdapter.ToSnapshot` now also resolves a
+hardcoded list of Helios's known canonical header/trailer IDs (reproduced from
+`HeliosDictionary`'s static constructor -- the class itself is `internal`, not reachable from
+`Helios.Bridge.Host`) via `scan.TryHeader`/`TryTrailer`, merging them into the wire dictionaries
+under their canonical name alongside the raw copy. `SimulatedInstrumentGateway.EmitScan` also
+gained a realistic set of canonical header values (`StartTime`, `FirstMass`/`LastMass`,
+`BasePeakIntensity`, `ScanData`, `MassAnalyzer`, `Polarity`, `ScanMode`, `IonizationMode`,
+`InjectTime`, `TIC`) so a live test against the Simulated backend actually exercises this path
+instead of silently no-op'ing the way the original bare `{Scan, MSOrder}` header would have.
+
+---
+
+## 2026-08-13 -- Bridge merge: Contracts, Host, Client, Demo all landed and verified end-to-end
+
+**Status: done and verified live** (all four new projects build clean against real Helios.dll and
+real IAPI DLLs; a live host+demo run over the Simulated backend streamed ~1000 scans/sec at
+~1.3ms average latency, toggled acquisition mode, and submitted a custom scan successfully).
+
+Brought ProjectA's gRPC bridge prototype (`../ProjectA`) into this repo as `Bridge/`, per the plan
+recorded in this repo's `CLAUDE.md`. Rather than a mechanical copy-and-rename, the host-side
+Fusion/Exploris gateway was rewritten from scratch to wrap `Helios.dll`'s own public interfaces
+(`InstrumentAccessContainerFactory`, `IInstrumentAccess`, `IControl`, `IAcquisition`, `IScans`,
+...) instead of re-implementing IAPI access a second time -- everything else (proto contracts, the
+gRPC service layer, the Simulated backend, streaming plumbing) ported with only namespace renames,
+since none of it duplicated anything Helios already had.
+
+### Components delivered
+
+- **`Bridge/Helios.Bridge.Contracts`** (netstandard2.0) -- the `.proto` contract, ported from
+  ProjectA.Contracts with only the package/namespace renamed (`projecta.v1` ->
+  `helios.bridge.v1`, `ProjectA.Contracts` -> `Helios.Bridge.Contracts`). Wire shapes (columnar
+  `CentroidBlock`, the five services) unchanged.
+- **`Bridge/Helios.Bridge.Host`** (net48 console) -- the gRPC server.
+  - `Instruments/HeliosInstrumentGateway.cs` -- new. Wraps `Helios.dll`'s real interfaces for
+    Fusion/Exploris; one adapter suffices where ProjectA needed two (`FusionInstrumentGateway`,
+    `ExplorisInstrumentGateway`) because Helios's interfaces already unify the two families
+    (single `SystemMode`/`InstrumentState` enums, not one per family). No `extern alias` needed in
+    this project at all -- only Helios.dll's own public surface is touched.
+  - `Instruments/IInstrumentGateway.cs`, `Instruments/Models.cs`, `Instruments/Simulated/*`,
+    `Services/*`, `Program.cs`, `App.config` -- ported from ProjectA with namespace renames only.
+  - `InstrumentFamily` (Fusion/Exploris) is no longer an explicit `App.config` choice for real
+    hardware: `Helios.Interfaces.InstrumentAccessContainerFactory.Create()` auto-probes (tries
+    Fusion, then Exploris, then VMS) and there's no way to force a family from outside Helios.dll
+    (its per-family container classes are `internal`, no `InternalsVisibleTo`). `App.config`'s
+    `InstrumentFamily` now only chooses Simulated vs. Real.
+- **`Bridge/Helios.Client`** (net8 library) -- the .NET 8-facing API, redesigned to mirror
+  Helios's own interface names/shapes (`IInstrumentAccess`, `IControl`, `IAcquisition`, `IScans`,
+  `IMsScan`, `ISyringePumpControl`, `IAnalogTraceContainer`) per the branch's design goal, rather
+  than ProjectA.Client's own idiomatic-but-independent DTO shape. Three disclosed, deliberate
+  divergences from a byte-for-byte mirror -- see the doc comment at the top of `Interfaces.cs`:
+  synchronous properties/events stay synchronous (cached, kept current by a background gRPC
+  stream); genuine round-trip calls are `Task`-returning instead of blocking; `IMsScan.Centroids`
+  stays the columnar `CentroidBlock`, not `IEnumerable<ICentroid>`.
+  `IControl.SyringePumpControl` is `null` for Exploris, matching Helios.dll's own nullability
+  exactly (not ProjectA's always-non-null-plus-a-flag-to-check shape).
+- **`Bridge/Helios.Client.Demo`** (net8 console) -- ported from ProjectA.Demo onto the new client
+  API; same latency-tracking scan stream, custom scan submission, and acquisition toggling demo.
+- **`Helios.sln`** -- gained a `Bridge` solution folder containing all four new projects.
+- **`Helios.csproj`** itself -- fixed stale IAPI `HintPath`s (were pointing at a
+  `D:\Software\Other\IAPI` that doesn't exist on this machine; now point at
+  `D:\Software\Claude\iapi`, redirected per go-ahead). One pre-existing extra `..\` typo on the
+  `Fusion.API-2.0` reference (inconsistent depth vs. every other IAPI reference in the same file)
+  fixed at the same time, since it was the exact line already being edited.
+
+### Environment setup notes (not code changes)
+
+- This fresh clone had no restored `Nova` NuGet package (`packages.config`-style; `dotnet
+  restore`/`dotnet build` don't drive that restore path). Extracted `Nova.1.0.0.18.nupkg` from the
+  local feed at `D:\Software\SchweppeLab\NuGet` directly into `Helios/packages/` to unblock the
+  build.
+- `ScanSpy`/`ScanInjector` still fail to build in this environment (missing `HarfBuzzSharp`/
+  ScottPlot native-asset packages, restored the same packages.config way) -- pre-existing, present
+  before this branch's changes, and not fixed here since neither project was in scope for this
+  pass (ScanSpy's Core 8 port is separately planned; ScanInjector is intentionally untouched).
+
+### Confirmed gap, reported not silently fixed
+
+`Helios.Interfaces.InstrumentAccess.Control.InstrumentValues.HeliosInstrumentValues.Get(string)`
+and `Get(ulong)` are both stubbed to `return null;` in current `Helios.dll`, for both Exploris and
+Fusion -- reading instrument values by name isn't possible through Helios's public surface at all
+today. `HeliosInstrumentGateway.GetInstrumentValues` and `Helios.Client`'s
+`GetInstrumentValuesAsync` both return an empty dictionary and say why in a code comment, rather
+than working around it further. Fixing `HeliosInstrumentValues` itself is out of scope for this
+pass pending direction.
+
+### Known gaps carried over from ProjectA (still open, not blocking)
+
+- `IMsScan.NoiseBand` isn't on the wire (centroids only) -- unlike ProjectA's own gap list, this
+  one is now provably just a proto-contract limitation: Helios's real `ISpectrum.NoiseBand`
+  exists and has data, it's simply not yet in `scans.proto`/`CentroidBlock`.
+- No automated tests yet exercise `HeliosInstrumentGateway` against real Fusion/Exploris hardware
+  (compiles clean against the real IAPI DLLs, type-checked, but unverified live -- same caveat
+  ProjectA itself carried).
+- Helios.dll's own `IControl.GetScans(bool exclusiveAccess)` does support exclusive re-acquisition
+  (unlike the raw-IAPI gateway this replaced), but `HeliosScanControlAdapter`/`GrpcScans` don't
+  wire a re-acquire path through yet -- `GetPossibleScanParametersRequest.ExclusiveAccess` is
+  still not honored end-to-end.
+
+---
+
+## 2026-08-13 -- Branch created
+
+`Core8` branch created off `main` to add a Framework 4.8 <-> .NET 8 communication layer to Helios,
+per the plan recorded in this repo's `CLAUDE.md`.

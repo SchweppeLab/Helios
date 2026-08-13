@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>Helios.Bridge.Host</RootNamespace>
+    <AssemblyName>Helios.Bridge.Host</AssemblyName>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <!--
+    No IAPI DLL references here, and no extern alias. HeliosInstrumentGateway talks to
+    Helios.dll's own public interfaces (IInstrumentAccessContainer, IInstrumentAccess, IControl,
+    and others), which already resolved the Fusion/Exploris extern-alias split. Only Helios.dll's
+    project reference is needed for real-hardware support; the Simulated backend needs neither.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Helios\Helios.csproj" />
+    <ProjectReference Include="..\Helios.Bridge.Contracts\Helios.Bridge.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Core" Version="2.46.6" />
+    <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>

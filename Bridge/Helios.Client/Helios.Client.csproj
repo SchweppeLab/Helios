@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Helios.Client</RootNamespace>
+    <AssemblyName>Helios.Client</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    NuGet metadata only, packing isn't wired into any build/CI step (no
+    GeneratePackageOnBuild); this just makes `dotnet pack` produce something sensible if this
+    library is ever published. Mirrors Helios.nuspec's values; keep the two in sync if either
+    changes. Requires a running Helios.Bridge.Host process (net48, wraps IAPI via Helios.dll) to
+    talk to; see the root README for the two ways to consume Helios.
+  -->
+  <PropertyGroup>
+    <PackageId>Helios.Client</PackageId>
+    <Authors>Michael Hoopmann, University of Washington</Authors>
+    <Description>.NET 8 client for Helios's gRPC bridge (Helios.Bridge.Host) to Thermo Fisher IAPI-based real-time mass spectrometer control and data analysis. Mirrors Helios's own interfaces (IInstrumentAccess, IControl, IAcquisition, IScans, IMsScan, ...).</Description>
+    <PackageProjectUrl>https://github.com/SchweppeLab/Helios</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageTags>mass spectrometry spectrometer IAPI Thermo Fisher Scientific real time instrument control</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Helios.Bridge.Contracts\Helios.Bridge.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+  </ItemGroup>
+
+</Project>

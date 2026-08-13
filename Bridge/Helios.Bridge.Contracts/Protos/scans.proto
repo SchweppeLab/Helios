@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package helios.bridge.v1;
+
+option csharp_namespace = "Helios.Bridge.Contracts";
+
+// The hot path: real-time MS scan delivery. Kept in its own service so it never queues
+// behind control-plane calls.
+service ScanStreamService {
+  // Server-streaming push, one message per IMsScanContainer.MsScanArrived. Long-lived call.
+  rpc StreamMsScans(StreamScansRequest) returns (stream MsScanData);
+
+  rpc GetLastMsScan(StreamScansRequest) returns (MsScanData);
+}
+
+message StreamScansRequest {
+  int32 ms_detector_set = 1;
+}
+
+message MsScanData {
+  string detector_name = 1;
+  int64 arrival_time_unix_ms = 2; // Host-side receipt time, for latency measurement on the client.
+
+  map<string, string> header = 3;
+  map<string, string> trailer = 4;
+  map<string, string> status_log = 5;
+  map<string, string> tune_data = 6;
+
+  bool has_profile_information = 7;
+  CentroidBlock centroids = 8;
+}
+
+// Columnar (structure-of-arrays) centroid data. Deliberately not "repeated Centroid" -- a scan
+// with thousands of centroids would otherwise mean thousands of tiny heap allocations per scan on
+// both ends of the wire; packed scalar arrays serialize as tight varint/fixed64 runs instead. This
+// is the single biggest lever on wire/alloc cost on the highest-frequency path in the system --
+// preserve this shape through any future change that touches scan data.
+message CentroidBlock {
+  repeated double mz = 1;
+  repeated double intensity = 2;
+  repeated int32 charge = 3;       // -1 = unknown/unassigned.
+  repeated double resolution = 4;
+  repeated bool is_exceptional = 5;
+  repeated bool is_fragmented = 6;
+  repeated bool is_merged = 7;
+  repeated bool is_referenced = 8;
+}

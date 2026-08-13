@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package helios.bridge.v1;
+
+import "common.proto";
+
+option csharp_namespace = "Helios.Bridge.Contracts";
+
+// Fusion-only peripherals. A host connected to Exploris implements these services but every
+// method returns UNIMPLEMENTED -- callers should gate on StatusResponse.has_syringe_pump /
+// has_analog_channels (from InstrumentService) before using them.
+service SyringePumpService {
+  rpc Start(Empty) returns (Empty);
+  rpc Stop(Empty) returns (Empty);
+  rpc Toggle(Empty) returns (Empty);
+  rpc SetDiameter(SetSyringeValueRequest) returns (Empty);
+  rpc SetVolume(SetSyringeValueRequest) returns (Empty);
+  rpc SetFlowRate(SetSyringeValueRequest) returns (Empty);
+  rpc StreamSyringeStatus(Empty) returns (stream SyringeStatusEvent);
+}
+
+message SetSyringeValueRequest {
+  double value = 1;
+}
+
+enum SyringePumpStatus {
+  SYRINGE_PUMP_STATUS_UNSPECIFIED = 0;
+  SYRINGE_ON = 1;
+  SYRINGE_OFF = 2;
+  SYRINGE_ERROR = 3;
+  SYRINGE_NOT_CONNECTED = 4;
+  SYRINGE_LIMIT_REACHED = 5;
+}
+
+message SyringeStatusEvent {
+  double diameter = 1;
+  double volume = 2;
+  double flow_rate = 3;
+  SyringePumpStatus status = 4;
+}
+
+service AnalogTraceService {
+  rpc GetAnalogTraceInfo(AnalogTraceRequest) returns (AnalogTraceInfoResponse);
+  rpc StreamAnalogTrace(AnalogTraceRequest) returns (stream AnalogTracePointEvent);
+}
+
+message AnalogTraceRequest {
+  int32 channel = 1;
+}
+
+message AnalogTraceInfoResponse {
+  string detector_class = 1;
+  double minimum = 2;
+  double maximum = 3;
+  optional double update_frequency_hz = 4;
+}
+
+message AnalogTracePointEvent {
+  double value = 1;
+  int64 occurrence_ms = 2; // Offset since acquisition start, per IAPI's IAnalogTracePoint.Occurrence (a TimeSpan), not a wall-clock timestamp.
+}
