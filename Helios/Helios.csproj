@@ -50,12 +50,11 @@
     <DocumentationFile>bin\x64\Release\Helios.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="API-2.0, Version=1.1.0.1, Culture=neutral, PublicKeyToken=c03bf447005257eb, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="API-2.0">
       <HintPath>..\..\..\Other\IAPI\lib\API-2.0.dll</HintPath>
     </Reference>
     <Reference Include="Fusion.API-2.0">
-      <HintPath>..\..\..\..\Other\IAPI\lib\tribrid\TribridSeries4pt3\Fusion.API-2.0.dll</HintPath>
+      <HintPath>..\..\..\Other\IAPI\lib\tribrid\TribridSeries4pt3\Fusion.API-2.0.dll</HintPath>
       <Aliases>fusion</Aliases>
     </Reference>
     <Reference Include="Nova, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">

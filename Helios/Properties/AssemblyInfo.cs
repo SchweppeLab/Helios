@@ -29,8 +29,8 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.16")]
-[assembly: AssemblyFileVersion("1.0.0.16")]
+[assembly: AssemblyVersion("1.0.0.17")]
+[assembly: AssemblyFileVersion("1.0.0.17")]
 
 //Suggested for packing from command line:
 //nuget pack .\Helios.csproj -Prop Configuration=Release

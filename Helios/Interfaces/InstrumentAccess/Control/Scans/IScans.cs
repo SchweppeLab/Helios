@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Threading;
 using Nova.IPC.Pipes;
+using Thermo.Interfaces.InstrumentAccess_V1.Control.Scans;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 {
@@ -312,6 +313,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       {
         HeliosPossibleParameters[i] = new HeliosParameterDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID, "", "", HeliosCustomDictionary.GetDescription(HeliosCustomDictionary.HeliosLexicon[i].HeliosID));
       }
+
     }
 
     public bool CancelCustomScan()
@@ -353,22 +355,14 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     }
 
 
-    protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
+    public virtual void OnCanAcceptNextCustomScan(EventArgs e)
     {
-      EventHandler<EventArgs> handler = CanAcceptNextCustomScan;
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      CanAcceptNextCustomScan?.Invoke(this, e);
     }
 
     protected virtual void OnPossibleParametersChanged(EventArgs e)
     {
-      EventHandler<EventArgs> handler = PossibleParametersChanged;
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      PossibleParametersChanged?.Invoke(this, e);
     }
 
     private byte[] Serialize(ICustomScan customScan)
@@ -396,7 +390,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       PipeMessage pm = new PipeMessage();
       pm.MsgCode = 'A';
       pm.MsgData = Serialize(customScan);
-      pipesClient.Send(pm);
+      pipesClient?.Send(pm);
       return true;
     }
 

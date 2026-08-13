@@ -86,17 +86,18 @@ namespace Helios.Interfaces.InstrumentAccess.Control
     public IInstrumentValues InstrumentValues { get; } = new HeliosInstrumentValues();
     public ISyringePumpControl SyringePumpControl { get; } = null;
 
+    private readonly HeliosScansVMS scans;
     private readonly PipesClient pipesClient = null;
 
     public HeliosControlVMS(PipesClient pc = null)
     {
       pipesClient = pc;
-
+      scans = new HeliosScansVMS(pc);
     }
 
     public IScans GetScans(bool exclusiveAccess)
     {
-      return new HeliosScansVMS(pipesClient);
+      return scans;
     }
   }
 
