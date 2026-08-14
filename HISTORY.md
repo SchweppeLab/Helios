@@ -7,6 +7,63 @@ deleting past entries.
 
 ---
 
+## 2026-08-14 -- Fixed ScanInjector's fresh-clone build failure (out of Core8 scope, fixed on request)
+
+**Status: done.** `ScanInjector` was previously documented as a known, unfixed fresh-clone build
+gap (packages.config-style restore, same class of problem as `Nova`, just never worked around).
+Fixed on explicit request, per the bug-fixing policy.
+
+Tried converting `ScanInjector.csproj` to `PackageReference` first (drop OpenTK/OpenTK.GLControl,
+which turned out to be unused in source, same as the already-removed reference from ScanSpy's
+port; let ScottPlot.WinForms pull in SkiaSharp/HarfBuzzSharp transitively) -- abandoned after
+hitting `MSB3822`/`MSB3823` (non-string `.resx` resources need
+`GenerateResourceUsePreserializedResources` + a `System.Resources.Extensions` reference) and
+discovering the package's own auto-wiring `.targets` file no-ops for this project: it's gated on
+`$(TargetFramework)`, an SDK-style-only property a legacy `TargetFrameworkVersion`-based project
+like this never sets. Reverted the csproj back to its original `packages.config`/`Reference`
++`HintPath` structure entirely (`git checkout`) rather than accumulate hand-wired `HintPath`s for
+an ever-shifting transitive graph.
+
+Actual fix: downloaded the real NuGet CLI
+(`https://dist.nuget.org/win-x86-commandline/latest/nuget.exe` -- not present on this machine) and
+ran `nuget.exe restore ScanInjector\packages.config -PackagesDirectory Helios\packages`, the
+restore mechanism packages.config was actually designed for. All 21 packages landed in the exact
+`Helios/packages/<id>.<version>/lib/...` layout the project's existing `HintPath`s already expect --
+this was always just a "never restored on this clone" problem, same root cause as the `Nova`
+package, not a version-compatibility one. Added `System.Resources.Extensions` to the same
+`packages.config`/`HintPath` structure to clear the separate, unrelated `MSB3822`/`MSB3823`
+toolchain quirk (would hit any legacy WinForms project with image/icon resx resources on this SDK
+version, nothing to do with NuGet).
+
+**Verified**: `ScanInjector.csproj` builds clean standalone, and a full `Helios.sln -c Release
+-p:Platform=x64` build succeeds end to end (7 projects, 0 errors) -- including alongside the
+user's own live `ScanSpy.exe`/`Helios.Bridge.Host.exe` test session, which was left untouched.
+`ScanInjector.exe` itself wasn't launched/tested live, to avoid a second in-process connection
+racing the user's already-connected bridge session against the same instrument/Corona.
+
+---
+
+## 2026-08-14 -- Auto-launched Helios.Bridge.Host runs with no console window
+
+**Status: done, verified live.** `IdleShutdownSeconds` default lowered from 20s to 5s (`App.config`),
+per request. Separately, `HeliosClient.LaunchHost` now launches the host via
+`cmd.exe /c "<exe> > logfile 2>&1"` instead of running it directly, so an auto-launched host no
+longer pops up a console window. Deliberately not implemented via `ProcessStartInfo.RedirectStandardOutput`:
+that would require the launching client itself to keep draining the pipe for as long as the host
+runs, but the host is designed to outlive whichever client happened to launch it (auto-shutdown is
+driven by total connection count, not the specific caller) -- once that client exited, the host's
+`Console.WriteLine` calls would eventually block on a full, undrained pipe buffer and hang. `cmd`'s
+own redirection instead hands the host a plain file handle, needing no reader; output lands in
+`%LocalAppData%\SchweppeLab\Helios\Helios.Bridge.Host.<port>.log`, overwritten per launch. A
+manually-started host is unaffected and keeps its usual visible console.
+
+**Live-verified**: rebuilt `Helios.Client`/`Helios.Client.Demo`, ran `Helios.Client.Demo` cold —
+host auto-launched (confirmed running via `tasklist`, no window), its startup/status lines appeared
+correctly in the per-port log file, and killing the client still triggered normal idle
+auto-shutdown afterward.
+
+---
+
 ## 2026-08-13 -- Helios.Bridge.Host auto-launch and self-managed idle shutdown
 
 **Status: done, verified live.** `HeliosClient.ConnectAsync` no longer requires the caller to have

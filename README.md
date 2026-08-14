@@ -16,8 +16,9 @@ over a local gRPC connection. `Helios.Client`'s public API mirrors Helios's own 
 
 You don't need to start `Helios.Bridge.Host` yourself: `HeliosClient.ConnectAsync` auto-launches it if nothing is already listening (and reuses an already-running
 one — from another app, possibly connected to real hardware — instead of starting a redundant instance), and the host shuts itself back down a short while after
-its last connected client disconnects, including a crash (see "Locating and managing Helios.Bridge.Host" below). Starting it manually still works too, and is
-useful when you want to watch its console output directly.
+its last connected client disconnects, including a crash (see "Locating and managing Helios.Bridge.Host" below). An auto-launched host runs with no console window
+and its output going to a log file instead (see below); starting it manually still works too, opens its usual visible console, and is useful when you want to watch
+its output directly.
 
 `Helios.Bridge.Host` picks its backend automatically at startup (`Auto` in its `App.config`, the default): it probes for a real Fusion or Exploris instrument, then a
 Corona (VMS) connection, and falls back to a built-in synthetic scan generator (`Simulated`) only if none of those answered — the same behavior applications got for
@@ -39,6 +40,9 @@ If none of those resolve, `ConnectAsync` throws an error explaining all four opt
 configurable in its `App.config`) after its last connected client disconnects — including an ungraceful one, since it's watching for the dropped connection itself
 rather than waiting for a goodbye message — so a crashed or closed app doesn't leave it running forever, but a brief gap between two client sessions doesn't tear
 down (and, for real hardware, reconnect) it either. Set `IdleShutdownSeconds` to `0` or a negative number to disable auto-shutdown entirely.
+
+An auto-launched host writes its console output to `%LocalAppData%\SchweppeLab\Helios\Helios.Bridge.Host.<port>.log` instead of a window (overwritten on each
+launch) — check there if something needs troubleshooting. A manually-started host is unaffected and keeps using its normal console.
 
 ## Repository Contents
 

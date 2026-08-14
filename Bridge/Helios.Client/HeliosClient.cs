@@ -42,7 +42,7 @@ namespace Helios.Client
       if (IsLoopback(host) && !await IsHostListeningAsync(host, port, cancellationToken).ConfigureAwait(false))
       {
         string exePath = BridgeHostLocator.Locate(hostExecutablePath);
-        LaunchHost(exePath);
+        LaunchHost(exePath, port);
         await WaitForHostListeningAsync(host, port, cancellationToken).ConfigureAwait(false);
       }
 
@@ -70,16 +70,30 @@ namespace Helios.Client
       }
     }
 
-    private static void LaunchHost(string exePath)
+    private static void LaunchHost(string exePath, int port)
     {
       // Not tracked/awaited beyond this -- Helios.Bridge.Host manages its own lifetime (idle
       // auto-shutdown once every client disconnects; see ConnectionWatchdog on the host side), so
       // there's nothing for the launching client to own or clean up.
+      //
+      // Run through cmd.exe's own '>' redirection rather than Process.Start's
+      // RedirectStandardOutput -- that would need this client to keep draining the pipe for as
+      // long as the host runs, but the host is designed to outlive whichever client happened to
+      // launch it. A .NET-side pipe would back up and hang the host's own Console.WriteLine calls
+      // the moment this client exits and stops reading it; cmd's redirection hands the host a
+      // plain file handle instead, so no reader is needed. This also means no console window is
+      // ever created for the host process itself -- CreateNoWindow below only has to hide cmd.exe.
+      string logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SchweppeLab", "Helios");
+      Directory.CreateDirectory(logDirectory);
+      string logPath = Path.Combine(logDirectory, $"Helios.Bridge.Host.{port}.log");
+
       Process.Start(new ProcessStartInfo
       {
-        FileName = exePath,
+        FileName = "cmd.exe",
+        Arguments = $"/c \"\"{exePath}\" > \"{logPath}\" 2>&1\"",
         WorkingDirectory = Path.GetDirectoryName(exePath) ?? string.Empty,
         UseShellExecute = false,
+        CreateNoWindow = true,
       });
     }
 

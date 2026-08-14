@@ -27,11 +27,10 @@ Build everything (from `Helios/`, where the solution lives):
 ```
 dotnet build Helios.sln -c Release -p:Platform=x64
 ```
-`ScanInjector` currently fails to build on a fresh clone independent of anything in `Bridge/` —
-its ScottPlot/HarfBuzzSharp NuGet packages were never restored (packages.config-style; `dotnet
-restore`/`build` don't drive that restore path). Not fixed as part of the bridge work since
-`ScanInjector` was out of scope for it; see the `Nova` package note below for how the same class of
-problem was worked around for `Helios.csproj` itself.
+`ScanInjector` builds clean, but needs a real `nuget.exe` restore on a fresh clone (see "A
+fresh-clone gotcha" below) — `dotnet build`/`dotnet restore` don't drive packages.config-style
+restore at all (unlike PackageReference, which they handle natively), so there's no way around
+fetching the classic CLI for this one.
 
 Manually starting the host is no longer required for local dev/testing — `HeliosClient.ConnectAsync`
 auto-launches it if nothing is listening on `127.0.0.1:50100` yet (see "Auto-launch and
@@ -53,13 +52,40 @@ dotnet run --project Bridge/Helios.Client.Demo -c Release
 overwrite a locked `.exe`, and a background/orphaned process from a previous run is a common cause
 of `MSB3021`/`MSB3027` ("being used by another process") during a rebuild.
 
-### A fresh-clone gotcha: the `Nova` package
+### A fresh-clone gotcha: `packages.config`-style projects (`Nova`, `ScanInjector`)
 
-`Helios.csproj` references `Nova` via `packages.config` (not `PackageReference`), which `dotnet
-build`/`dotnet restore` don't restore automatically. If `Nova, Version=...` fails to resolve,
-extract the matching `Nova.<version>.nupkg` (a local feed lives at
-`D:\Software\SchweppeLab\NuGet` on this machine) into `Helios/packages/Nova.<version>/`, matching
-the layout `dotnet build` expects (`lib/net48/Nova.dll` under that folder).
+`Helios.csproj` (for `Nova`) and `ScanInjector.csproj` (for ScottPlot/SkiaSharp/HarfBuzzSharp/...)
+both reference dependencies via `packages.config`, not `PackageReference` — `dotnet build`/`dotnet
+restore` only drive PackageReference-style restore, so packages.config projects come up with
+nothing in `Helios/packages/` on a fresh clone and fail with "missing NuGet package(s)"-style
+errors. Two ways to fix it, depending on the package:
+
+- **`Nova`** has no public feed; extract the matching `Nova.<version>.nupkg` (a local feed lives at
+  `D:\Software\SchweppeLab\NuGet` on this machine) into `Helios/packages/Nova.<version>/`, matching
+  the layout restore would produce (`lib/net48/Nova.dll` under that folder).
+- **`ScanInjector`'s packages** are all public. Fetch the real NuGet CLI
+  (`https://dist.nuget.org/win-x86-commandline/latest/nuget.exe`) and run
+  `nuget.exe restore ScanInjector\packages.config -PackagesDirectory Helios\packages` from the repo
+  root — this is the one restore mechanism actually designed for packages.config and reproduces the
+  exact folder layout the project's `HintPath`s expect. Don't try to fix a packages.config project by
+  converting it to `PackageReference` instead: attempted once for `ScanInjector` and abandoned —
+  legacy (non-SDK-style, `TargetFrameworkVersion`-based) projects don't reliably get automatic
+  compile-time wiring for PackageReference-resolved transitive dependencies or package-provided
+  build targets the way SDK-style projects do (concretely, `System.Resources.Extensions`'s own
+  auto-wiring `.targets` file no-ops because it's gated on `$(TargetFramework)`, an SDK-style-only
+  property this project never sets) — converting would mean either hand-wiring every transitive
+  `HintPath` via `$(NuGetPackageRoot)` (fragile, breaks again whenever the dependency graph shifts)
+  or a full SDK-style project-format rewrite (a much bigger, riskier change than "fix the build").
+
+Separately, on any SDK version new enough (seen on the .NET 9 SDK's bundled MSBuild), a project
+with non-string (image/icon) `.resx` resources needs
+`<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>` plus
+a `System.Resources.Extensions` reference or it fails with `MSB3822`/`MSB3823` — unrelated to NuGet
+restore entirely, a toolchain-version quirk that would hit even a from-scratch legacy WinForms
+project with no packages.config involved at all. `ScanInjector.csproj` hits this; its
+`System.Resources.Extensions` reference is HintPath'd like everything else in that file (restored
+the same `nuget.exe restore` way above) rather than added as a `PackageReference`, for the same
+auto-wiring reason.
 
 ## Architecture
 
@@ -198,11 +224,25 @@ to be resolved at runtime rather than assumed:
   `IdleShutdownSeconds` (default 5s; `<= 0` disables auto-shutdown entirely, Ctrl+C-only as before
   this existed).
 
+An auto-launched host runs with no console window: `HeliosClient.LaunchHost` runs it via
+`cmd.exe /c "... > logfile 2>&1"` rather than launching it directly. This is deliberate, not just
+cosmetic — a naive `ProcessStartInfo.RedirectStandardOutput` would need *this* client to keep
+draining the pipe for as long as the host runs, but the host is designed to outlive whichever
+client happened to launch it (auto-shutdown is driven by total connection count, not by the
+launching caller specifically); once that client exited and stopped reading, the host's own
+`Console.WriteLine` calls would eventually block on a full pipe buffer and hang. `cmd`'s own file
+redirection hands the host a plain file handle instead, so no reader is required, and no console is
+ever allocated for the host process either. Output lands in
+`%LocalAppData%\SchweppeLab\Helios\Helios.Bridge.Host.<port>.log`, overwritten on each launch. A
+manually-started host is unaffected and keeps its normal visible console.
+
 Live-verified end to end (single client: auto-launch → connect → force-kill the client to simulate
 a crash → watchdog detects the dropped stream → idle timer fires → host exits cleanly; two clients:
 second client reuses the first's already-running host rather than launching a duplicate, host
 survives one client disconnecting while the other stays connected, and only shuts down once both
-are gone).
+are gone; hidden-launch path re-verified after adding the cmd.exe wrapper: host ran with no visible
+window, its startup/status lines appeared in the per-port log file, and auto-shutdown still fired
+normally afterward).
 
 ### `ScanSpy` (net8.0-windows, ported from the original net48 in-process app)
 
