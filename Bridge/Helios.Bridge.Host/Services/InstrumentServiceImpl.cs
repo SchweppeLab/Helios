@@ -19,8 +19,22 @@ namespace Helios.Bridge.Host.Services
 
     public override async Task<StatusResponse> Connect(ConnectRequest request, ServerCallContext context)
     {
-      await _gateway.ConnectAsync(context.CancellationToken).ConfigureAwait(false);
-      return BuildStatus();
+      try
+      {
+        await _gateway.ConnectAsync(context.CancellationToken).ConfigureAwait(false);
+        return BuildStatus();
+      }
+      catch (Exception ex)
+      {
+        // Grpc.Core doesn't forward handler exception details to the client by default (the
+        // caller just sees a generic "Unknown"/"Exception was thrown by handler." status) -- log
+        // the real exception here (to the host's console, or its log file when auto-launched; see
+        // HeliosClient.LaunchHost) since that's otherwise the only place to see it, and re-throw as
+        // an RpcException with the real message so it also reaches the client's own error log
+        // without needing access to the host machine.
+        Console.Error.WriteLine($"Helios.Bridge.Host: Connect failed: {ex}");
+        throw new RpcException(new Status(StatusCode.Internal, ex.Message));
+      }
     }
 
     public override Task<StatusResponse> GetStatus(Empty request, ServerCallContext context) =>

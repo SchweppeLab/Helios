@@ -334,12 +334,19 @@ namespace ScanSpy
         }
       }
 
-      UiInvoke(() =>
+      // Only queue a UI update for the scans that pass the refreshNow throttle above (~10Hz), not
+      // every single scan -- BeginInvoke doesn't block this (background) thread, but it does queue
+      // onto the UI thread's own message loop, which is just as unbounded and un-droppable as
+      // everything else in this pipeline. At real instrument scan rates well above 10Hz (e.g. DDA
+      // with many MS2 events per MS1), invoking on every scan queued UI work faster than the UI
+      // thread could drain it, so displayed values (including the Hz readout meant to show the
+      // current rate) fell progressively further behind rather than settling at ~10Hz like the plot.
+      if (refreshNow)
       {
-        labelScanSpeed.Text = hz.ToString("F1") + " Hz";
-
-        if (refreshNow)
+        UiInvoke(() =>
         {
+          labelScanSpeed.Text = hz.ToString("F1") + " Hz";
+
           lock (plotSpectrum.Plot.Sync)
           {
             plotSpectrum.Plot.Clear();
@@ -352,10 +359,10 @@ namespace ScanSpy
           lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString("#.00") + "  NL:" + basePeakIntensity.ToString("E2");
           refreshSpectrum = true;
           lastTicks = curTicks;
-        }
 
-        RefreshStats();
-      });
+          RefreshStats();
+        });
+      }
     }
 
     // Unlike Helios's own IMsScan.TryHeader, Helios.Client's IMsScan exposes plain resolved

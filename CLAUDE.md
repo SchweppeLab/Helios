@@ -133,6 +133,18 @@ of it on the consuming side (null-checks, a fallback detector name, and a try/ca
 four stubbed centroid flags to `false`). Any other code that reads `IMsScan` fields from a VMS
 scan should expect the same gaps.
 
+**The try/catch above is not just a correctness workaround — it's probed once and cached, not
+retried per peak.** `IsExceptional` throws immediately (short-circuiting the other three reads
+entirely), so naively wrapping every peak's reads in try/catch means every peak on a real Fusion
+instrument throws and catches a real .NET exception — found live to be the dominant cost behind
+`Helios.Bridge.Host` falling behind a real Fusion instrument's scan rate (exceptions are far more
+expensive than a marshal call; see `HISTORY.md`'s 2026-08-14 entry). `ToSnapshot`'s
+`_centroidFlagsSupported` (a `static bool?`, shared across every `HeliosMsScanChannelAdapter`
+instance for the process's lifetime, since one process talks to one instrument family for its whole
+life) probes once on the first peak and skips the try/catch — not just the property reads — for
+every later peak once it's known unsupported. Don't revert this to a plain per-peak try/catch even
+though it looks equivalent for correctness; it isn't, for cost.
+
 ### The bridge (`Bridge/`)
 
 Five projects, three runtime boundaries:
@@ -158,6 +170,22 @@ Five projects, three runtime boundaries:
     one event — confirmed live (see `HISTORY.md`) when a `StatusLog` null reference silently ended
     an entire session's worth of scan/acquisition events after the very first scan. `CallbackGuard`
     turns a bug anywhere in this file into a logged, recoverable no-op instead of a dead connection.
+  - `HeliosInstrumentGateway.ConnectAsync` waits for `_container.ServiceConnectionChanged` to
+    report `ServiceConnected == true` (`WaitForServiceConnectedAsync`, 15s timeout) before calling
+    `_container.Get(1)`. This matters only for real Fusion/Exploris hardware: `StartOnlineAccess()`
+    brings the service online asynchronously there, unlike Simulated/VMS, which have no such
+    handshake at all — calling `Get(1)` before it completes threw. Found live against real hardware
+    (the first time this path had been exercised outside Simulated/VMS/Corona — see `HISTORY.md`),
+    mirrors the wait the original in-process pattern always did (`Create()` →
+    `ServiceConnectionChanged` → `Get(1)`). On failure, `_connected` resets to `0` so a retried
+    `Connect` RPC actually retries instead of the once-only guard silently short-circuiting forever
+    with `_access` left `null`.
+  - `InstrumentServiceImpl.Connect` logs any exception from `IInstrumentGateway.ConnectAsync` to the
+    host's own console/log file and re-throws as `RpcException(StatusCode.Internal, ex.Message)`
+    rather than letting Grpc.Core's default generic `"Exception was thrown by handler."` reach the
+    client — the specific message now shows up in the calling app's own error log too (e.g.
+    ScanSpy's `Log("HeliosClient.ConnectAsync() " + ex.Message)`), without needing access to the
+    host machine to diagnose a failed connect.
   - `Services/*ServiceImpl.cs` are the five gRPC service implementations. Every server-streaming
     RPC follows the same shape: subscribe a handler that writes into an unbounded
     `System.Threading.Channels.Channel<T>`, then drain that channel into the gRPC
@@ -261,6 +289,12 @@ Notable adaptations, useful context if touching it again:
   controls. `Helios.Client`'s events fire from a background `Task` draining a gRPC stream, same as
   the in-process events did from an IAPI callback thread — but the original had some unguarded
   cross-thread UI writes that happened to not matter until now.
+- **`MsScanArrived`'s `UiInvoke` call is gated by the same `refreshNow` throttle (~10Hz) that gates
+  the plot redraw — keep it that way.** `BeginInvoke` doesn't block the gRPC-stream-reading thread
+  that calls it, but it does queue onto the UI thread's own message loop, which is exactly as
+  unbounded/un-droppable as every other hop in this pipeline (see `HISTORY.md`'s 2026-08-14 "falling
+  behind" entries). Calling it once per scan instead of once per throttled refresh reintroduces that
+  bug at real instrument scan rates above ~10Hz.
 
 ## Bug-fixing policy for this repo
 
@@ -299,6 +333,11 @@ opportunistically "fix while passing by" in code outside that scope.
   `Helios.dll` for both Fusion and Exploris — instrument-value reads aren't possible through
   Helios's public surface at all today. The bridge's `GetInstrumentValues`/`GetInstrumentValuesAsync`
   both return an empty dictionary and say why in a comment, rather than working around it further.
-- No automated tests exercise the bridge's Fusion/Exploris path against real hardware (compiles
-  clean, type-checked against real IAPI DLLs, but only Simulated and VMS/Corona have been run
-  live in this environment).
+- No automated tests exercise the bridge's Fusion/Exploris path against real hardware, and this
+  environment has no such hardware to run it against directly. The first live attempt (a user
+  testing `ScanSpy` against a real Fusion instrument on a separate PC) surfaced two real bugs, both
+  confirmed fixed live on that same Fusion instrument since (see `HISTORY.md`'s 2026-08-14 entries):
+  the `ServiceConnectionChanged` race under `HeliosInstrumentGateway.ConnectAsync`, and the
+  per-centroid-peak exception cost under `ToSnapshot`. Exploris itself remains untested live in any
+  environment — the Fusion/VMS-specific centroid fix doesn't touch it, and nothing else in this list
+  has been confirmed against it either.

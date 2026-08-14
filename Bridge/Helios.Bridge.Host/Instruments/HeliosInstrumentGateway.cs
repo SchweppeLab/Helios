@@ -107,28 +107,79 @@ namespace Helios.Bridge.Host.Instruments
     public IScanControl Scans => _scanControlAdapter ?? throw NotConnected();
     public ISyringePumpChannel? SyringePump => _syringePumpAdapter;
 
-    public Task ConnectAsync(CancellationToken cancellationToken)
+    // Real Fusion/Exploris hardware brings the service online asynchronously after
+    // StartOnlineAccess() -- unlike Simulated/VMS, which have no such handshake at all, so this
+    // race never surfaced against either of them. Get(1) called before ServiceConnectionChanged
+    // actually reports ServiceConnected == true throws (or hands back an unusable
+    // IInstrumentAccess) on real hardware; the original in-process pattern always waited for
+    // exactly this before calling Get(1) (see CLAUDE.md: Create() -> ServiceConnectionChanged ->
+    // Get(1)) -- this mirrors that instead of assuming StartOnlineAccess() completes synchronously.
+    private static readonly TimeSpan ServiceConnectTimeout = TimeSpan.FromSeconds(15);
+
+    public async Task ConnectAsync(CancellationToken cancellationToken)
     {
-      if (Interlocked.CompareExchange(ref _connected, 1, 0) != 0) return Task.CompletedTask;
+      if (Interlocked.CompareExchange(ref _connected, 1, 0) != 0) return;
 
-      _container.MessagesArrived += (s, e) => CallbackGuard.Run("MessagesArrived", () => MessagesArrived?.Invoke(this, ToHost(e)));
-      _container.ServiceConnectionChanged += (s, e) => CallbackGuard.Run("ServiceConnectionChanged", () => ServiceConnectionChanged?.Invoke(this, e));
-      _container.StartOnlineAccess();
+      try
+      {
+        await WaitForServiceConnectedAsync(cancellationToken).ConfigureAwait(false);
 
-      _access = _container.Get(1);
-      _access.ConnectionChanged += (s, e) => CallbackGuard.Run("ConnectionChanged", () => InstrumentConnectionChanged?.Invoke(this, e));
-      _access.ContactClosureChanged += (s, e) => CallbackGuard.Run("ContactClosureChanged", () =>
-        ContactClosureChanged?.Invoke(this, new ContactClosureChangedEventArgs { RisingEdges = e.RisingEdges, FallingEdges = e.FallingEdges }));
+        // Only wired up after the wait succeeds -- no gRPC client can be listening yet at this
+        // point anyway (Connect hasn't returned), so there's nothing lost by not forwarding the
+        // very first ServiceConnectionChanged transition; delaying this also means a failed
+        // connect attempt doesn't leave a stale subscription behind for the retry below to double up.
+        _container.MessagesArrived += (s, e) => CallbackGuard.Run("MessagesArrived", () => MessagesArrived?.Invoke(this, ToHost(e)));
+        _container.ServiceConnectionChanged += (s, e) => CallbackGuard.Run("ServiceConnectionChanged", () => ServiceConnectionChanged?.Invoke(this, e));
 
-      _acquisitionAdapter = new HeliosAcquisitionControlAdapter(_access.Control.Acquisition);
-      _scans = _access.Control.GetScans(exclusiveAccess: false);
-      _scanControlAdapter = new HeliosScanControlAdapter(_scans);
-      var pump = _access.Control.SyringePumpControl;
-      _syringePumpAdapter = pump is null ? null : new HeliosSyringePumpAdapter(pump);
+        _access = _container.Get(1);
+        _access.ConnectionChanged += (s, e) => CallbackGuard.Run("ConnectionChanged", () => InstrumentConnectionChanged?.Invoke(this, e));
+        _access.ContactClosureChanged += (s, e) => CallbackGuard.Run("ContactClosureChanged", () =>
+          ContactClosureChanged?.Invoke(this, new ContactClosureChangedEventArgs { RisingEdges = e.RisingEdges, FallingEdges = e.FallingEdges }));
 
-      _msScanChannels[0] = new HeliosMsScanChannelAdapter(_access.GetMsScanContainer(0));
+        _acquisitionAdapter = new HeliosAcquisitionControlAdapter(_access.Control.Acquisition);
+        _scans = _access.Control.GetScans(exclusiveAccess: false);
+        _scanControlAdapter = new HeliosScanControlAdapter(_scans);
+        var pump = _access.Control.SyringePumpControl;
+        _syringePumpAdapter = pump is null ? null : new HeliosSyringePumpAdapter(pump);
 
-      return Task.CompletedTask;
+        _msScanChannels[0] = new HeliosMsScanChannelAdapter(_access.GetMsScanContainer(0));
+      }
+      catch
+      {
+        // Let a retried Connect RPC actually retry instead of the guard above silently
+        // short-circuiting every future attempt (returning as if already connected while _access
+        // stays null) once the first one has failed.
+        _connected = 0;
+        throw;
+      }
+    }
+
+    private async Task WaitForServiceConnectedAsync(CancellationToken cancellationToken)
+    {
+      var serviceConnectedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+      void OnServiceConnectionChanged(object? s, EventArgs e)
+      {
+        if (_container.ServiceConnected) serviceConnectedTcs.TrySetResult(true);
+      }
+
+      _container.ServiceConnectionChanged += OnServiceConnectionChanged;
+      try
+      {
+        _container.StartOnlineAccess();
+        if (_container.ServiceConnected) return; // already online -- StartOnlineAccess completed synchronously.
+
+        using var timeoutCts = new CancellationTokenSource(ServiceConnectTimeout);
+        using var callerRegistration = cancellationToken.Register(() => serviceConnectedTcs.TrySetCanceled(cancellationToken));
+        using var timeoutRegistration = timeoutCts.Token.Register(() =>
+          serviceConnectedTcs.TrySetException(new TimeoutException(
+            $"Timed out after {ServiceConnectTimeout.TotalSeconds:F0}s waiting for the instrument service to come online (ServiceConnectionChanged never reported ServiceConnected == true).")));
+
+        await serviceConnectedTcs.Task.ConfigureAwait(false);
+      }
+      finally
+      {
+        _container.ServiceConnectionChanged -= OnServiceConnectionChanged;
+      }
     }
 
     public IMsScanChannel GetMsScanContainer(int msDetectorSet)
@@ -339,6 +390,27 @@ namespace Helios.Bridge.Host.Instruments
     // ArgumentNullException, taking the scan out the same way the StatusLog null once did before
     // CallbackGuard existed). Falls back to the already-known detector class name rather than an
     // empty string, since that's more useful and we have it on hand regardless.
+    // Helios.dll's generic Centroid implementation (used by Fusion and VMS/Corona -- Exploris has
+    // its own) stubs IsExceptional/IsFragmented/IsMerged/IsReferenced with `throw new
+    // NotImplementedException()`. Reading them inside a per-peak try/catch (as this used to do)
+    // is not just a marshal cost -- IsExceptional throws immediately, so the other three reads
+    // never even execute, meaning every peak on a real Fusion instrument threw and caught one live
+    // .NET exception, which is dramatically more expensive than a normal property read or even a
+    // cross-process marshal (stack capture/unwind). At real centroid counts (thousands per scan)
+    // and real scan rates, this alone was enough to throttle ToSnapshot below real-time -- found
+    // as the dominant contributor to Helios.Bridge.Host falling behind a live Fusion instrument
+    // (see HISTORY.md). One instrument family per process for this process's whole lifetime (see
+    // Program.cs's CreateGateway), so probing once and caching the result -- rather than per-peak,
+    // per-scan, or per-adapter -- is both correct and enough: after the very first peak of the
+    // very first scan proves these are unsupported, every later peak skips the try/catch (and the
+    // exception it would throw) entirely instead of paying for it thousands of times a second.
+    // Shared across every HeliosMsScanChannelAdapter instance (one per detector set) rather than
+    // per-instance, since they all talk to the same instrument. Deliberately unsynchronized: a
+    // race during the first few overlapping calls (if multiple detector sets' callbacks land on
+    // different threads before this settles) just means a handful of redundant probes, not a
+    // correctness bug -- not worth a lock on this hot a path for that.
+    private static bool? _centroidFlagsSupported;
+
     private static MsScanSnapshot ToSnapshot(IMsScan scan, string fallbackDetectorName)
     {
       int count = scan.CentroidCount ?? 0;
@@ -360,24 +432,22 @@ namespace Helios.Bridge.Host.Instruments
         charge[i] = c.Charge ?? -1;
         resolution[i] = c.Resolution ?? 0;
 
-        // Helios.dll's generic Centroid implementation (used by Fusion and VMS/Corona -- Exploris
-        // has its own) stubs IsExceptional/IsFragmented/IsMerged/IsReferenced with
-        // `throw new NotImplementedException()`; Mz/Intensity/Charge/Resolution above are real
-        // (constructor-backed), just not these four. Read once and default all four together
-        // rather than letting a NotImplementedException here take out the whole scan.
-        try
+        // Arrays already default to false, so there's nothing to do here once these are known
+        // unsupported -- just leave this peak's four slots alone.
+        if (_centroidFlagsSupported != false)
         {
-          exceptional[i] = c.IsExceptional ?? false;
-          fragmented[i] = c.IsFragmented ?? false;
-          merged[i] = c.IsMerged ?? false;
-          referenced[i] = c.IsReferenced ?? false;
-        }
-        catch (NotImplementedException)
-        {
-          exceptional[i] = false;
-          fragmented[i] = false;
-          merged[i] = false;
-          referenced[i] = false;
+          try
+          {
+            exceptional[i] = c.IsExceptional ?? false;
+            fragmented[i] = c.IsFragmented ?? false;
+            merged[i] = c.IsMerged ?? false;
+            referenced[i] = c.IsReferenced ?? false;
+            _centroidFlagsSupported = true;
+          }
+          catch (NotImplementedException)
+          {
+            _centroidFlagsSupported = false;
+          }
         }
         i++;
       }

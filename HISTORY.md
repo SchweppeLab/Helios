@@ -7,6 +7,127 @@ deleting past entries.
 
 ---
 
+## 2026-08-14 -- Host: stopped throwing a .NET exception per centroid peak on Fusion (falling-behind bug, part 2 of 2, host side)
+
+**Status: fixed, confirmed live against real Fusion hardware -- Helios.Bridge.Host now keeps up with
+the instrument's real scan rate.** Continuation of the ScanSpy falling-behind investigation -- user
+confirmed via
+Task Manager that `Helios.Bridge.Host.exe`'s memory climbs steadily during a long run against a real
+(Fusion) instrument, separately from the ScanSpy UI-thread fix in the previous entry. User is
+testing against a Fusion specifically; per the comments already in this file (Exploris has its own
+`Centroid` implementation, not the generic stub), this fix is Fusion/VMS-specific and doesn't touch
+the Exploris path at all.
+
+User proposed a structural theory (Header/Trailer/StatusLog/TuneData copying plus canonical-term
+resolution plus "thousands of property marshals per MS2" for the four centroid flags) attributing
+the host-side cost to real IAPI marshaling that's simply absent in Simulated. Reviewed and largely
+agreed, with two corrections: (1) Header/Trailer + canonical-term resolution is cheap -- already-
+materialized local dictionaries, translated via Helios's own internal `HeliosDictionary`, no IAPI
+round-trip -- so it was dropped from the theory; (2) crucially, the centroid-flag cost isn't
+"marshals" at all. `HeliosMsScanChannelAdapter.ToSnapshot`'s per-peak try/catch (added earlier this
+session, see the 2026-08-13 VMS/Corona entries) reads `IsExceptional` first; Helios.dll's generic
+`Centroid` class (used by Fusion and VMS -- Exploris has its own) stubs it with `throw new
+NotImplementedException()`, so every single peak was throwing and catching a real .NET exception --
+`IsFragmented`/`IsMerged`/`IsReferenced` never even executed, short-circuited by the throw. .NET
+exceptions are dramatically more expensive than a marshal call (stack capture/unwind), so at real
+Fusion centroid counts (thousands per scan) and real scan rates, this alone was plausibly enough to
+throttle `ToSnapshot` below real-time on its own -- the single most severe item found, not just a
+compounding one. Also corrected: this isn't an MS2-specific cost, it scales with centroid count,
+which a full-profile MS1 can have as much of as any MS2.
+
+Fixed: added a `static bool? _centroidFlagsSupported` cache to `HeliosMsScanChannelAdapter`, probed
+once (on the very first peak that reads these properties) and shared across every channel adapter
+instance for the process's lifetime (safe, since one `Helios.Bridge.Host` process talks to one
+instrument family for its whole life -- see `Program.cs`'s `CreateGateway`). Once known unsupported,
+every later peak skips the try/catch (and the exception behind it) entirely instead of paying for it
+on every single peak of every single scan -- turns O(centroids x scans) exceptions into O(1) for the
+process's whole lifetime. Deliberately left unsynchronized (a race during the first few overlapping
+calls just means a handful of redundant probes, not a correctness bug).
+
+**Verified**: `Helios.Bridge.Host.csproj` builds clean, and the full solution builds clean (0
+errors). Regression-tested the modified path via `Helios.Client.Demo` against the local VMS/Corona
+backend (which also hits the generic `Centroid` stub, so exercises the same fast-path logic) --
+connects, submits a custom scan, toggles acquisition, no regression. User then confirmed live against
+the real Fusion instrument: `Helios.Bridge.Host` now keeps up with the instrument's real scan rate,
+resolving the falling-behind symptom this and the previous entry were chasing together. The host-side
+unbounded channel (`GrpcStreaming.PumpAsync`) remains a separate, deferred issue per the user's
+explicit instruction -- not addressed in this entry, and evidently not the dominant factor after all
+given the centroid-exception fix alone resolved the symptom.
+
+---
+
+## 2026-08-14 -- ScanSpy: stopped queuing a UI update for every scan (falling-behind bug, part 1 of 2)
+
+**Status: done, builds clean.** User reported `ScanSpy` progressively falling further behind the
+live scan stream from a real instrument the longer it ran. Code-review diagnosis (no access to the
+instrument PC, so no live profiling) identified two independent contributors: `ScanSpy`'s own
+UI-thread queuing, and unbounded buffering in `Helios.Bridge.Host`'s gRPC streaming (`GrpcStreaming.
+PumpAsync`'s `Channel.CreateUnbounded<T>`). User confirmed via Task Manager that `Helios.Bridge.
+Host.exe`'s memory does climb over a long run, confirming the second issue is real -- deferred for
+now, to be addressed separately. This entry covers only the `ScanSpy` fix.
+
+Root cause: `MsScanArrived` ([ScanSpy.cs](../ScanSpy/ScanSpy.cs)) called `UiInvoke` (->
+`Control.BeginInvoke`) for *every* scan, not just the ones passing the existing `refreshNow`
+throttle (~10Hz) that already gated the plot redraw. The invoked block unconditionally set
+`labelScanSpeed.Text` and called `RefreshStats()` (-> `labelStats.Text`) regardless of `refreshNow`.
+`BeginInvoke` doesn't block the calling (background, gRPC-stream-reading) thread, but it queues onto
+the UI thread's own message loop, which is exactly as unbounded and un-droppable as every other hop
+in this pipeline -- at real instrument scan rates well above 10Hz (e.g. DDA with many MS2 events per
+MS1), invoking on every scan queued UI work faster than the UI thread could drain it, so every
+displayed value (including the Hz readout meant to show the *current* rate) fell progressively
+further behind rather than settling at the intended ~10Hz refresh rate.
+
+Fix: moved the entire `UiInvoke(...)` call inside the existing `if (refreshNow)` block, so a UI
+update is only queued for scans that pass the throttle -- matching what the throttle was clearly
+already meant to gate.
+
+**Verified**: `ScanSpy.csproj` builds clean, 0 errors. Not live-tested against a real instrument
+(none available in this environment) or visually verified (WinForms UI, no way to see it render from
+here) -- a straightforward code-motion change (no logic altered, just what's gated by the existing
+`refreshNow` check), reviewed carefully rather than run. User will verify on the instrument PC.
+
+---
+
+## 2026-08-14 -- Fixed a real-hardware connect race and made Connect failures diagnosable
+
+**Status: fixed, regression-tested against VMS/Corona; pending user retest on real Fusion/Exploris
+hardware.** User reported `ScanSpy` failing to connect through the bridge on a separate PC with a
+real instrument attached, with only `Status(StatusCode="Unknown", Detail="Exception was thrown by
+handler.")` to go on -- no access to that machine's console/log to see the real exception. Diagnosed
+remotely from the error message and code alone (the specific gRPC status itself confirmed
+auto-launch/discovery worked correctly -- the RPC reached the host's handler and started executing).
+
+Root cause: `HeliosInstrumentGateway.ConnectAsync` called `_container.Get(1)` immediately after
+`_container.StartOnlineAccess()`, with no wait for the service to actually come online first. Real
+Fusion/Exploris hardware brings the service online asynchronously after `StartOnlineAccess()`;
+Simulated and VMS/Corona don't have this handshake at all, which is why this race never surfaced
+until the first real-hardware test. `CLAUDE.md` had already documented that the original in-process
+pattern required waiting for `ServiceConnectionChanged` before `Get(1)` -- the bridge's port of that
+pattern dropped the wait.
+
+Fixed:
+- `HeliosInstrumentGateway.ConnectAsync`/new `WaitForServiceConnectedAsync`: waits for
+  `ServiceConnectionChanged` to report `ServiceConnected == true` (15s timeout) before calling
+  `Get(1)`, mirroring the original three-step sequence. Also fixed an adjacent latent bug found
+  while touching this method: the `_connected` guard was set *before* the connect sequence, not
+  after it succeeded, so a failed connect left every future `Connect` RPC silently short-circuiting
+  forever (returning as if already connected while `_access` stayed `null`) -- now resets to `0` on
+  failure so a retry actually retries.
+- `InstrumentServiceImpl.Connect`: logs the real exception to the host's console/log file and
+  re-throws as `RpcException(StatusCode.Internal, ex.Message)` instead of letting Grpc.Core's
+  generic message reach the client -- the specific message now surfaces in the calling app's own
+  error log too (e.g. `ScanSpy`'s `Log("HeliosClient.ConnectAsync() " + ex.Message)`), without
+  needing access to the host machine to diagnose a failed connect next time.
+
+**Verified**: `Helios.Bridge.Host` builds clean. Regression-tested the modified connect path via
+`Helios.Client.Demo` against the local VMS/Corona backend (the only real, non-Simulated backend
+reachable in this environment) -- connects, submits a custom scan, toggles acquisition, all as
+before; no regression. The actual race only manifests against real Fusion/Exploris hardware, which
+isn't available here, so the fix itself is unverified against the reported scenario until the user
+retests on the instrument PC.
+
+---
+
 ## 2026-08-14 -- Fixed ScanInjector's fresh-clone build failure (out of Core8 scope, fixed on request)
 
 **Status: done.** `ScanInjector` was previously documented as a known, unfixed fresh-clone build
