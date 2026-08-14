@@ -32,6 +32,11 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+    <!-- For BridgeHostLocator's registry-based discovery of an installed Helios.Bridge.Host.
+         Provided by Microsoft; throws PlatformNotSupportedException off Windows, which is fine,
+         since Helios.Bridge.Host itself is net48/Windows-only, so this path is never exercised
+         elsewhere. -->
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

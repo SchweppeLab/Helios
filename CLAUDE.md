@@ -33,9 +33,11 @@ restore`/`build` don't drive that restore path). Not fixed as part of the bridge
 `ScanInjector` was out of scope for it; see the `Nova` package note below for how the same class of
 problem was worked around for `Helios.csproj` itself.
 
-Run the bridge host (net48) and a .NET 8 client (`Helios.Client.Demo` or `ScanSpy`) in separate
-processes — the host defaults to `Auto` (see below), so no hardware/license is needed to see it
-work:
+Manually starting the host is no longer required for local dev/testing — `HeliosClient.ConnectAsync`
+auto-launches it if nothing is listening on `127.0.0.1:50100` yet (see "Auto-launch and
+self-managed lifetime" below), so `dotnet run --project Bridge/Helios.Client.Demo -c Release` (or
+running `ScanSpy`) on its own is enough. Starting it manually still works and is useful when you
+want to watch its own console output directly:
 ```
 Bridge/Helios.Bridge.Host/bin/x64/Release/net48/Helios.Bridge.Host.exe
 dotnet run --project Bridge/Helios.Client.Demo -c Release
@@ -153,6 +155,54 @@ Loopback-only, no TLS, by design (`ServerCredentials.Insecure` host-side;
 `AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true)`
 client-side, set once in `HeliosClient`'s static constructor — required for the channel to connect
 at all, easy to forget when extending this pattern elsewhere).
+
+### Auto-launch and self-managed lifetime
+
+`HeliosClient.ConnectAsync` no longer requires the caller to have started `Helios.Bridge.Host`
+manually. Real deployments have no single build-time-known install path for it — a NuGet-only
+consumer app never built this repo, and `Helios.Bridge.Host` itself is expected to arrive via an
+installer or a zip file the user unpacks wherever they like — so discovery and lifetime both have
+to be resolved at runtime rather than assumed:
+
+- **Discovery** (`Helios.Client/BridgeHostLocator.cs`), first match wins: an explicit
+  `hostExecutablePath` argument to `ConnectAsync` → the `HELIOS_BRIDGE_HOST_PATH` environment
+  variable → `HKCU\Software\SchweppeLab\Helios\BridgeHostPath` in the registry → `Helios.Bridge.Host.exe`
+  found on `PATH`. Only consulted if nothing is already listening on `127.0.0.1:50100` — if another
+  app already has a host running (and possibly connected to real hardware), `ConnectAsync` reuses
+  it rather than starting a redundant instance.
+- **Self-registration** (`Helios.Bridge.Host/Program.cs`'s `RegisterInstallLocation`): the host
+  writes its own `MainModule.FileName` to that same registry key on every successful startup — not
+  just once, so a reinstalled/moved host keeps the key accurate without a separate
+  uninstall/unregister step. For zip-file installs with no installer to do this, run
+  `Helios.Bridge.Host.exe --register` once to write the key and exit without starting the server.
+  `BridgeHostLocator` self-heals a stale entry (host deleted without re-registering) by deleting it
+  the first time it notices the target file no longer exists, rather than leaving it to keep
+  misfiring.
+- **Single-instance detection**: `Program.cs` calls `server.Ports.Add(...)` directly (not the
+  `Ports = { ... }` collection-initializer shorthand) specifically to check its `int` return value —
+  Grpc.Core doesn't throw for "address already in use" the way a raw socket bind would, so `0` is
+  the only signal a second `Helios.Bridge.Host` has that another instance already owns the port. If
+  two `ConnectAsync` callers race and both decide to launch, both host processes start, but only one
+  wins the bind; the loser exits immediately, and both callers' listening-poll loop converges on
+  whichever one won. No separate single-instance mutex is needed.
+- **Idle auto-shutdown** (`Helios.Bridge.Host/Services/ConnectionWatchdog.cs`): every
+  `Helios.Client` connection keeps exactly one `StreamServiceEvents` call open for its whole
+  lifetime (opened right after `Connect`, in `HeliosClient.PumpServiceEventsAsync`), which makes
+  that call's start/end a reliable, crash-safe proxy for "a client is connected" — when a client
+  process dies, its socket closes immediately (even without a graceful `DisposeAsync`), which ends
+  the call the same way a clean disconnect would. `InstrumentServiceImpl.StreamServiceEvents` calls
+  `ConnectionWatchdog.ConnectionOpened`/`ConnectionClosed` around its body; the watchdog only arms
+  its idle timer on a transition from `>0` connections back to `0` (never on startup with zero
+  clients, since `ConnectionClosed` can't fire without a prior `ConnectionOpened`), and cancels the
+  timer if a new connection arrives before it elapses. Configurable via `App.config`'s
+  `IdleShutdownSeconds` (default 5s; `<= 0` disables auto-shutdown entirely, Ctrl+C-only as before
+  this existed).
+
+Live-verified end to end (single client: auto-launch → connect → force-kill the client to simulate
+a crash → watchdog detects the dropped stream → idle timer fires → host exits cleanly; two clients:
+second client reuses the first's already-running host rather than launching a duplicate, host
+survives one client disconnecting while the other stays connected, and only shuts down once both
+are gone).
 
 ### `ScanSpy` (net8.0-windows, ported from the original net48 in-process app)
 

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -15,6 +17,9 @@ namespace Helios.Client
   // reached is a Helios.Bridge.Host process over gRPC rather than IAPI in-process.
   public static class HeliosClient
   {
+    private static readonly TimeSpan ListeningProbeTimeout = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan LaunchWaitTimeout = TimeSpan.FromSeconds(15);
+
     static HeliosClient()
     {
       // Helios.Bridge.Host (Grpc.Core on .NET Framework 4.8) speaks plaintext HTTP/2 -- there's no
@@ -24,11 +29,69 @@ namespace Helios.Client
       AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
     }
 
-    public static async Task<IInstrumentAccess> ConnectAsync(string host = "127.0.0.1", int port = 50100, int instrumentIndex = 1, CancellationToken cancellationToken = default)
+    // Auto-launches Helios.Bridge.Host if it isn't already reachable at host:port -- checked
+    // first, since another app may already have one running (and connected to a real instrument)
+    // that this call should just share rather than start a redundant instance of. hostExecutablePath
+    // is only consulted if a launch turns out to be necessary; see BridgeHostLocator for the full
+    // discovery chain (explicit path, env var, registry, PATH) used when it's null. If two callers
+    // race and both decide to launch, only one host process ends up actually bound to the port
+    // (Helios.Bridge.Host's own Server.Ports.Add failure check) -- the other exits immediately, and
+    // both callers' wait-for-listening loop converges on whichever one won.
+    public static async Task<IInstrumentAccess> ConnectAsync(string host = "127.0.0.1", int port = 50100, int instrumentIndex = 1, string? hostExecutablePath = null, CancellationToken cancellationToken = default)
     {
+      if (IsLoopback(host) && !await IsHostListeningAsync(host, port, cancellationToken).ConfigureAwait(false))
+      {
+        string exePath = BridgeHostLocator.Locate(hostExecutablePath);
+        LaunchHost(exePath);
+        await WaitForHostListeningAsync(host, port, cancellationToken).ConfigureAwait(false);
+      }
+
       var access = new GrpcInstrumentAccess(host, port);
       await access.ConnectAsync(instrumentIndex, cancellationToken).ConfigureAwait(false);
       return access;
+    }
+
+    private static bool IsLoopback(string host) =>
+      host is "127.0.0.1" or "localhost" or "::1";
+
+    private static async Task<bool> IsHostListeningAsync(string host, int port, CancellationToken cancellationToken)
+    {
+      using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+      timeoutCts.CancelAfter(ListeningProbeTimeout);
+      try
+      {
+        using var probe = new TcpClient();
+        await probe.ConnectAsync(host, port, timeoutCts.Token).ConfigureAwait(false);
+        return true;
+      }
+      catch (Exception) when (!cancellationToken.IsCancellationRequested)
+      {
+        return false; // not listening yet, or refused/timed out -- all mean "not up", not an error here.
+      }
+    }
+
+    private static void LaunchHost(string exePath)
+    {
+      // Not tracked/awaited beyond this -- Helios.Bridge.Host manages its own lifetime (idle
+      // auto-shutdown once every client disconnects; see ConnectionWatchdog on the host side), so
+      // there's nothing for the launching client to own or clean up.
+      Process.Start(new ProcessStartInfo
+      {
+        FileName = exePath,
+        WorkingDirectory = Path.GetDirectoryName(exePath) ?? string.Empty,
+        UseShellExecute = false,
+      });
+    }
+
+    private static async Task WaitForHostListeningAsync(string host, int port, CancellationToken cancellationToken)
+    {
+      var deadline = DateTime.UtcNow + LaunchWaitTimeout;
+      while (DateTime.UtcNow < deadline)
+      {
+        if (await IsHostListeningAsync(host, port, cancellationToken).ConfigureAwait(false)) return;
+        await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+      }
+      throw new TimeoutException($"Launched Helios.Bridge.Host but it did not start listening on {host}:{port} within {LaunchWaitTimeout.TotalSeconds:F0}s.");
     }
 
     // Fire-and-forget commands (SetMode, StartAcquisition, syringe pump Start/Stop/...) still need

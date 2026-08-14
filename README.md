@@ -9,15 +9,36 @@ instruments from a single code base — and, as of the bridge described below, f
 **In-process (.NET Framework 4.8).** Link `Helios.dll` directly and call `Helios.Interfaces.InstrumentAccessContainerFactory.Create()`. Helios talks to IAPI in the
 same process. This is the original, still-supported way to use Helios, and the only option available to Framework 4.8 applications (`ScanInjector` uses it).
 
-**Over the bridge (.NET 8).** IAPI only runs on Framework 4.8, so a .NET 8 application can't link `Helios.dll` directly. Instead, run `Helios.Bridge.Host` (a small
-Framework 4.8 process that wraps IAPI via `Helios.dll`, exactly like the in-process case) and have your .NET 8 application reference `Helios.Client`, which talks to
-the host over a local gRPC connection. `Helios.Client`'s public API mirrors Helios's own interfaces (`IInstrumentAccess`, `IControl`, `IAcquisition`, `IScans`,
-`IMsScan`, ...), so Core 8 application code reads like Helios application code (`ScanSpy` uses this path).
+**Over the bridge (.NET 8).** IAPI only runs on Framework 4.8, so a .NET 8 application can't link `Helios.dll` directly. Instead, have your .NET 8 application
+reference `Helios.Client`, which talks to `Helios.Bridge.Host` (a small Framework 4.8 process that wraps IAPI via `Helios.dll`, exactly like the in-process case)
+over a local gRPC connection. `Helios.Client`'s public API mirrors Helios's own interfaces (`IInstrumentAccess`, `IControl`, `IAcquisition`, `IScans`, `IMsScan`,
+...), so Core 8 application code reads like Helios application code (`ScanSpy` uses this path).
+
+You don't need to start `Helios.Bridge.Host` yourself: `HeliosClient.ConnectAsync` auto-launches it if nothing is already listening (and reuses an already-running
+one — from another app, possibly connected to real hardware — instead of starting a redundant instance), and the host shuts itself back down a short while after
+its last connected client disconnects, including a crash (see "Locating and managing Helios.Bridge.Host" below). Starting it manually still works too, and is
+useful when you want to watch its console output directly.
 
 `Helios.Bridge.Host` picks its backend automatically at startup (`Auto` in its `App.config`, the default): it probes for a real Fusion or Exploris instrument, then a
 Corona (VMS) connection, and falls back to a built-in synthetic scan generator (`Simulated`) only if none of those answered — the same behavior applications got for
 free when linking `Helios.dll` in-process. Set `InstrumentFamily` to `Real` to require real hardware/Corona and fail if none is found, or `Simulated` to always use
 the synthetic generator regardless of what's attached (useful for development or load testing without an instrument).
+
+### Locating and managing Helios.Bridge.Host
+
+`Helios.Client` finds an installed `Helios.Bridge.Host.exe` at runtime, in this order:
+
+1. An explicit `hostExecutablePath` argument to `ConnectAsync`.
+2. The `HELIOS_BRIDGE_HOST_PATH` environment variable.
+3. The Windows registry (`HKCU\Software\SchweppeLab\Helios\BridgeHostPath`) — written automatically by `Helios.Bridge.Host` itself every time it starts
+   successfully. If you installed it via an installer, this is already set for you. If you unpacked a zip file instead, run `Helios.Bridge.Host.exe --register`
+   once (it writes the key and exits) so later auto-launches can find it.
+4. `Helios.Bridge.Host.exe` on your `PATH`.
+
+If none of those resolve, `ConnectAsync` throws an error explaining all four options. `Helios.Bridge.Host` shuts itself down `IdleShutdownSeconds` (5s by default,
+configurable in its `App.config`) after its last connected client disconnects — including an ungraceful one, since it's watching for the dropped connection itself
+rather than waiting for a goodbye message — so a crashed or closed app doesn't leave it running forever, but a brief gap between two client sessions doesn't tear
+down (and, for real hardware, reconnect) it either. Set `IdleShutdownSeconds` to `0` or a negative number to disable auto-shutdown entirely.
 
 ## Repository Contents
 

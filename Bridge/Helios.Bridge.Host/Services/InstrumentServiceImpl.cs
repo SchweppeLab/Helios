@@ -9,8 +9,13 @@ namespace Helios.Bridge.Host.Services
   internal sealed class InstrumentServiceImpl : InstrumentService.InstrumentServiceBase
   {
     private readonly IInstrumentGateway _gateway;
+    private readonly ConnectionWatchdog _watchdog;
 
-    public InstrumentServiceImpl(IInstrumentGateway gateway) => _gateway = gateway;
+    public InstrumentServiceImpl(IInstrumentGateway gateway, ConnectionWatchdog watchdog)
+    {
+      _gateway = gateway;
+      _watchdog = watchdog;
+    }
 
     public override async Task<StatusResponse> Connect(ConnectRequest request, ServerCallContext context)
     {
@@ -31,8 +36,15 @@ namespace Helios.Bridge.Host.Services
     // Channel<T> rather than through GrpcStreaming.PumpAsync (that helper assumes a single event
     // source; the per-call subscribe/unsubscribe state here must stay local to this call, not a
     // field, since InstrumentServiceImpl is shared across concurrent client streams).
+    // Every Helios.Client connection keeps exactly one of these calls open for its whole lifetime
+    // (see HeliosClient.PumpServiceEventsAsync), including one it opens right after Connect --
+    // that makes this call's start/end a reliable, crash-safe proxy for "a client is connected":
+    // when a client process dies, its socket closes immediately even without a graceful dispose,
+    // which ends this call the same way a clean disconnect would. ConnectionWatchdog uses that to
+    // auto-shut the host down once every client has gone, without needing a separate heartbeat.
     public override async Task StreamServiceEvents(Empty request, IServerStreamWriter<ServiceEvent> responseStream, ServerCallContext context)
     {
+      _watchdog.ConnectionOpened();
       var channel = System.Threading.Channels.Channel.CreateUnbounded<ServiceEvent>(new System.Threading.Channels.UnboundedChannelOptions
       {
         SingleReader = true,
@@ -89,6 +101,7 @@ namespace Helios.Bridge.Host.Services
         _gateway.InstrumentConnectionChanged -= OnInstrumentConnectionChanged;
         _gateway.MessagesArrived -= OnMessagesArrived;
         _gateway.ContactClosureChanged -= OnContactClosureChanged;
+        _watchdog.ConnectionClosed();
       }
     }
 

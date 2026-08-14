@@ -7,6 +7,56 @@ deleting past entries.
 
 ---
 
+## 2026-08-13 -- Helios.Bridge.Host auto-launch and self-managed idle shutdown
+
+**Status: done, verified live.** `HeliosClient.ConnectAsync` no longer requires the caller to have
+started `Helios.Bridge.Host` manually, and the host no longer needs to be manually stopped either:
+
+- **Discovery** (`Helios.Client/BridgeHostLocator.cs`): explicit `hostExecutablePath` argument ->
+  `HELIOS_BRIDGE_HOST_PATH` env var -> `HKCU\Software\SchweppeLab\Helios\BridgeHostPath` registry
+  key -> `PATH` search, in that order, only consulted if nothing is already listening on
+  `127.0.0.1:50100` (an already-running host, possibly another app's connection to real hardware,
+  is reused rather than duplicated). Chosen over build-time output-copying after realizing most
+  consumers will build against `Helios.Client` from NuGet, with `Helios.Bridge.Host` installed
+  wherever an installer or a manually-unpacked zip put it -- there is no build-time-known path to
+  copy in that scenario.
+- **Self-registration** (`Helios.Bridge.Host/Program.cs`): writes its own exe path to that registry
+  key on every successful startup (not just once, so a moved/reinstalled host self-heals the key
+  without an explicit uninstall step), plus a `--register`-only mode for zip-file installs with no
+  installer to do this automatically. `BridgeHostLocator` deletes a stale entry (target file gone)
+  the first time it notices, rather than leaving it to keep misfiring.
+- **Single-instance detection**: switched `Program.cs` from the `Ports = { new ServerPort(...) }`
+  collection-initializer shorthand to a direct `server.Ports.Add(...)` call so its `int` return
+  value (0 on bind failure) can be checked -- Grpc.Core doesn't throw for "address already in use".
+  This is also what makes two racing auto-launches safe with no separate mutex: both host processes
+  start, only one wins the bind, the loser exits immediately, and both callers' listening-poll loop
+  converges on the winner.
+- **Idle auto-shutdown** (`Helios.Bridge.Host/Services/ConnectionWatchdog.cs`): every
+  `Helios.Client` connection keeps one `StreamServiceEvents` call open for its whole lifetime,
+  which doubles as a crash-safe "client is connected" signal -- a dead client's socket closes
+  immediately even without a graceful disconnect. `InstrumentServiceImpl` increments/decrements a
+  counter around that call; the watchdog arms an idle timer only on a `>0` -> `0` transition (never
+  on startup with zero clients) and cancels it if a new connection arrives first. Configurable via
+  `App.config`'s new `IdleShutdownSeconds` (default 20s; `<=0` disables it, Ctrl+C-only as before).
+
+**Live-verified** (killed the still-running `Helios.Bridge.Host.exe` from the prior test session
+first, per user confirmation, since it held a file lock blocking the rebuild):
+- Registered a built `Helios.Bridge.Host.exe` via `--register`, confirmed the registry key.
+- Ran `Helios.Client.Demo` with no host running: it located the host via the registry, launched it,
+  waited for it to start listening, and connected -- the host's own `Auto` probe found the
+  user's already-running Corona session (VMS/"Corona VirtualMS") rather than falling back to
+  Simulated, and normal operations (custom scan submit, acquisition mode toggle) worked over the
+  auto-launched connection.
+- Force-killed the client (simulating a crash, not a graceful `DisposeAsync`): the watchdog
+  detected the dropped stream, waited out `IdleShutdownSeconds`, and the host shut itself down
+  cleanly.
+- Ran two `Helios.Client.Demo` instances concurrently: the second reused the first's already-running
+  host (confirmed exactly one `Helios.Bridge.Host.exe` process). Killing one client left the host
+  running past the idle grace period since the other was still connected; killing the second
+  triggered auto-shutdown as expected.
+
+---
+
 ## 2026-08-13 -- Documentation pass: README, CLAUDE.md, and NuGet packaging metadata
 
 **Status: done.** With the bridge merge landed and verified live (ScanSpy <-> Corona confirmed
