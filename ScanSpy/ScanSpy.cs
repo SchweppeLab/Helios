@@ -11,7 +11,11 @@ using Helios.Client;
 
 namespace ScanSpy
 {
+#if USE_LANDMINE_UI
+  public partial class ScanSpy : LandmineUI.WinForms.SharpWindow
+#else
   public partial class ScanSpy : Form
+#endif
   {
     private IInstrumentAccess msIA;
     private IControl msControl;
@@ -42,6 +46,16 @@ namespace ScanSpy
     {
       InitializeComponent();
 
+#if USE_LANDMINE_UI
+      // SharpWindow themes ContentArea.BackColor from the active theme but leaves ForeColor at
+      // its WinForms default (near-black SystemColors.ControlText) -- every plain WinForms control
+      // still living in this window (Label, GroupBox, ...) reads BackColor/ForeColor ambiently
+      // from its parent, so without this, their text stays dark-on-dark against the now-dark
+      // background. Setting it once here cascades to all of them.
+      var landmineTheme = LandmineUI.WinForms.Theming.ThemeManager.Current;
+      this.ContentArea.ForeColor = landmineTheme.TextPrimary;
+#endif
+
       UpdatePlotTimer.Interval = 100;
       UpdatePlotTimer.Enabled = true;
 
@@ -50,11 +64,20 @@ namespace ScanSpy
       co[0].Y = 0;
 
       plotSpec = plotSpectrum.Plot.Add.Scatter(co);
-      plotSpec.MarkerSize = 1;
+      plotSpec.MarkerSize = 0;
       plotSpectrum.Plot.Axes.SetLimitsY(0, 100);
       plotSpectrum.Plot.YLabel("Relative Intensity");
       plotSpectrum.Plot.XLabel("m/z");
       plotSpectrum.Plot.HideGrid();
+#if USE_LANDMINE_UI
+      // ScottPlot has no awareness of LandmineUI's theme system at all (it's a separate library),
+      // so without this the plot stays permanently white/light regardless of which LandmineUI
+      // theme is active.
+      plotSpectrum.Plot.FigureBackground.Color = ScottPlot.Color.FromSDColor(landmineTheme.Surface);
+      plotSpectrum.Plot.DataBackground.Color = ScottPlot.Color.FromSDColor(landmineTheme.Background);
+      plotSpectrum.Plot.Axes.Color(ScottPlot.Color.FromSDColor(landmineTheme.TextSecondary));
+      plotSpectrum.Plot.Axes.FrameColor(ScottPlot.Color.FromSDColor(landmineTheme.Border));
+#endif
       plotSpectrum.Refresh();
 
       UpdateConnection();
@@ -208,7 +231,13 @@ namespace ScanSpy
 
     void Log(string s)
     {
+#if USE_LANDMINE_UI
+      // SharpTextArea has no AppendText -- it's a themed control built around a plain Text
+      // setter, not RichTextBox's incremental-append API.
+      UiInvoke(() => rtbLog.Text += s + System.Environment.NewLine);
+#else
       UiInvoke(() => rtbLog.AppendText(s + System.Environment.NewLine));
+#endif
     }
 
     void MessagesArrived(object sender, MessagesArrivedEventArgs e)
@@ -256,9 +285,11 @@ namespace ScanSpy
       double[] y = null;
       string scanFilter = null;
       string header = null;
+      string msOrderForColor = null;
 
       if (refreshNow)
       {
+        msScan.Header.TryGetValue("MSOrder", out msOrderForColor);
         if (msScan.Header.TryGetValue("Scan", out tmp)) scanNumber = Convert.ToInt32(tmp);
         if (msScan.Header.TryGetValue("FirstMass", out tmp)) firstMass = Convert.ToDouble(tmp);
         if (msScan.Header.TryGetValue("LastMass", out tmp)) lastMass = Convert.ToDouble(tmp);
@@ -351,11 +382,17 @@ namespace ScanSpy
           {
             plotSpectrum.Plot.Clear();
             var scat = plotSpectrum.Plot.Add.Scatter(x, y);
-            scat.MarkerSize = 1;
+            // No markers -- with the centroid zero/peak/zero triples, a marker at every vertex
+            // reads as a haze of dots along the baseline once more than a handful of peaks are in
+            // view. The line alone already draws a clean spike per peak.
+            scat.MarkerSize = 0;
+            scat.LineWidth = 1.5f;
+            scat.LineColor = ColorForMsOrder(msOrderForColor);
             plotSpectrum.Plot.Axes.SetLimitsX(firstMass, lastMass);
           }
 
           rtbHeader.Text = header;
+          lblScanFilter.Text = scanFilter;
           lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString("#.00") + "  NL:" + basePeakIntensity.ToString("E2");
           refreshSpectrum = true;
           lastTicks = curTicks;
@@ -433,6 +470,16 @@ namespace ScanSpy
       return filter;
     }
 
+    // Colors the trace by MS level so a glance at the plot tells you what kind of scan you're
+    // looking at, without having to read the filter text above it.
+    private static ScottPlot.Color ColorForMsOrder(string msOrder)
+    {
+      if (msOrder == "MS" || msOrder == "1") return ScottPlot.Colors.SteelBlue;
+      if (msOrder == "MS2" || msOrder == "2") return ScottPlot.Colors.OrangeRed;
+      if (msOrder == "3") return ScottPlot.Colors.MediumPurple;
+      return ScottPlot.Colors.Gray;
+    }
+
     private void RefreshStats()
     {
       string a = String.Format("{0}{1,10}", scanCount[0], totalScanCount[0]);
@@ -496,6 +543,26 @@ namespace ScanSpy
       listener = false;
     }
 
+    // Abstracts stock StatusStrip's two ToolStripStatusLabel items vs. SharpStatusBar's flat
+    // LeftText/RightText strings, so call sites don't need their own #if.
+    void SetStatusLeft(string s)
+    {
+#if USE_LANDMINE_UI
+      statusStrip1.LeftText = s;
+#else
+      toolStripStatusLabel1.Text = s;
+#endif
+    }
+
+    void SetStatusRight(string s)
+    {
+#if USE_LANDMINE_UI
+      statusStrip1.RightText = s;
+#else
+      toolStripStatusLabel2.Text = s;
+#endif
+    }
+
     /// <summary>
     /// Updates the connection button and status to whatever state the application
     /// is in when this is called. Useful if ever having to temporarily disable
@@ -509,7 +576,7 @@ namespace ScanSpy
         connectionIndicator.BackColor = msIA.Connected ? Color.Lime : Color.Gray;
         disconnectionIndicator.BackColor = msIA.Connected ? Color.Gray : Color.Red;
         buttonConnect.Text = "Disconnect";
-        toolStripStatusLabel1.Text = "Connected: " + msIA.InstrumentName;
+        SetStatusLeft("Connected: " + msIA.InstrumentName);
         connected = true;
       }
       else
@@ -517,7 +584,7 @@ namespace ScanSpy
         connectionIndicator.BackColor = Color.Gray;
         disconnectionIndicator.BackColor = Color.Red;
         buttonConnect.Text = "Connect";
-        toolStripStatusLabel1.Text = "Not Connected";
+        SetStatusLeft("Not Connected");
         connected = false;
       }
       buttonConnect.Enabled = true;  //maybe disallow connection button while listener is activated?
@@ -542,7 +609,7 @@ namespace ScanSpy
         listenIndicatorOn.BackColor = Color.Gray;
         listenIndicatorWait.BackColor = Color.Gray;
         listenIndicatorOff.BackColor = Color.Red;
-        toolStripStatusLabel2.Text = "Status: Idle";
+        SetStatusRight("Status: Idle");
         labelScanSpeed.Text = "0 Hz";
       }
       else
@@ -555,7 +622,7 @@ namespace ScanSpy
           listenIndicatorWait.BackColor = cbOnAcquisition.Checked ? Color.Yellow : Color.Gray;
           listenIndicatorOff.BackColor = Color.Gray;
           ignoreScan = cbOnAcquisition.Checked ? true : false;
-          toolStripStatusLabel2.Text = "Status: Spying";
+          SetStatusRight("Status: Spying");
         }
         else
         {
@@ -563,7 +630,7 @@ namespace ScanSpy
           listenIndicatorOn.BackColor = Color.Gray;
           listenIndicatorWait.BackColor = Color.Gray;
           listenIndicatorOff.BackColor = Color.Red;
-          toolStripStatusLabel2.Text = "Status: Idle";
+          SetStatusRight("Status: Idle");
           labelScanSpeed.Text = "0 Hz";
         }
       }

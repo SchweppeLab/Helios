@@ -10,8 +10,25 @@
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
+  <!--
+    Opt-in, machine-local LandmineUI window (see README-LandmineUI.md). Presence of
+    LandmineUI.local.props (gitignored, never committed) is the only thing that turns this on;
+    a fresh clone of this repo has neither that file nor the LandmineUI NuGet feed configured, so
+    it builds and runs with the plain WinForms Form below exactly as before.
+  -->
+  <PropertyGroup>
+    <UseLandmineUI Condition="Exists('$(MSBuildThisFileDirectory)LandmineUI.local.props')">true</UseLandmineUI>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseLandmineUI)' == 'true'">
+    <DefineConstants>$(DefineConstants);USE_LANDMINE_UI</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="ScottPlot.WinForms" Version="5.0.54" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLandmineUI)' == 'true'">
+    <PackageReference Include="LandmineUI.WinForms" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>

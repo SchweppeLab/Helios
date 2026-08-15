@@ -13,6 +13,9 @@ namespace ScanSpy
     {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
+#if USE_LANDMINE_UI
+      LandmineUI.WinForms.Theming.ThemeManager.SetTheme(LandmineUI.WinForms.Theming.NocturneTheme.Dark);
+#endif
       Application.Run(new ScanSpy());
     }
   }

@@ -68,6 +68,11 @@ namespace Helios.Client
       {
         // Expected on Dispose.
       }
+      catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+      {
+        // Also expected on Dispose -- Grpc.Net.Client surfaces a locally-cancelled streaming call
+        // as RpcException(Cancelled), not OperationCanceledException.
+      }
     }
 
     private sealed class HeliosStateSnapshot : IHeliosState

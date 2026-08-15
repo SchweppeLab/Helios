@@ -66,6 +66,11 @@ namespace Helios.Client
         // Expected on Dispose. Also the ordinary outcome when connected to Exploris/no pump --
         // the host answers this RPC with Unimplemented immediately.
       }
+      catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+      {
+        // Also expected on Dispose -- Grpc.Net.Client surfaces a locally-cancelled streaming call
+        // as RpcException(Cancelled), not OperationCanceledException.
+      }
       catch (Grpc.Core.RpcException) when (Status == SyringePumpStatus.Unspecified)
       {
         // Connected to Exploris (or a Simulated backend without a pump): the host's
@@ -121,6 +126,11 @@ namespace Helios.Client
       catch (OperationCanceledException)
       {
         // Expected on Dispose.
+      }
+      catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+      {
+        // Also expected on Dispose -- Grpc.Net.Client surfaces a locally-cancelled streaming call
+        // as RpcException(Cancelled), not OperationCanceledException.
       }
     }
   }

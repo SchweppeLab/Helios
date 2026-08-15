@@ -221,6 +221,13 @@ namespace Helios.Client
       {
         // Expected on Dispose.
       }
+      catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+      {
+        // Also expected on Dispose -- Grpc.Net.Client surfaces a locally-cancelled streaming call
+        // as RpcException(Cancelled), not OperationCanceledException. This one specifically is
+        // awaited by DisposeAsync(), so leaving it uncaught here propagates into whatever awaits
+        // DisposeAsync() (e.g. an async void UI event handler), crashing the app.
+      }
     }
 
     public IMsScanContainer GetMsScanContainer(int msDetectorSet)

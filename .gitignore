@@ -20,3 +20,8 @@ packages/
 # Rider/VS Code
 .idea/
 .vscode/
+
+# Local-machine opt-in for ScanSpy's LandmineUI-themed window (see ScanSpy/README-LandmineUI.md).
+# Both are specific to whoever's clone enables them and must never be committed.
+NuGet.Config
+ScanSpy/LandmineUI.local.props

@@ -7,6 +7,68 @@ deleting past entries.
 
 ---
 
+## 2026-08-15 -- ScanSpy: graceful disconnect, spectrum plot cleanup, optional LandmineUI window
+
+**Status: done.** Three independent ScanSpy-side fixes/features, none touching the host/bridge
+performance work in the entries below.
+
+**Disconnect crash fixed.** `Grpc.Net.Client` surfaces a locally-cancelled streaming call as
+`RpcException(StatusCode.Cancelled)`, not `OperationCanceledException` -- every background "pump"
+loop in `Helios.Client` (`HeliosClient.cs`, `Acquisition.cs`, `Scans.cs`, `MsScan.cs`,
+`Peripherals.cs`) only caught the latter. `GrpcInstrumentAccess.PumpServiceEventsAsync` is the one
+that mattered: it's `await`ed directly inside `DisposeAsync()`, which ScanSpy's `buttonConnect_Click`
+(`async void`) awaited with no try/catch, so the escaping exception crashed the app on every
+disconnect. Fixed by also catching `RpcException` where `StatusCode == Cancelled` in all six pump
+loops, not just the one that was provably crashing -- the other five had the identical latent bug,
+just not yet wired to something that awaited them.
+
+**Spectrum plot decluttered.** Compared against Corona's ScottPlot spectrum view (read-only
+reference, no changes made there) -- turned out Corona uses essentially the same centroid
+zero/peak/zero triple-point trick ScanSpy already had, so nothing to port. Instead: removed
+per-vertex markers (`MarkerSize` 1 -> 0), which were leaving a haze of dots along the baseline for
+centroid data -- most of what "doesn't represent centroid data well" was actually about; added MS-
+level-based trace coloring (MS1/MS2/MS3); fixed a real dropped-value bug where `ProcessScanHeader`
+computed the scan filter string but `lblScanFilter.Text` was never assigned it.
+
+**Optional LandmineUI-themed window added.** `ScanSpy` conditionally derives from
+`LandmineUI.WinForms.SharpWindow` (frameless, custom-drawn title bar) instead of plain `Form`,
+gated behind a `USE_LANDMINE_UI` compile symbol that only turns on when a gitignored
+`ScanSpy/LandmineUI.local.props` marker file exists, paired with a gitignored repo-root
+`NuGet.Config` pointing at the local LandmineUI feed (`D:\Software\NuGet\LandmineUI`). Neither file
+is tracked, so a fresh clone builds/runs the plain WinForms `Form` with zero extra setup; usage
+documented in `ScanSpy/README-LandmineUI.md`.
+
+First integration pass wrapped only the window chrome and left every interior control stock,
+producing black-on-black text (`SharpWindow.ContentArea` themes `BackColor` but not `ForeColor` --
+confirmed via a throwaway reflection probe against the compiled DLL, since the ambient-inheritance
+default meant already-dark-background stock children kept default-black text), mismatched
+buttons/toolbar/tabs, and an unthemed plot. Fixed by swapping `buttonConnect`/`buttonListen` ->
+`SharpButton`, `cbOnAcquisition` -> `SharpCheckBox`, `splitContainer1/2/3` -> `SharpSplitContainer`,
+`statusStrip1` -> `SharpStatusBar` (via new `SetStatusLeft`/`SetStatusRight` helpers, since
+`SharpStatusBar` exposes flat `LeftText`/`RightText` strings rather than `ToolStripStatusLabel`
+items), `tabControl1` -> `SharpTabControl` (`AddTab(title, tag) -> Panel` instead of `TabPages`),
+`rtbLog`/`rtbHeader` -> `SharpTextArea` (`Log()`'s `AppendText` call became `Text +=`, since
+`SharpTextArea` has no append API); set `ContentArea.ForeColor` explicitly from the active theme;
+hand-matched ScottPlot's `FigureBackground`/`DataBackground`/axis colors to the theme (ScottPlot has
+no LandmineUI awareness at all, so this can never be automatic).
+
+The three `GroupBox`es (`groupBox1/2/3`) were initially left as stock -- no LandmineUI equivalent
+existed, and hand-composing one via `SharpCard` + a manual header label risked breaking the
+Designer.cs pixel layout GroupBox's automatic caption-space reservation had been calibrated
+against. Filed as an upstream wish (`D:\Software\Claude\Wishes\LandmineUI\groupbox-equivalent.md`,
+per that repo's documented external-wish workflow) rather than worked around locally. Granted same
+day: `LandmineUI.WinForms` v1.1.0 shipped `SharpGroupBox : Panel` (content goes straight to
+`.Controls`, no nested content panel, specifically so `GroupBox` -> `SharpGroupBox` is a clean
+class-name swap with no `Location` rework). Bumped the package reference to 1.1.0 and completed the
+swap (`.Text` -> `.HeaderText`, everything else unchanged). Wish file deleted after user confirmed
+the result visually, per that workflow's own rule that only the requester closes a wish.
+
+**Verified**: both build paths (`LandmineUI.local.props` present and absent) compile clean with 0
+errors on every pass across this work. User confirmed the LandmineUI build visually, including
+after the final `SharpGroupBox` swap -- "looks good, works well."
+
+---
+
 ## 2026-08-14 -- Core8Speed branch: collapsed the host's double-copy of scan data
 
 **Status: done, confirmed live on the real Fusion instrument -- the fix holds.** New branch

@@ -1,4 +1,4 @@
-﻿namespace ScanSpy
+namespace ScanSpy
 {
   partial class ScanSpy
   {
@@ -28,42 +28,85 @@
     /// </summary>
     private void InitializeComponent()
     {
+#if USE_LANDMINE_UI
+      this.statusStrip1 = new LandmineUI.WinForms.SharpStatusBar();
+#else
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
       this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
       this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+#endif
       this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+#if USE_LANDMINE_UI
+      this.splitContainer1 = new LandmineUI.WinForms.SharpSplitContainer();
+      this.splitContainer2 = new LandmineUI.WinForms.SharpSplitContainer();
+#else
       this.splitContainer1 = new System.Windows.Forms.SplitContainer();
       this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+#endif
+#if USE_LANDMINE_UI
+      this.groupBox2 = new LandmineUI.WinForms.SharpGroupBox();
+#else
       this.groupBox2 = new System.Windows.Forms.GroupBox();
+#endif
       this.label5 = new System.Windows.Forms.Label();
       this.label4 = new System.Windows.Forms.Label();
       this.label3 = new System.Windows.Forms.Label();
+#if USE_LANDMINE_UI
+      this.cbOnAcquisition = new LandmineUI.WinForms.SharpCheckBox();
+#else
       this.cbOnAcquisition = new System.Windows.Forms.CheckBox();
+#endif
       this.listenIndicatorOff = new System.Windows.Forms.Button();
       this.listenIndicatorWait = new System.Windows.Forms.Button();
       this.listenIndicatorOn = new System.Windows.Forms.Button();
+#if USE_LANDMINE_UI
+      this.buttonListen = new LandmineUI.WinForms.SharpButton();
+#else
       this.buttonListen = new System.Windows.Forms.Button();
+#endif
+#if USE_LANDMINE_UI
+      this.groupBox1 = new LandmineUI.WinForms.SharpGroupBox();
+#else
       this.groupBox1 = new System.Windows.Forms.GroupBox();
+#endif
       this.label2 = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
       this.disconnectionIndicator = new System.Windows.Forms.Button();
       this.connectionIndicator = new System.Windows.Forms.Button();
+#if USE_LANDMINE_UI
+      this.buttonConnect = new LandmineUI.WinForms.SharpButton();
+#else
       this.buttonConnect = new System.Windows.Forms.Button();
+#endif
+#if USE_LANDMINE_UI
+      this.groupBox3 = new LandmineUI.WinForms.SharpGroupBox();
+#else
       this.groupBox3 = new System.Windows.Forms.GroupBox();
+#endif
       this.labelScanSpeed = new System.Windows.Forms.Label();
       this.label8 = new System.Windows.Forms.Label();
       this.labelStats = new System.Windows.Forms.Label();
       this.label7 = new System.Windows.Forms.Label();
       this.label6 = new System.Windows.Forms.Label();
+#if USE_LANDMINE_UI
+      this.splitContainer3 = new LandmineUI.WinForms.SharpSplitContainer();
+#else
       this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+#endif
       this.plotSpectrum = new ScottPlot.WinForms.FormsPlot();
       this.lblScanFilter = new System.Windows.Forms.Label();
       this.lblScanInfo = new System.Windows.Forms.Label();
+#if USE_LANDMINE_UI
+      this.tabControl1 = new LandmineUI.WinForms.SharpTabControl();
+      this.rtbLog = new LandmineUI.WinForms.SharpTextArea();
+      this.rtbHeader = new LandmineUI.WinForms.SharpTextArea();
+#else
       this.tabControl1 = new System.Windows.Forms.TabControl();
       this.tabPage1 = new System.Windows.Forms.TabPage();
       this.rtbLog = new System.Windows.Forms.RichTextBox();
       this.tabPage2 = new System.Windows.Forms.TabPage();
       this.rtbHeader = new System.Windows.Forms.RichTextBox();
+#endif
       this.statusStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
@@ -81,12 +124,23 @@
       this.splitContainer3.Panel2.SuspendLayout();
       this.splitContainer3.SuspendLayout();
       this.tabControl1.SuspendLayout();
+#if !USE_LANDMINE_UI
       this.tabPage1.SuspendLayout();
       this.tabPage2.SuspendLayout();
+#endif
       this.SuspendLayout();
-      // 
+      //
       // statusStrip1
-      // 
+      //
+#if USE_LANDMINE_UI
+      this.statusStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
+      this.statusStrip1.Location = new System.Drawing.Point(0, 529);
+      this.statusStrip1.Name = "statusStrip1";
+      this.statusStrip1.Size = new System.Drawing.Size(784, 32);
+      this.statusStrip1.TabIndex = 0;
+      this.statusStrip1.LeftText = "";
+      this.statusStrip1.RightText = "";
+#else
       this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
       this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
@@ -96,24 +150,25 @@
       this.statusStrip1.Size = new System.Drawing.Size(784, 32);
       this.statusStrip1.TabIndex = 0;
       this.statusStrip1.Text = "statusStrip1";
-      // 
+      //
       // toolStripStatusLabel1
-      // 
+      //
       this.toolStripStatusLabel1.AutoSize = false;
       this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
       this.toolStripStatusLabel1.Size = new System.Drawing.Size(180, 27);
       this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
       this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-      // 
+      //
       // toolStripStatusLabel2
-      // 
+      //
       this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
       this.toolStripStatusLabel2.Size = new System.Drawing.Size(118, 27);
       this.toolStripStatusLabel2.Text = "toolStripStatusLabel2";
       this.toolStripStatusLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-      // 
+#endif
+      //
       // toolStrip1
-      // 
+      //
       this.toolStrip1.AutoSize = false;
       this.toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
       this.toolStrip1.Location = new System.Drawing.Point(0, 0);
@@ -122,51 +177,51 @@
       this.toolStrip1.Size = new System.Drawing.Size(784, 31);
       this.toolStrip1.TabIndex = 1;
       this.toolStrip1.Text = "toolStrip1";
-      // 
+      //
       // splitContainer1
-      // 
+      //
       this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
       this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
       this.splitContainer1.IsSplitterFixed = true;
       this.splitContainer1.Location = new System.Drawing.Point(0, 31);
       this.splitContainer1.Margin = new System.Windows.Forms.Padding(1, 2, 1, 2);
       this.splitContainer1.Name = "splitContainer1";
-      // 
+      //
       // splitContainer1.Panel1
-      // 
+      //
       this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
       this.splitContainer1.Panel1MinSize = 220;
-      // 
+      //
       // splitContainer1.Panel2
-      // 
+      //
       this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
       this.splitContainer1.Size = new System.Drawing.Size(784, 498);
       this.splitContainer1.SplitterDistance = 230;
       this.splitContainer1.TabIndex = 2;
-      // 
+      //
       // splitContainer2
-      // 
+      //
       this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
       this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
       this.splitContainer2.IsSplitterFixed = true;
       this.splitContainer2.Location = new System.Drawing.Point(0, 0);
       this.splitContainer2.Name = "splitContainer2";
       this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
-      // 
+      //
       // splitContainer2.Panel1
-      // 
+      //
       this.splitContainer2.Panel1.Controls.Add(this.groupBox2);
       this.splitContainer2.Panel1.Controls.Add(this.groupBox1);
-      // 
+      //
       // splitContainer2.Panel2
-      // 
+      //
       this.splitContainer2.Panel2.Controls.Add(this.groupBox3);
       this.splitContainer2.Size = new System.Drawing.Size(230, 498);
       this.splitContainer2.SplitterDistance = 148;
       this.splitContainer2.TabIndex = 0;
-      // 
+      //
       // groupBox2
-      // 
+      //
       this.groupBox2.Controls.Add(this.label5);
       this.groupBox2.Controls.Add(this.label4);
       this.groupBox2.Controls.Add(this.label3);
@@ -182,11 +237,15 @@
       this.groupBox2.Size = new System.Drawing.Size(230, 80);
       this.groupBox2.TabIndex = 1;
       this.groupBox2.TabStop = false;
+#if USE_LANDMINE_UI
+      this.groupBox2.HeaderText = "Activity";
+#else
       this.groupBox2.Text = "Activity";
+#endif
       this.groupBox2.Enter += new System.EventHandler(this.groupBox2_Enter);
-      // 
+      //
       // label5
-      // 
+      //
       this.label5.AutoSize = true;
       this.label5.Location = new System.Drawing.Point(138, 57);
       this.label5.Name = "label5";
@@ -194,9 +253,9 @@
       this.label5.TabIndex = 8;
       this.label5.Text = "Off";
       this.label5.Click += new System.EventHandler(this.label5_Click);
-      // 
+      //
       // label4
-      // 
+      //
       this.label4.AutoSize = true;
       this.label4.Location = new System.Drawing.Point(138, 41);
       this.label4.Name = "label4";
@@ -204,9 +263,9 @@
       this.label4.TabIndex = 7;
       this.label4.Text = "Waiting";
       this.label4.Click += new System.EventHandler(this.label4_Click);
-      // 
+      //
       // label3
-      // 
+      //
       this.label3.AutoSize = true;
       this.label3.Location = new System.Drawing.Point(138, 25);
       this.label3.Name = "label3";
@@ -214,20 +273,22 @@
       this.label3.TabIndex = 6;
       this.label3.Text = "Spying";
       this.label3.Click += new System.EventHandler(this.label3_Click);
-      // 
+      //
       // cbOnAcquisition
-      // 
+      //
       this.cbOnAcquisition.AutoSize = true;
       this.cbOnAcquisition.Location = new System.Drawing.Point(6, 20);
       this.cbOnAcquisition.Name = "cbOnAcquisition";
       this.cbOnAcquisition.Size = new System.Drawing.Size(111, 21);
       this.cbOnAcquisition.TabIndex = 5;
       this.cbOnAcquisition.Text = "On Acquisition";
+#if !USE_LANDMINE_UI
       this.cbOnAcquisition.UseVisualStyleBackColor = true;
+#endif
       this.cbOnAcquisition.CheckedChanged += new System.EventHandler(this.cbOnAcquisition_CheckedChanged);
-      // 
+      //
       // listenIndicatorOff
-      // 
+      //
       this.listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
       this.listenIndicatorOff.Location = new System.Drawing.Point(122, 58);
       this.listenIndicatorOff.Name = "listenIndicatorOff";
@@ -235,9 +296,9 @@
       this.listenIndicatorOff.TabIndex = 4;
       this.listenIndicatorOff.UseVisualStyleBackColor = false;
       this.listenIndicatorOff.Click += new System.EventHandler(this.listenIndicatorOff_Click);
-      // 
+      //
       // listenIndicatorWait
-      // 
+      //
       this.listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
       this.listenIndicatorWait.Location = new System.Drawing.Point(122, 42);
       this.listenIndicatorWait.Name = "listenIndicatorWait";
@@ -245,9 +306,9 @@
       this.listenIndicatorWait.TabIndex = 3;
       this.listenIndicatorWait.UseVisualStyleBackColor = false;
       this.listenIndicatorWait.Click += new System.EventHandler(this.listenIndicatorWait_Click);
-      // 
+      //
       // listenIndicatorOn
-      // 
+      //
       this.listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
       this.listenIndicatorOn.Location = new System.Drawing.Point(122, 26);
       this.listenIndicatorOn.Name = "listenIndicatorOn";
@@ -255,19 +316,21 @@
       this.listenIndicatorOn.TabIndex = 2;
       this.listenIndicatorOn.UseVisualStyleBackColor = false;
       this.listenIndicatorOn.Click += new System.EventHandler(this.listenIndicatorOn_Click);
-      // 
+      //
       // buttonListen
-      // 
+      //
       this.buttonListen.Location = new System.Drawing.Point(3, 42);
       this.buttonListen.Name = "buttonListen";
       this.buttonListen.Size = new System.Drawing.Size(96, 32);
       this.buttonListen.TabIndex = 0;
       this.buttonListen.Text = "Activate";
+#if !USE_LANDMINE_UI
       this.buttonListen.UseVisualStyleBackColor = true;
+#endif
       this.buttonListen.Click += new System.EventHandler(this.buttonListen_Click);
-      // 
+      //
       // groupBox1
-      // 
+      //
       this.groupBox1.Controls.Add(this.label2);
       this.groupBox1.Controls.Add(this.label1);
       this.groupBox1.Controls.Add(this.disconnectionIndicator);
@@ -280,56 +343,62 @@
       this.groupBox1.Size = new System.Drawing.Size(230, 64);
       this.groupBox1.TabIndex = 0;
       this.groupBox1.TabStop = false;
+#if USE_LANDMINE_UI
+      this.groupBox1.HeaderText = "Instrument Status";
+#else
       this.groupBox1.Text = "Instrument Status";
-      // 
+#endif
+      //
       // label2
-      // 
+      //
       this.label2.AutoSize = true;
       this.label2.Location = new System.Drawing.Point(138, 42);
       this.label2.Name = "label2";
       this.label2.Size = new System.Drawing.Size(86, 17);
       this.label2.TabIndex = 4;
       this.label2.Text = "Disconnected";
-      // 
+      //
       // label1
-      // 
+      //
       this.label1.AutoSize = true;
       this.label1.Location = new System.Drawing.Point(138, 26);
       this.label1.Name = "label1";
       this.label1.Size = new System.Drawing.Size(70, 17);
       this.label1.TabIndex = 3;
       this.label1.Text = "Connected";
-      // 
+      //
       // disconnectionIndicator
-      // 
+      //
       this.disconnectionIndicator.BackColor = System.Drawing.Color.Red;
       this.disconnectionIndicator.Location = new System.Drawing.Point(122, 43);
       this.disconnectionIndicator.Name = "disconnectionIndicator";
       this.disconnectionIndicator.Size = new System.Drawing.Size(16, 16);
       this.disconnectionIndicator.TabIndex = 2;
       this.disconnectionIndicator.UseVisualStyleBackColor = false;
-      // 
+      //
       // connectionIndicator
-      // 
+      //
       this.connectionIndicator.BackColor = System.Drawing.Color.Gray;
       this.connectionIndicator.Location = new System.Drawing.Point(122, 27);
       this.connectionIndicator.Name = "connectionIndicator";
       this.connectionIndicator.Size = new System.Drawing.Size(16, 16);
       this.connectionIndicator.TabIndex = 1;
       this.connectionIndicator.UseVisualStyleBackColor = false;
-      // 
+      //
       // buttonConnect
-      // 
+      //
       this.buttonConnect.Location = new System.Drawing.Point(3, 26);
       this.buttonConnect.Name = "buttonConnect";
       this.buttonConnect.Size = new System.Drawing.Size(96, 32);
       this.buttonConnect.TabIndex = 0;
       this.buttonConnect.Text = "Connect";
+#if !USE_LANDMINE_UI
       this.buttonConnect.UseVisualStyleBackColor = true;
+#endif
       this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
-      // 
+      //
       // groupBox3
-      // 
+      //
       this.groupBox3.Controls.Add(this.labelScanSpeed);
       this.groupBox3.Controls.Add(this.label8);
       this.groupBox3.Controls.Add(this.labelStats);
@@ -342,10 +411,14 @@
       this.groupBox3.Size = new System.Drawing.Size(230, 152);
       this.groupBox3.TabIndex = 0;
       this.groupBox3.TabStop = false;
+#if USE_LANDMINE_UI
+      this.groupBox3.HeaderText = "Summary";
+#else
       this.groupBox3.Text = "Summary";
-      // 
+#endif
+      //
       // labelScanSpeed
-      // 
+      //
       this.labelScanSpeed.AutoSize = true;
       this.labelScanSpeed.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.labelScanSpeed.Location = new System.Drawing.Point(81, 118);
@@ -353,9 +426,9 @@
       this.labelScanSpeed.Size = new System.Drawing.Size(30, 15);
       this.labelScanSpeed.TabIndex = 4;
       this.labelScanSpeed.Text = "0 Hz";
-      // 
+      //
       // label8
-      // 
+      //
       this.label8.AutoSize = true;
       this.label8.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.label8.Location = new System.Drawing.Point(6, 118);
@@ -363,9 +436,9 @@
       this.label8.Size = new System.Drawing.Size(73, 15);
       this.label8.TabIndex = 3;
       this.label8.Text = "Scan Speed: ";
-      // 
+      //
       // labelStats
-      // 
+      //
       this.labelStats.AutoSize = true;
       this.labelStats.Font = new System.Drawing.Font("Cascadia Code", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.labelStats.Location = new System.Drawing.Point(81, 39);
@@ -373,9 +446,9 @@
       this.labelStats.Size = new System.Drawing.Size(84, 64);
       this.labelStats.TabIndex = 2;
       this.labelStats.Text = "0         0\r\n0         0\r\n0         0\r\n0         0";
-      // 
+      //
       // label7
-      // 
+      //
       this.label7.AutoSize = true;
       this.label7.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.label7.Location = new System.Drawing.Point(81, 21);
@@ -383,9 +456,9 @@
       this.label7.Size = new System.Drawing.Size(136, 15);
       this.label7.TabIndex = 1;
       this.label7.Text = "Current          All               ";
-      // 
+      //
       // label6
-      // 
+      //
       this.label6.AutoSize = true;
       this.label6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.label6.Location = new System.Drawing.Point(6, 39);
@@ -393,38 +466,38 @@
       this.label6.Size = new System.Drawing.Size(69, 60);
       this.label6.TabIndex = 0;
       this.label6.Text = "Total Scans:\r\nMS1 Scans:\r\nMS2 Scans:\r\nMS3 Scans:";
-      // 
+      //
       // splitContainer3
-      // 
+      //
       this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
       this.splitContainer3.Location = new System.Drawing.Point(0, 0);
       this.splitContainer3.Name = "splitContainer3";
       this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
-      // 
+      //
       // splitContainer3.Panel1
-      // 
+      //
       this.splitContainer3.Panel1.Controls.Add(this.plotSpectrum);
       this.splitContainer3.Panel1.Controls.Add(this.lblScanFilter);
       this.splitContainer3.Panel1.Controls.Add(this.lblScanInfo);
-      // 
+      //
       // splitContainer3.Panel2
-      // 
+      //
       this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
       this.splitContainer3.Size = new System.Drawing.Size(550, 498);
       this.splitContainer3.SplitterDistance = 277;
       this.splitContainer3.TabIndex = 0;
-      // 
+      //
       // plotSpectrum
-      // 
+      //
       this.plotSpectrum.DisplayScale = 0F;
       this.plotSpectrum.Dock = System.Windows.Forms.DockStyle.Fill;
       this.plotSpectrum.Location = new System.Drawing.Point(0, 34);
       this.plotSpectrum.Name = "plotSpectrum";
       this.plotSpectrum.Size = new System.Drawing.Size(550, 243);
       this.plotSpectrum.TabIndex = 0;
-      // 
+      //
       // lblScanFilter
-      // 
+      //
       this.lblScanFilter.AutoSize = true;
       this.lblScanFilter.Dock = System.Windows.Forms.DockStyle.Top;
       this.lblScanFilter.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -432,9 +505,9 @@
       this.lblScanFilter.Name = "lblScanFilter";
       this.lblScanFilter.Size = new System.Drawing.Size(0, 17);
       this.lblScanFilter.TabIndex = 2;
-      // 
+      //
       // lblScanInfo
-      // 
+      //
       this.lblScanInfo.AutoSize = true;
       this.lblScanInfo.Dock = System.Windows.Forms.DockStyle.Top;
       this.lblScanInfo.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -442,21 +515,57 @@
       this.lblScanInfo.Name = "lblScanInfo";
       this.lblScanInfo.Size = new System.Drawing.Size(0, 17);
       this.lblScanInfo.TabIndex = 1;
-      // 
+      //
+      // rtbLog
+      //
+      this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.rtbLog.Name = "rtbLog";
+      this.rtbLog.Text = "";
+#if USE_LANDMINE_UI
+      this.rtbLog.Multiline = true;
+      this.rtbLog.ReadOnly = true;
+#else
+      this.rtbLog.Location = new System.Drawing.Point(3, 3);
+      this.rtbLog.Size = new System.Drawing.Size(536, 185);
+      this.rtbLog.TabIndex = 0;
+#endif
+      //
+      // rtbHeader
+      //
+      this.rtbHeader.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.rtbHeader.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.rtbHeader.Name = "rtbHeader";
+      this.rtbHeader.ReadOnly = true;
+      this.rtbHeader.Text = "";
+#if USE_LANDMINE_UI
+      this.rtbHeader.Multiline = true;
+#else
+      this.rtbHeader.BackColor = System.Drawing.SystemColors.Window;
+      this.rtbHeader.Location = new System.Drawing.Point(3, 3);
+      this.rtbHeader.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
+      this.rtbHeader.Size = new System.Drawing.Size(613, 189);
+      this.rtbHeader.TabIndex = 0;
+#endif
+      //
       // tabControl1
-      // 
-      this.tabControl1.Alignment = System.Windows.Forms.TabAlignment.Bottom;
-      this.tabControl1.Controls.Add(this.tabPage1);
-      this.tabControl1.Controls.Add(this.tabPage2);
+      //
       this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
       this.tabControl1.Location = new System.Drawing.Point(0, 0);
       this.tabControl1.Name = "tabControl1";
-      this.tabControl1.SelectedIndex = 0;
       this.tabControl1.Size = new System.Drawing.Size(550, 217);
       this.tabControl1.TabIndex = 0;
-      // 
+#if USE_LANDMINE_UI
+      this.tabControl1.AddTab("Message Log", null).Controls.Add(this.rtbLog);
+      this.tabControl1.AddTab("Header", null).Controls.Add(this.rtbHeader);
+      this.tabControl1.SelectedIndex = 0;
+#else
+      this.tabControl1.Alignment = System.Windows.Forms.TabAlignment.Bottom;
+      this.tabControl1.Controls.Add(this.tabPage1);
+      this.tabControl1.Controls.Add(this.tabPage2);
+      this.tabControl1.SelectedIndex = 0;
+      //
       // tabPage1
-      // 
+      //
       this.tabPage1.Controls.Add(this.rtbLog);
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
       this.tabPage1.Name = "tabPage1";
@@ -465,18 +574,9 @@
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Message Log";
       this.tabPage1.UseVisualStyleBackColor = true;
-      // 
-      // rtbLog
-      // 
-      this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.rtbLog.Location = new System.Drawing.Point(3, 3);
-      this.rtbLog.Name = "rtbLog";
-      this.rtbLog.Size = new System.Drawing.Size(536, 185);
-      this.rtbLog.TabIndex = 0;
-      this.rtbLog.Text = "";
-      // 
+      //
       // tabPage2
-      // 
+      //
       this.tabPage2.Controls.Add(this.rtbHeader);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
       this.tabPage2.Name = "tabPage2";
@@ -485,28 +585,26 @@
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Header";
       this.tabPage2.UseVisualStyleBackColor = true;
-      // 
-      // rtbHeader
-      // 
-      this.rtbHeader.BackColor = System.Drawing.SystemColors.Window;
-      this.rtbHeader.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.rtbHeader.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.rtbHeader.Location = new System.Drawing.Point(3, 3);
-      this.rtbHeader.Name = "rtbHeader";
-      this.rtbHeader.ReadOnly = true;
-      this.rtbHeader.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-      this.rtbHeader.Size = new System.Drawing.Size(613, 189);
-      this.rtbHeader.TabIndex = 0;
-      this.rtbHeader.Text = "";
-      // 
+#endif
+      //
       // ScanSpy
-      // 
+      //
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(784, 561);
+#if USE_LANDMINE_UI
+      // SharpWindow draws its own themed title bar and reserves the rest of the window for
+      // ContentArea -- adding straight to this.Controls would put these on top of/behind that
+      // title bar instead of below it. toolStrip1 is never populated with items -- it's dead UI
+      // even in the plain build -- so it's simply left unparented here rather than adding an
+      // empty, unthemed bar.
+      this.ContentArea.Controls.Add(this.splitContainer1);
+      this.ContentArea.Controls.Add(this.statusStrip1);
+#else
       this.Controls.Add(this.splitContainer1);
       this.Controls.Add(this.toolStrip1);
       this.Controls.Add(this.statusStrip1);
+#endif
       this.MinimumSize = new System.Drawing.Size(798, 594);
       this.Name = "ScanSpy";
       this.Text = "ScanSpy";
@@ -532,8 +630,10 @@
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
       this.splitContainer3.ResumeLayout(false);
       this.tabControl1.ResumeLayout(false);
+#if !USE_LANDMINE_UI
       this.tabPage1.ResumeLayout(false);
       this.tabPage2.ResumeLayout(false);
+#endif
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -541,37 +641,80 @@
 
     #endregion
 
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpStatusBar statusStrip1;
+#else
     private System.Windows.Forms.StatusStrip statusStrip1;
+    private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+    private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+#endif
     private System.Windows.Forms.ToolStrip toolStrip1;
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpSplitContainer splitContainer1;
+    private LandmineUI.WinForms.SharpSplitContainer splitContainer3;
+    private LandmineUI.WinForms.SharpSplitContainer splitContainer2;
+#else
     private System.Windows.Forms.SplitContainer splitContainer1;
     private System.Windows.Forms.SplitContainer splitContainer3;
     private System.Windows.Forms.SplitContainer splitContainer2;
+#endif
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpTabControl tabControl1;
+#else
     private System.Windows.Forms.TabControl tabControl1;
     private System.Windows.Forms.TabPage tabPage1;
     private System.Windows.Forms.TabPage tabPage2;
+#endif
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpGroupBox groupBox2;
+    private LandmineUI.WinForms.SharpGroupBox groupBox1;
+#else
     private System.Windows.Forms.GroupBox groupBox2;
     private System.Windows.Forms.GroupBox groupBox1;
+#endif
     private ScottPlot.WinForms.FormsPlot plotSpectrum;
     private System.Windows.Forms.Button connectionIndicator;
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpButton buttonConnect;
+#else
     private System.Windows.Forms.Button buttonConnect;
+#endif
     private System.Windows.Forms.Button disconnectionIndicator;
     private System.Windows.Forms.Label label2;
     private System.Windows.Forms.Label label1;
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpButton buttonListen;
+#else
     private System.Windows.Forms.Button buttonListen;
+#endif
     private System.Windows.Forms.Button listenIndicatorOff;
     private System.Windows.Forms.Button listenIndicatorWait;
     private System.Windows.Forms.Button listenIndicatorOn;
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpCheckBox cbOnAcquisition;
+#else
     private System.Windows.Forms.CheckBox cbOnAcquisition;
+#endif
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpTextArea rtbLog;
+#else
     private System.Windows.Forms.RichTextBox rtbLog;
+#endif
     private System.Windows.Forms.Label lblScanFilter;
     private System.Windows.Forms.Label lblScanInfo;
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.Label label4;
     private System.Windows.Forms.Label label3;
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpTextArea rtbHeader;
+#else
     private System.Windows.Forms.RichTextBox rtbHeader;
-    private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-    private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+#endif
+#if USE_LANDMINE_UI
+    private LandmineUI.WinForms.SharpGroupBox groupBox3;
+#else
     private System.Windows.Forms.GroupBox groupBox3;
+#endif
     private System.Windows.Forms.Label label6;
     private System.Windows.Forms.Label labelStats;
     private System.Windows.Forms.Label label7;
@@ -579,4 +722,3 @@
     private System.Windows.Forms.Label label8;
   }
 }
-
