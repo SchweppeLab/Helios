@@ -138,12 +138,31 @@ retried per peak.** `IsExceptional` throws immediately (short-circuiting the oth
 entirely), so naively wrapping every peak's reads in try/catch means every peak on a real Fusion
 instrument throws and catches a real .NET exception — found live to be the dominant cost behind
 `Helios.Bridge.Host` falling behind a real Fusion instrument's scan rate (exceptions are far more
-expensive than a marshal call; see `HISTORY.md`'s 2026-08-14 entry). `ToSnapshot`'s
-`_centroidFlagsSupported` (a `static bool?`, shared across every `HeliosMsScanChannelAdapter`
-instance for the process's lifetime, since one process talks to one instrument family for its whole
-life) probes once on the first peak and skips the try/catch — not just the property reads — for
-every later peak once it's known unsupported. Don't revert this to a plain per-peak try/catch even
-though it looks equivalent for correctness; it isn't, for cost.
+expensive than a marshal call; see `HISTORY.md`'s 2026-08-14 entry). `HeliosMsScanChannelAdapter.
+ToProto`'s `_centroidFlagsSupported` (a `static bool?`, shared across every
+`HeliosMsScanChannelAdapter` instance for the process's lifetime, since one process talks to one
+instrument family for its whole life) probes once on the first peak and skips the try/catch — not
+just the property reads — for every later peak once it's known unsupported. Don't revert this to a
+plain per-peak try/catch even though it looks equivalent for correctness; it isn't, for cost.
+
+**`Instruments.MsScanSnapshot`/`Instruments.CentroidBlock` no longer exist — `ToProto` builds
+`Contracts.MsScanData`/`Contracts.CentroidBlock` (the wire message) directly** from raw IAPI data
+(and `SimulatedInstrumentGateway.EmitScan` does the same from synthetic data), rather than building
+a host-local snapshot DTO that `Services/ScanStreamServiceImpl` then copied again into the proto
+message. `IMsScanChannel.MsScanArrived`/`GetLastMsScan()` carry `Contracts.MsScanData` directly for
+this reason (`Models.cs`'s `MsScanEventArgs`) — a deliberate, scoped exception to this namespace's
+usual "no proto type crosses this boundary" rule, paid specifically on the scan-streaming hot path
+to remove a second full pass over the highest-frequency data in the system (every centroid array
+and all four dictionaries were being built once into the DTO, then copied again into the wire
+message). `RepeatedField<T>.Capacity`/`MapField<string,string>`'s indexer are populated directly in
+the single pass over `scan.Centroids`/`scan.Header`/etc. — see `HISTORY.md`'s Core8Speed entry for
+the before/after and the live 1000 scans/sec regression test. This trade was made deliberately, on
+request, after the centroid-exception fix alone was confirmed to resolve the reported symptom on
+real Fusion hardware — i.e. this wasn't strictly required, it was chosen for additional headroom.
+`Helios.Client`'s own public surface (a *different*, separate "no proto type" boundary — see below)
+is untouched by this; only the host-internal representation collapsed. If you're looking for
+`MsScanSnapshot` and it's gone, this is why — don't recreate it as a stepping stone without a reason
+beyond "restore the old shape."
 
 ### The bridge (`Bridge/`)
 
@@ -199,9 +218,12 @@ Five projects, three runtime boundaries:
   comment at the top of `Interfaces.cs`): synchronous properties/events stay synchronous, backed by
   a cache kept current by a background gRPC stream; genuine round-trip calls that shouldn't block a
   caller are `Task`-returning instead of exactly-synchronous; `IMsScan.Centroids` stays the
-  columnar `CentroidBlock`, not `IEnumerable<ICentroid>`. Neither this project's public surface nor
-  the host's `IInstrumentGateway` ever expose a generated proto type — `Mapping.cs` (client-side)
-  and each `Services/*ServiceImpl.cs` (host-side) are the only places proto types appear.
+  columnar `CentroidBlock`, not `IEnumerable<ICentroid>`. This project's public surface never
+  exposes a generated proto type — `Mapping.cs` is the only place they appear client-side. The
+  host's `IInstrumentGateway` holds to the same rule *except* `IMsScanChannel`, which deliberately
+  carries `Contracts.MsScanData` directly (see the `HeliosMsScanChannelAdapter`/`ToProto` note
+  above) — a scoped, on-request exception for the scan-streaming hot path specifically, not a
+  precedent for loosening the rule elsewhere in `IInstrumentGateway`.
 - **`Helios.Client.Demo`** (net8 console) — end-to-end showcase: connects, streams scans with a
   rolling latency report, submits a demo custom scan, toggles acquisition on/off.
 

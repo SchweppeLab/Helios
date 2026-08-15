@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Contracts = Helios.Bridge.Contracts;
 
 namespace Helios.Bridge.Host.Instruments.Simulated
 {
@@ -158,48 +159,44 @@ namespace Helios.Bridge.Host.Instruments.Simulated
         if (intensity[i] > basePeakIntensity) basePeakIntensity = intensity[i];
       }
 
+      var centroids = new Contracts.CentroidBlock();
+      centroids.Mz.Add(mz);
+      centroids.Intensity.Add(intensity);
+      centroids.Charge.Add(charge);
+      centroids.Resolution.Add(resolution);
+      centroids.IsExceptional.Add(exceptional);
+      centroids.IsFragmented.Add(fragmented);
+      centroids.IsMerged.Add(merged);
+      centroids.IsReferenced.Add(referenced);
+
+      var scan = new Contracts.MsScanData
+      {
+        DetectorName = DetectorClasses[0],
+        ArrivalTimeUnixMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+        HasProfileInformation = false,
+        Centroids = centroids,
+      };
+
       // Header keys use the same canonical (Helios "universal dictionary") spellings
       // HeliosMsScanChannelAdapter.CanonicalHeaderIds resolves on real Fusion/Exploris hardware --
       // this backend has no raw instrument-specific spelling to translate from, so it can just
       // emit the canonical form directly.
-      var snapshot = new MsScanSnapshot
-      {
-        DetectorName = DetectorClasses[0],
-        ArrivalTimeUtc = DateTime.UtcNow,
-        Header = new Dictionary<string, string>
-        {
-          ["Scan"] = scanNumber.ToString(),
-          ["MSOrder"] = "1",
-          ["StartTime"] = _sinceConnect.Elapsed.TotalMinutes.ToString("F4"),
-          ["FirstMass"] = firstMass.ToString("F4"),
-          ["LastMass"] = lastMass.ToString("F4"),
-          ["BasePeakIntensity"] = basePeakIntensity.ToString("F1"),
-          ["ScanData"] = "Centroid",
-          ["MassAnalyzer"] = "FTMS",
-          ["Polarity"] = "Positive",
-          ["ScanMode"] = "Full",
-          ["IonizationMode"] = "NSI",
-          ["InjectTime"] = "50",
-          ["TIC"] = (basePeakIntensity * peakCount * 0.4).ToString("F1"),
-        },
-        Trailer = new Dictionary<string, string> { ["Access ID"] = scanNumber.ToString() },
-        StatusLog = new Dictionary<string, string>(),
-        TuneData = new Dictionary<string, string>(),
-        HasProfileInformation = false,
-        Centroids = new CentroidBlock
-        {
-          Mz = mz,
-          Intensity = intensity,
-          Charge = charge,
-          Resolution = resolution,
-          IsExceptional = exceptional,
-          IsFragmented = fragmented,
-          IsMerged = merged,
-          IsReferenced = referenced,
-        },
-      };
+      scan.Header["Scan"] = scanNumber.ToString();
+      scan.Header["MSOrder"] = "1";
+      scan.Header["StartTime"] = _sinceConnect.Elapsed.TotalMinutes.ToString("F4");
+      scan.Header["FirstMass"] = firstMass.ToString("F4");
+      scan.Header["LastMass"] = lastMass.ToString("F4");
+      scan.Header["BasePeakIntensity"] = basePeakIntensity.ToString("F1");
+      scan.Header["ScanData"] = "Centroid";
+      scan.Header["MassAnalyzer"] = "FTMS";
+      scan.Header["Polarity"] = "Positive";
+      scan.Header["ScanMode"] = "Full";
+      scan.Header["IonizationMode"] = "NSI";
+      scan.Header["InjectTime"] = "50";
+      scan.Header["TIC"] = (basePeakIntensity * peakCount * 0.4).ToString("F1");
+      scan.Trailer["Access ID"] = scanNumber.ToString();
 
-      _msScanChannel.Emit(snapshot);
+      _msScanChannel.Emit(scan);
     }
 
     private double NextDouble(double min, double max)
@@ -218,7 +215,7 @@ namespace Helios.Bridge.Host.Instruments.Simulated
 
   internal sealed class SimulatedMsScanChannel : IMsScanChannel
   {
-    private MsScanSnapshot? _lastScan;
+    private Contracts.MsScanData? _lastScan;
 
     public SimulatedMsScanChannel(string detectorClass) => DetectorClass = detectorClass;
 
@@ -226,9 +223,9 @@ namespace Helios.Bridge.Host.Instruments.Simulated
 
     public event EventHandler<MsScanEventArgs>? MsScanArrived;
 
-    public MsScanSnapshot? GetLastMsScan() => _lastScan;
+    public Contracts.MsScanData? GetLastMsScan() => _lastScan;
 
-    public void Emit(MsScanSnapshot scan)
+    public void Emit(Contracts.MsScanData scan)
     {
       _lastScan = scan;
       MsScanArrived?.Invoke(this, new MsScanEventArgs(scan));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Contracts = Helios.Bridge.Contracts;
 
 namespace Helios.Bridge.Host.Instruments
 {
@@ -108,47 +109,6 @@ namespace Helios.Bridge.Host.Instruments
     public IDictionary<string, string> Values { get; } = new Dictionary<string, string>();
   }
 
-  // Structure-of-arrays centroid block -- see Helios.Bridge.Contracts' scans.proto for why this
-  // shape was chosen over one object per centroid. Built once per scan by the gateway and handed
-  // straight through to the gRPC layer for packing into CentroidBlock.
-  public sealed class CentroidBlock
-  {
-    public static readonly CentroidBlock Empty = new()
-    {
-      Mz = Array.Empty<double>(),
-      Intensity = Array.Empty<double>(),
-      Charge = Array.Empty<int>(),
-      Resolution = Array.Empty<double>(),
-      IsExceptional = Array.Empty<bool>(),
-      IsFragmented = Array.Empty<bool>(),
-      IsMerged = Array.Empty<bool>(),
-      IsReferenced = Array.Empty<bool>(),
-    };
-
-    public double[] Mz { get; init; } = Array.Empty<double>();
-    public double[] Intensity { get; init; } = Array.Empty<double>();
-    public int[] Charge { get; init; } = Array.Empty<int>();
-    public double[] Resolution { get; init; } = Array.Empty<double>();
-    public bool[] IsExceptional { get; init; } = Array.Empty<bool>();
-    public bool[] IsFragmented { get; init; } = Array.Empty<bool>();
-    public bool[] IsMerged { get; init; } = Array.Empty<bool>();
-    public bool[] IsReferenced { get; init; } = Array.Empty<bool>();
-  }
-
-  public sealed class MsScanSnapshot
-  {
-    public string DetectorName { get; init; } = string.Empty;
-    public DateTime ArrivalTimeUtc { get; init; }
-    public IReadOnlyDictionary<string, string> Header { get; init; } = EmptyMap;
-    public IReadOnlyDictionary<string, string> Trailer { get; init; } = EmptyMap;
-    public IReadOnlyDictionary<string, string> StatusLog { get; init; } = EmptyMap;
-    public IReadOnlyDictionary<string, string> TuneData { get; init; } = EmptyMap;
-    public bool HasProfileInformation { get; init; }
-    public CentroidBlock Centroids { get; init; } = CentroidBlock.Empty;
-
-    private static readonly IReadOnlyDictionary<string, string> EmptyMap = new Dictionary<string, string>();
-  }
-
   public sealed class InstrumentMessage
   {
     public int InstrumentId { get; init; }
@@ -173,11 +133,16 @@ namespace Helios.Bridge.Host.Instruments
     public int FallingEdges { get; init; }
   }
 
+  // Carries the wire-shaped Contracts.MsScanData directly rather than a host-local snapshot DTO --
+  // the gateway builds it straight from the raw backend data (real IAPI or Simulated), and
+  // Services/ScanStreamServiceImpl ships it out unmodified. Deliberately breaks this namespace's
+  // usual "no proto types cross this boundary" rule (see IInstrumentGateway.cs), specifically for
+  // the scan-streaming hot path -- see HeliosInstrumentGateway.cs's ToProto for why.
   public sealed class MsScanEventArgs : EventArgs
   {
-    public MsScanSnapshot Scan { get; }
+    public Contracts.MsScanData Scan { get; }
 
-    public MsScanEventArgs(MsScanSnapshot scan) => Scan = scan;
+    public MsScanEventArgs(Contracts.MsScanData scan) => Scan = scan;
   }
 
   public sealed class AcquisitionStateChangedEventArgs : EventArgs

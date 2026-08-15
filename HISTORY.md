@@ -7,6 +7,73 @@ deleting past entries.
 
 ---
 
+## 2026-08-14 -- Core8Speed branch: collapsed the host's double-copy of scan data
+
+**Status: done, confirmed live on the real Fusion instrument -- the fix holds.** New branch
+(`Core8Speed`, off `Core8`) opened specifically for further performance work after the centroid-
+exception fix (previous entry) resolved the user's reported real-Fusion falling-behind symptom.
+Continuing the bottleneck review: found that every scan's centroid arrays and all four dictionaries
+(`Header`/`Trailer`/`StatusLog`/`TuneData`) were being built twice on the host -- once into
+`Instruments.MsScanSnapshot`/`CentroidBlock` (a host-local DTO that exists purely so
+`IInstrumentGateway` stays proto-free), then copied again into the proto `MsScanData` message in
+`Services/ScanStreamServiceImpl.ToProto`. Not the exception-storm class of bug (no exceptions
+involved, just allocation/copy work), but real, unavoidable-looking GC pressure on the
+highest-frequency path in the system, paid twice per scan.
+
+Presented as an explicit architecture tradeoff before touching anything: collapsing it means
+`IMsScanChannel` (part of `IInstrumentGateway`'s public surface) has to carry `Contracts.MsScanData`
+directly instead of a host-local DTO, breaking this namespace's otherwise-consistent "no proto type
+crosses this boundary" rule for that one interface member. User's explicit direction: "make the
+tradeoff... skip the intermediate steps."
+
+Implemented:
+- `Models.cs`: removed `MsScanSnapshot`/`CentroidBlock` entirely; `MsScanEventArgs` now carries
+  `Contracts.MsScanData` directly.
+- `IInstrumentGateway.cs`: `IMsScanChannel.GetLastMsScan()` returns `Contracts.MsScanData?`.
+- `HeliosInstrumentGateway.cs`: `HeliosMsScanChannelAdapter.ToSnapshot` renamed to `ToProto`, now
+  builds `Contracts.MsScanData`/`Contracts.CentroidBlock` directly from raw `IMsScan` data in a
+  single pass -- `RepeatedField<T>.Capacity` pre-sized per field (same benefit the old fixed-size
+  arrays gave for free, without needing them as a separate allocation), `.Add()`'d per peak; Header/
+  Trailer/StatusLog/TuneData written straight into `MapField<string,string>` via the same
+  `CopyInto`/`ResolveCanonicalTerms` logic, just retargeted. The centroid-flag fast path from the
+  previous entry carried over unchanged in spirit, with one real correctness fix along the way:
+  `RepeatedField<T>` (unlike a fixed-size `bool[]`) doesn't auto-default unwritten slots to `false`,
+  so skipping the four flag adds entirely once known-unsupported would have left those fields
+  shorter than `Mz`/`Intensity`/etc., breaking the parallel-arrays wire contract -- a `wroteFlags`
+  flag now ensures exactly one entry (real or `false`) is always added per field per peak.
+- `SimulatedInstrumentGateway.cs`: `EmitScan`/`SimulatedMsScanChannel` retargeted to build
+  `Contracts.MsScanData`/`CentroidBlock` directly too (kept close to its original structure --
+  Simulated isn't the hot path being optimized, just needs to satisfy the same interface).
+- `Services/ScanStreamServiceImpl.cs`: collapsed to a pure pass-through (no `ToProto`/`CopyInto` of
+  its own left at all) now that `IMsScanChannel` already hands back wire-ready data.
+
+Deliberately NOT changed: `Helios.Client`'s own public surface and its proto-to-client-DTO copy
+(`Mapping.cs`) -- a separate, consumer-facing API-contract boundary, not part of what was flagged or
+agreed to here. Also not changed per explicit instruction: the host's scan-stream channel stays
+unbounded with no drop policy (user: memory isn't growing at normal instrument speeds anymore, and
+"even if it were, do not skip scans... not ready to throw away data"), and `GrpcStreaming.PumpAsync`'s
+`SingleWriter: false` setting (left alone for now).
+
+**Verified**: `Helios.Bridge.Host.csproj` builds clean on the first attempt (0 warnings/errors) --
+the `Contracts`-alias-vs-unqualified-`using` collision risk (this namespace already defines its own
+`SystemMode`/`InstrumentState`, which would collide with `Contracts.SystemMode`/`InstrumentState`
+under a blanket `using Helios.Bridge.Contracts;`) was caught during planning and avoided via
+`using Contracts = Helios.Bridge.Contracts;` specifically in the `Instruments` namespace's files
+(`Services/*.cs` already used the unqualified form safely, since that namespace has no colliding
+names). Full solution builds clean (0 errors). Regression-tested live: connected via
+`Helios.Client.Demo` against local VMS/Corona (control-plane operations clean, no exceptions;
+VirtualMS wasn't actively streaming scans during the test). Then temporarily switched the deployed
+(not source) `App.config` to `Simulated` at its existing `SimulatedScanIntervalMs=1` (1000 scans/sec)
+stress-test setting and ran the same demo: sustained ~1000 scans/sec with 0.5-2.7ms latency,
+matching the original pre-refactor baseline (~1000 scans/sec, ~1.3ms avg) from when this backend was
+first verified -- header/centroid data confirmed flowing correctly end-to-end (the demo's own
+scans/sec and latency figures are computed from real header timestamps and arrival times, so a
+wrong/malformed `Header` or `Centroids` would have shown up as broken output, not just a crash).
+Deployed config reverted to match source (`Auto`) via a clean rebuild afterward. User then confirmed
+live on the real Fusion instrument: the fix holds, no regression from the double-copy collapse.
+
+---
+
 ## 2026-08-14 -- Host: stopped throwing a .NET exception per centroid peak on Fusion (falling-behind bug, part 2 of 2, host side)
 
 **Status: fixed, confirmed live against real Fusion hardware -- Helios.Bridge.Host now keeps up with

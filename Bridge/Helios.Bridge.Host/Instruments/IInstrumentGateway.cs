@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Contracts = Helios.Bridge.Contracts;
 
 namespace Helios.Bridge.Host.Instruments
 {
@@ -75,7 +76,7 @@ namespace Helios.Bridge.Host.Instruments
 
     event EventHandler<MsScanEventArgs> MsScanArrived;
 
-    MsScanSnapshot? GetLastMsScan();
+    Contracts.MsScanData? GetLastMsScan();
   }
 
   public interface ISyringePumpChannel

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Protobuf.Collections;
+using Contracts = Helios.Bridge.Contracts;
 using Helios.Interfaces;
 using Helios.Interfaces.InstrumentAccess;
 using Helios.Interfaces.InstrumentAccess.AnalogTraceContainer;
@@ -356,10 +358,19 @@ namespace Helios.Bridge.Host.Instruments
     public bool CancelRepetition() => _scans.CancelRepetition();
   }
 
+  // Builds Contracts.MsScanData (the wire message) directly from raw IAPI data -- no intermediate
+  // host-local snapshot/CentroidBlock DTO in between. That intermediate type used to exist purely
+  // so IInstrumentGateway's abstraction stayed proto-free, but it meant every scan's centroid
+  // arrays and four dictionaries were built once into the DTO and then copied again into the proto
+  // message in Services/ScanStreamServiceImpl -- a second full pass over the highest-frequency data
+  // in the system, on top of the cost already paid once here. Deliberately traded that clean
+  // layering away for this one hot path (see MsScanEventArgs in Models.cs) once the centroid-flag
+  // exception storm below was fixed and real Fusion throughput was still a stated concern; see
+  // HISTORY.md's Core8Speed entry.
   internal sealed class HeliosMsScanChannelAdapter : IMsScanChannel
   {
     private readonly IMsScanContainer _container;
-    private MsScanSnapshot? _lastScan;
+    private Contracts.MsScanData? _lastScan;
 
     public HeliosMsScanChannelAdapter(IMsScanContainer container)
     {
@@ -368,7 +379,7 @@ namespace Helios.Bridge.Host.Instruments
       _container.MsScanArrived += (s, e) => CallbackGuard.Run("MsScanContainer.MsScanArrived", () =>
       {
         using var scan = e.GetScan();
-        _lastScan = ToSnapshot(scan, DetectorClass);
+        _lastScan = ToProto(scan, DetectorClass);
         MsScanArrived?.Invoke(this, new MsScanEventArgs(_lastScan));
       });
     }
@@ -377,11 +388,11 @@ namespace Helios.Bridge.Host.Instruments
 
     public event EventHandler<MsScanEventArgs>? MsScanArrived;
 
-    public MsScanSnapshot? GetLastMsScan()
+    public Contracts.MsScanData? GetLastMsScan()
     {
       if (_lastScan is not null) return _lastScan;
       using var scan = _container.GetLastMsScan();
-      return scan is null ? null : ToSnapshot(scan, DetectorClass);
+      return scan is null ? null : ToProto(scan, DetectorClass);
     }
 
     // HeliosMsScanVMS (Corona) never assigns DetectorName either -- same gap as StatusLog/TuneData
@@ -397,7 +408,7 @@ namespace Helios.Bridge.Host.Instruments
     // never even execute, meaning every peak on a real Fusion instrument threw and caught one live
     // .NET exception, which is dramatically more expensive than a normal property read or even a
     // cross-process marshal (stack capture/unwind). At real centroid counts (thousands per scan)
-    // and real scan rates, this alone was enough to throttle ToSnapshot below real-time -- found
+    // and real scan rates, this alone was enough to throttle this method below real-time -- found
     // as the dominant contributor to Helios.Bridge.Host falling behind a live Fusion instrument
     // (see HISTORY.md). One instrument family per process for this process's whole lifetime (see
     // Program.cs's CreateGateway), so probing once and caching the result -- rather than per-peak,
@@ -411,73 +422,82 @@ namespace Helios.Bridge.Host.Instruments
     // correctness bug -- not worth a lock on this hot a path for that.
     private static bool? _centroidFlagsSupported;
 
-    private static MsScanSnapshot ToSnapshot(IMsScan scan, string fallbackDetectorName)
+    private static Contracts.MsScanData ToProto(IMsScan scan, string fallbackDetectorName)
     {
       int count = scan.CentroidCount ?? 0;
-      var mz = new double[count];
-      var intensity = new double[count];
-      var charge = new int[count];
-      var resolution = new double[count];
-      var exceptional = new bool[count];
-      var fragmented = new bool[count];
-      var merged = new bool[count];
-      var referenced = new bool[count];
+
+      var centroids = new Contracts.CentroidBlock();
+      // Pre-sizing avoids the repeated backing-array doubling RepeatedField<T> would otherwise do
+      // as each .Add() below grows it from empty -- the same benefit the old fixed-size double[]
+      // arrays gave for free, without needing those arrays as a separate allocation to copy from.
+      centroids.Mz.Capacity = count;
+      centroids.Intensity.Capacity = count;
+      centroids.Charge.Capacity = count;
+      centroids.Resolution.Capacity = count;
+      centroids.IsExceptional.Capacity = count;
+      centroids.IsFragmented.Capacity = count;
+      centroids.IsMerged.Capacity = count;
+      centroids.IsReferenced.Capacity = count;
 
       int i = 0;
       foreach (var c in scan.Centroids)
       {
         if (i >= count) break; // CentroidCount is advisory per IAPI docs; guard against a mismatch.
-        mz[i] = c.Mz;
-        intensity[i] = c.Intensity;
-        charge[i] = c.Charge ?? -1;
-        resolution[i] = c.Resolution ?? 0;
+        centroids.Mz.Add(c.Mz);
+        centroids.Intensity.Add(c.Intensity);
+        centroids.Charge.Add(c.Charge ?? -1);
+        centroids.Resolution.Add(c.Resolution ?? 0);
 
-        // Arrays already default to false, so there's nothing to do here once these are known
-        // unsupported -- just leave this peak's four slots alone.
+        // Unlike the old fixed-size bool[] arrays (which defaulted every slot to false for free),
+        // RepeatedField<T> only ever has as many entries as were .Add()'d -- skipping the four
+        // flag adds entirely once known unsupported would leave those four fields shorter than
+        // Mz/Intensity/etc., breaking the parallel-arrays wire contract. wroteFlags tracks whether
+        // the try below actually added this peak's four values, so the fallback always adds
+        // exactly one (false) entry per field when it didn't.
+        bool wroteFlags = false;
         if (_centroidFlagsSupported != false)
         {
           try
           {
-            exceptional[i] = c.IsExceptional ?? false;
-            fragmented[i] = c.IsFragmented ?? false;
-            merged[i] = c.IsMerged ?? false;
-            referenced[i] = c.IsReferenced ?? false;
+            centroids.IsExceptional.Add(c.IsExceptional ?? false);
+            centroids.IsFragmented.Add(c.IsFragmented ?? false);
+            centroids.IsMerged.Add(c.IsMerged ?? false);
+            centroids.IsReferenced.Add(c.IsReferenced ?? false);
             _centroidFlagsSupported = true;
+            wroteFlags = true;
           }
           catch (NotImplementedException)
           {
             _centroidFlagsSupported = false;
           }
         }
+        if (!wroteFlags)
+        {
+          centroids.IsExceptional.Add(false);
+          centroids.IsFragmented.Add(false);
+          centroids.IsMerged.Add(false);
+          centroids.IsReferenced.Add(false);
+        }
+
         i++;
       }
 
-      var header = new Dictionary<string, string>(scan.Header);
-      ResolveCanonicalTerms(header, CanonicalHeaderIds, scan.TryHeader);
-      var trailer = ToDictionary(scan.Trailer);
-      ResolveCanonicalTerms(trailer, CanonicalTrailerIds, scan.TryTrailer);
-
-      return new MsScanSnapshot
+      var proto = new Contracts.MsScanData
       {
         DetectorName = scan.DetectorName ?? fallbackDetectorName,
-        ArrivalTimeUtc = DateTime.UtcNow,
-        Header = header,
-        Trailer = trailer,
-        StatusLog = ToDictionary(scan.StatusLog),
-        TuneData = ToDictionary(scan.TuneData),
+        ArrivalTimeUnixMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
         HasProfileInformation = false,
-        Centroids = new CentroidBlock
-        {
-          Mz = mz,
-          Intensity = intensity,
-          Charge = charge,
-          Resolution = resolution,
-          IsExceptional = exceptional,
-          IsFragmented = fragmented,
-          IsMerged = merged,
-          IsReferenced = referenced,
-        },
+        Centroids = centroids,
       };
+
+      CopyInto(proto.Header, scan.Header);
+      ResolveCanonicalTerms(proto.Header, CanonicalHeaderIds, scan.TryHeader);
+      CopyInto(proto.Trailer, scan.Trailer);
+      ResolveCanonicalTerms(proto.Trailer, CanonicalTrailerIds, scan.TryTrailer);
+      CopyInto(proto.StatusLog, scan.StatusLog);
+      CopyInto(proto.TuneData, scan.TuneData);
+
+      return proto;
     }
 
     private delegate bool TryGet(string id, out string value);
@@ -506,7 +526,7 @@ namespace Helios.Bridge.Host.Instruments
       "Master Scan Number", "Monoisotopic M/Z", "Scan Description",
     };
 
-    private static void ResolveCanonicalTerms(Dictionary<string, string> target, string[] canonicalIds, TryGet tryGet)
+    private static void ResolveCanonicalTerms(MapField<string, string> target, string[] canonicalIds, TryGet tryGet)
     {
       foreach (var id in canonicalIds)
       {
@@ -514,22 +534,27 @@ namespace Helios.Bridge.Host.Instruments
       }
     }
 
-    // HeliosMsScanVMS (Corona) never assigns StatusLog/TuneData at all -- they're null for every
-    // VMS scan, unlike Exploris/Fusion which always wrap a real (possibly-unavailable-but-non-null)
-    // source. A null check here isn't defensive filler: without it this throws on literally the
-    // first scan Corona ever sends, synchronously inside Corona's own pipe-message dispatch chain
-    // (ReceiveScan -> MsScanArrived -> this method), which kills that dispatch thread -- explains
-    // why no scan data arrived AND why AcquisitionStreamClosing/the next StreamOpening never fired
-    // either, not just this one scan.
-    private static Dictionary<string, string> ToDictionary(IInformationSourceAccess source)
+    // scan.Header is already a plain, already-materialized dictionary-like source -- straight copy.
+    private static void CopyInto(MapField<string, string> target, IEnumerable<KeyValuePair<string, string>> source)
     {
-      var result = new Dictionary<string, string>();
-      if (source is null || !source.Available) return result;
+      foreach (var kv in source) target[kv.Key] = kv.Value;
+    }
+
+    // scan.Trailer/StatusLog/TuneData are IInformationSourceAccess instead -- a live accessor, not
+    // a plain dictionary. HeliosMsScanVMS (Corona) never assigns StatusLog/TuneData at all -- null
+    // for every VMS scan, unlike Exploris/Fusion which always wrap a real
+    // (possibly-unavailable-but-non-null) source. The null check here isn't defensive filler:
+    // without it this throws on literally the first scan Corona ever sends, synchronously inside
+    // Corona's own pipe-message dispatch chain (ReceiveScan -> MsScanArrived -> this method), which
+    // kills that dispatch thread -- explains why no scan data arrived AND why
+    // AcquisitionStreamClosing/the next StreamOpening never fired either, not just this one scan.
+    private static void CopyInto(MapField<string, string> target, IInformationSourceAccess source)
+    {
+      if (source is null || !source.Available) return;
       foreach (var name in source.ItemNames)
       {
-        if (source.TryGetValue(name, out var value)) result[name] = value;
+        if (source.TryGetValue(name, out var value)) target[name] = value;
       }
-      return result;
     }
   }
 
