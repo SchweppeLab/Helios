@@ -317,6 +317,39 @@ Notable adaptations, useful context if touching it again:
   unbounded/un-droppable as every other hop in this pipeline (see `HISTORY.md`'s 2026-08-14 "falling
   behind" entries). Calling it once per scan instead of once per throttled refresh reintroduces that
   bug at real instrument scan rates above ~10Hz.
+- **Optional LandmineUI-themed window.** `ScanSpy` can build as a themed `LandmineUI.WinForms`
+  window instead of plain WinForms, gated behind a `USE_LANDMINE_UI` compile symbol that only turns
+  on via a gitignored, machine-local `ScanSpy/LandmineUI.local.props` marker — a fresh clone is
+  unaffected. See `ScanSpy/README-LandmineUI.md` for setup and `HISTORY.md`'s 2026-08-15 entries for
+  the full integration history. When touching any control in `ScanSpy.Designer.cs`, check both
+  `#if USE_LANDMINE_UI` branches build (toggle the marker file and rebuild both ways) — the two
+  paths use genuinely different control types (`SharpButton` vs `Button`, `SharpTextArea` vs
+  `RichTextBox`, etc.), not just different styling of the same one.
+- **The scan filter line (`ProcessScanHeader`, above the spectrum plot) prefers a real `"Filter"`
+  header key when present, over its own field-by-field reconstruction.** Corona/VMS scans carry the
+  authentic Thermo filter string through from RawFileReader (`Spectrum.ScanFilter =
+  RawFile.GetFilterForScanNumber(...).ToString()` in Nova's `ThermoRawReader.cs`) under that raw
+  key; live Exploris/Fusion scans via IAPI never expose a filter string at all (confirmed absent
+  from `HeliosDictionary`'s canonical mapping), so those still go through the reconstruction
+  fallback. Don't "simplify" this back down to reconstruction-only — that's what produced the
+  original static-looking `"FTMS + c ESI?"` bug (VMS scans never populate `IonizationMode`, so every
+  VMS-driven scan hit the same placeholder branch).
+- **`rtbHeader`'s text gets replaced wholesale on every throttled refresh, which resets scroll
+  position unless explicitly restored.** Both build paths do this via `EM_GETFIRSTVISIBLELINE`/
+  `EM_LINESCROLL` (plain build: `SetHeaderText` in `ScanSpy.cs`; LandmineUI build:
+  `SharpTextBox.SetTextPreservingScroll`, added upstream for this). **Restore by the delta between
+  the actual post-`Text`-set position and the target, not by re-applying the pre-change absolute
+  line number** — assuming `WM_SETTEXT` resets the view to line 0 is not reliable, and the resulting
+  off-by-a-little error compounds every refresh into a slow drift back to the top. If this pattern
+  shows up elsewhere (another control gets the same wholesale-replace treatment), reuse the
+  delta-based version, not the absolute one.
+- **Status indicators (`connectionIndicator`, `disconnectionIndicator`, `listenIndicatorOn/Wait/Off`)
+  are `LedIndicator` (`ScanSpy/LedIndicator.cs`), not `Button`.** It's a plain custom-painted
+  `Control` with no LandmineUI dependency of its own — same type in both build configs — but reads
+  `ThemeManager.Current` for its backdrop/ring color under `USE_LANDMINE_UI`. Callers set the
+  `LedColor` property (not `BackColor`); `Color.Gray` means off, any non-grayscale color is drawn
+  lit (glow + bevel). Keep using `Color.Gray` for "off" if adding more indicators — that's what
+  `LedIndicator` checks to decide whether to render the lit style.
 
 ## Bug-fixing policy for this repo
 
