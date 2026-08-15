@@ -56,9 +56,9 @@ namespace ScanSpy
 #else
       this.cbOnAcquisition = new System.Windows.Forms.CheckBox();
 #endif
-      this.listenIndicatorOff = new System.Windows.Forms.Button();
-      this.listenIndicatorWait = new System.Windows.Forms.Button();
-      this.listenIndicatorOn = new System.Windows.Forms.Button();
+      this.listenIndicatorOff = new global::ScanSpy.LedIndicator();
+      this.listenIndicatorWait = new global::ScanSpy.LedIndicator();
+      this.listenIndicatorOn = new global::ScanSpy.LedIndicator();
 #if USE_LANDMINE_UI
       this.buttonListen = new LandmineUI.WinForms.SharpButton();
 #else
@@ -71,8 +71,8 @@ namespace ScanSpy
 #endif
       this.label2 = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
-      this.disconnectionIndicator = new System.Windows.Forms.Button();
-      this.connectionIndicator = new System.Windows.Forms.Button();
+      this.disconnectionIndicator = new global::ScanSpy.LedIndicator();
+      this.connectionIndicator = new global::ScanSpy.LedIndicator();
 #if USE_LANDMINE_UI
       this.buttonConnect = new LandmineUI.WinForms.SharpButton();
 #else
@@ -289,32 +289,29 @@ namespace ScanSpy
       //
       // listenIndicatorOff
       //
-      this.listenIndicatorOff.BackColor = System.Drawing.Color.Gray;
+      this.listenIndicatorOff.LedColor = System.Drawing.Color.Gray;
       this.listenIndicatorOff.Location = new System.Drawing.Point(122, 58);
       this.listenIndicatorOff.Name = "listenIndicatorOff";
       this.listenIndicatorOff.Size = new System.Drawing.Size(16, 16);
       this.listenIndicatorOff.TabIndex = 4;
-      this.listenIndicatorOff.UseVisualStyleBackColor = false;
       this.listenIndicatorOff.Click += new System.EventHandler(this.listenIndicatorOff_Click);
       //
       // listenIndicatorWait
       //
-      this.listenIndicatorWait.BackColor = System.Drawing.Color.Gray;
+      this.listenIndicatorWait.LedColor = System.Drawing.Color.Gray;
       this.listenIndicatorWait.Location = new System.Drawing.Point(122, 42);
       this.listenIndicatorWait.Name = "listenIndicatorWait";
       this.listenIndicatorWait.Size = new System.Drawing.Size(16, 16);
       this.listenIndicatorWait.TabIndex = 3;
-      this.listenIndicatorWait.UseVisualStyleBackColor = false;
       this.listenIndicatorWait.Click += new System.EventHandler(this.listenIndicatorWait_Click);
       //
       // listenIndicatorOn
       //
-      this.listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
+      this.listenIndicatorOn.LedColor = System.Drawing.Color.Gray;
       this.listenIndicatorOn.Location = new System.Drawing.Point(122, 26);
       this.listenIndicatorOn.Name = "listenIndicatorOn";
       this.listenIndicatorOn.Size = new System.Drawing.Size(16, 16);
       this.listenIndicatorOn.TabIndex = 2;
-      this.listenIndicatorOn.UseVisualStyleBackColor = false;
       this.listenIndicatorOn.Click += new System.EventHandler(this.listenIndicatorOn_Click);
       //
       // buttonListen
@@ -369,21 +366,19 @@ namespace ScanSpy
       //
       // disconnectionIndicator
       //
-      this.disconnectionIndicator.BackColor = System.Drawing.Color.Red;
+      this.disconnectionIndicator.LedColor = System.Drawing.Color.Red;
       this.disconnectionIndicator.Location = new System.Drawing.Point(122, 43);
       this.disconnectionIndicator.Name = "disconnectionIndicator";
       this.disconnectionIndicator.Size = new System.Drawing.Size(16, 16);
       this.disconnectionIndicator.TabIndex = 2;
-      this.disconnectionIndicator.UseVisualStyleBackColor = false;
       //
       // connectionIndicator
       //
-      this.connectionIndicator.BackColor = System.Drawing.Color.Gray;
+      this.connectionIndicator.LedColor = System.Drawing.Color.Gray;
       this.connectionIndicator.Location = new System.Drawing.Point(122, 27);
       this.connectionIndicator.Name = "connectionIndicator";
       this.connectionIndicator.Size = new System.Drawing.Size(16, 16);
       this.connectionIndicator.TabIndex = 1;
-      this.connectionIndicator.UseVisualStyleBackColor = false;
       //
       // buttonConnect
       //
@@ -673,13 +668,13 @@ namespace ScanSpy
     private System.Windows.Forms.GroupBox groupBox1;
 #endif
     private ScottPlot.WinForms.FormsPlot plotSpectrum;
-    private System.Windows.Forms.Button connectionIndicator;
+    private global::ScanSpy.LedIndicator connectionIndicator;
 #if USE_LANDMINE_UI
     private LandmineUI.WinForms.SharpButton buttonConnect;
 #else
     private System.Windows.Forms.Button buttonConnect;
 #endif
-    private System.Windows.Forms.Button disconnectionIndicator;
+    private global::ScanSpy.LedIndicator disconnectionIndicator;
     private System.Windows.Forms.Label label2;
     private System.Windows.Forms.Label label1;
 #if USE_LANDMINE_UI
@@ -687,9 +682,9 @@ namespace ScanSpy
 #else
     private System.Windows.Forms.Button buttonListen;
 #endif
-    private System.Windows.Forms.Button listenIndicatorOff;
-    private System.Windows.Forms.Button listenIndicatorWait;
-    private System.Windows.Forms.Button listenIndicatorOn;
+    private global::ScanSpy.LedIndicator listenIndicatorOff;
+    private global::ScanSpy.LedIndicator listenIndicatorWait;
+    private global::ScanSpy.LedIndicator listenIndicatorOn;
 #if USE_LANDMINE_UI
     private LandmineUI.WinForms.SharpCheckBox cbOnAcquisition;
 #else

@@ -164,9 +164,9 @@ namespace ScanSpy
         Log("AcquisitionStreamClosing.");
         if (listener && cbOnAcquisition.Checked)
         {
-          listenIndicatorOn.BackColor = Color.Gray;
-          listenIndicatorWait.BackColor = Color.Yellow;
-          listenIndicatorOff.BackColor = Color.Gray;
+          listenIndicatorOn.LedColor = Color.Gray;
+          listenIndicatorWait.LedColor = Color.Yellow;
+          listenIndicatorOff.LedColor = Color.Gray;
           ignoreScan = true;
         }
       });
@@ -177,9 +177,9 @@ namespace ScanSpy
       UiInvoke(() =>
       {
         ignoreScan = false;
-        listenIndicatorOn.BackColor = Color.Lime;
-        listenIndicatorWait.BackColor = Color.Gray;
-        listenIndicatorOff.BackColor = Color.Gray;
+        listenIndicatorOn.LedColor = Color.Lime;
+        listenIndicatorWait.LedColor = Color.Gray;
+        listenIndicatorOff.LedColor = Color.Gray;
 
         string str = "AcquisitionStreamOpening: ";
         foreach (var de in e.StartingInformation)
@@ -645,16 +645,16 @@ namespace ScanSpy
     {
       if (msIA != null)
       {
-        connectionIndicator.BackColor = msIA.Connected ? Color.Lime : Color.Gray;
-        disconnectionIndicator.BackColor = msIA.Connected ? Color.Gray : Color.Red;
+        connectionIndicator.LedColor = msIA.Connected ? Color.Lime : Color.Gray;
+        disconnectionIndicator.LedColor = msIA.Connected ? Color.Gray : Color.Red;
         buttonConnect.Text = "Disconnect";
         SetStatusLeft("Connected: " + msIA.InstrumentName);
         connected = true;
       }
       else
       {
-        connectionIndicator.BackColor = Color.Gray;
-        disconnectionIndicator.BackColor = Color.Red;
+        connectionIndicator.LedColor = Color.Gray;
+        disconnectionIndicator.LedColor = Color.Red;
         buttonConnect.Text = "Connect";
         SetStatusLeft("Not Connected");
         connected = false;
@@ -678,9 +678,9 @@ namespace ScanSpy
       {
         buttonListen.Text = "Activate";
         buttonListen.Enabled = false;
-        listenIndicatorOn.BackColor = Color.Gray;
-        listenIndicatorWait.BackColor = Color.Gray;
-        listenIndicatorOff.BackColor = Color.Red;
+        listenIndicatorOn.LedColor = Color.Gray;
+        listenIndicatorWait.LedColor = Color.Gray;
+        listenIndicatorOff.LedColor = Color.Red;
         SetStatusRight("Status: Idle");
         labelScanSpeed.Text = "0 Hz";
       }
@@ -690,18 +690,18 @@ namespace ScanSpy
         if (listener)
         {
           buttonListen.Text = "Pause";
-          listenIndicatorOn.BackColor = cbOnAcquisition.Checked ? Color.Gray : Color.Lime;
-          listenIndicatorWait.BackColor = cbOnAcquisition.Checked ? Color.Yellow : Color.Gray;
-          listenIndicatorOff.BackColor = Color.Gray;
+          listenIndicatorOn.LedColor = cbOnAcquisition.Checked ? Color.Gray : Color.Lime;
+          listenIndicatorWait.LedColor = cbOnAcquisition.Checked ? Color.Yellow : Color.Gray;
+          listenIndicatorOff.LedColor = Color.Gray;
           ignoreScan = cbOnAcquisition.Checked ? true : false;
           SetStatusRight("Status: Spying");
         }
         else
         {
           buttonListen.Text = "Activate";
-          listenIndicatorOn.BackColor = Color.Gray;
-          listenIndicatorWait.BackColor = Color.Gray;
-          listenIndicatorOff.BackColor = Color.Red;
+          listenIndicatorOn.LedColor = Color.Gray;
+          listenIndicatorWait.LedColor = Color.Gray;
+          listenIndicatorOff.LedColor = Color.Red;
           SetStatusRight("Status: Idle");
           labelScanSpeed.Text = "0 Hz";
         }

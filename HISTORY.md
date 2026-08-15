@@ -7,6 +7,33 @@ deleting past entries.
 
 ---
 
+## 2026-08-15 -- ScanSpy: status LEDs replace plain colored-square Buttons
+
+**Status: done.** The five connection/listener status indicators
+(`connectionIndicator`, `disconnectionIndicator`, `listenIndicatorOn`, `listenIndicatorWait`,
+`listenIndicatorOff`) were plain `System.Windows.Forms.Button` controls repurposed as 16x16 colored
+squares -- `BackColor` was the only thing ever touched on them, and three had empty `Click`
+no-op handlers left over from the designer. Replaced with a new `LedIndicator : Control`
+(`ScanSpy/LedIndicator.cs`), custom-painted with GDI+: a glossy round LED with a soft multi-ring
+glow when lit (fill color not grayscale) and a flatter dim dot when off, instead of Button's native
+chrome (3D bevel, focus rectangle, hover highlight) reading as a clickable control rather than a
+status light.
+
+`LedIndicator` has no LandmineUI dependency of its own -- it's plain `System.Drawing`/
+`System.Windows.Forms` -- so it behaves identically in both build configurations with no `#if`
+needed around the Designer.cs declarations, just a straight `Button` -> `LedIndicator` swap
+(`BackColor` calls became `LedColor`, `UseVisualStyleBackColor` dropped since it's Button-only).
+Under `USE_LANDMINE_UI` specifically, `OnPaint` pulls its backdrop and "off" ring color from
+`ThemeManager.Current` (`Background`/`Border`) instead of hardcoded stock-WinForms grays, so it
+blends into a `SharpGroupBox` instead of sitting on a mismatched default-gray square. Green/yellow/
+red semantics unchanged -- callers still assign `Color.Lime`/`Color.Yellow`/`Color.Red`/`Color.Gray`
+the same way, just to a `LedColor` property instead of `BackColor`.
+
+**Verified**: both build paths (`LandmineUI.local.props` present and absent) compile clean with 0
+errors. User confirmed the LandmineUI build visually: "Looks great."
+
+---
+
 ## 2026-08-15 -- ScanSpy: real scan filter text, header tab scroll preservation
 
 **Status: done.** Two follow-on ScanSpy fixes to the Header tab, both traced through
