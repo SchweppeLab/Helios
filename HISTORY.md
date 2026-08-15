@@ -7,6 +7,62 @@ deleting past entries.
 
 ---
 
+## 2026-08-15 -- ScanSpy: real scan filter text, header tab scroll preservation
+
+**Status: done.** Two follow-on ScanSpy fixes to the Header tab, both traced through
+`D:\Software\Claude\RawFileReader` and `D:\Software\Claude\Nova` for ground truth rather than
+guessed at.
+
+**Scan filter string fixed.** `ProcessScanHeader`'s filter line was always rendering as a static-
+looking `"FTMS + c ESI?"` -- root cause: `HeliosMsScanVMS` (Corona/VMS-sourced scans) never
+populates `IonizationMode` in its header at all, so every VMS-driven scan fell into the old code's
+`else` branch and appended a literal `"ESI?"` placeholder regardless of the actual scan. Real fix:
+Corona plays back genuine `.raw` files through RawFileReader, and Nova's `ThermoRawReader.cs`
+already computes the authentic Thermo filter string (`Spectrum.ScanFilter =
+RawFile.GetFilterForScanNumber(...).ToString()`), carried through into the scan header under the
+raw `"Filter"` key. `ProcessScanHeader` now uses that verbatim when present. Live Exploris/Fusion
+acquisition via IAPI has no equivalent (confirmed absent from `HeliosDictionary`'s canonical
+mapping -- the real-time interface never exposes a filter string), so those connections still fall
+back to a reconstruction from the fields IAPI actually provides: mass analyzer, polarity,
+centroid/profile, ionization mode (used as-is now, no forced placeholder), scan mode, a proper
+`ms`/`ms2`/`ms3` suffix derived from `MSOrder` (`MsOrderSuffix`, handling the "MS"/"1"/"MS2"/"2"/"3"
+spelling inconsistencies already dealt with elsewhere in the file), and the mass range. No
+precursor-mass/activation-energy segment is fabricated for the fallback case -- that data isn't
+surfaced anywhere in the live header path.
+
+**Header tab scroll position preserved.** `rtbHeader.Text` gets replaced wholesale on every scan
+refresh (~10Hz), which reset the scroll position to the top on every update -- scrolling down to
+read a field was pointless. Plain `RichTextBox` build: fixed via `EM_GETFIRSTVISIBLELINE`/
+`EM_LINESCROLL`, capturing the line position before the `Text` set and restoring it after. First
+pass restored by the pre-change absolute line number, assuming `WM_SETTEXT` always resets the view
+to line 0; when that assumption was off by even one line, the shortfall compounded every refresh
+into a slow drift back to the top ("ratchets back to the top, one line at a time" -- reported
+directly). Fixed by re-reading the actual post-`Text`-set position and scrolling by the *delta* to
+the target instead, matching the same delta-based pattern LandmineUI's own scrollbar sync uses
+internally.
+
+LandmineUI build: `SharpTextArea`/`SharpTextBox` had no scroll or selection accessors exposed at
+all as of v1.1.0 -- filed upstream as a wish
+(`D:\Software\Claude\Wishes\LandmineUI\text-control-scroll-position.md`, per that repo's documented
+external-wish workflow). Granted same day: v1.2.0 shipped `FirstVisibleLine` (get/set `int`,
+handle-not-yet-created-safe) and `SetTextPreservingScroll(string?)` (a thin wrapper over the same
+capture/replace/restore approach), built on the same `EM_GETFIRSTVISIBLELINE`/`EM_LINESCROLL` pair
+already used internally for `SharpTextBox`'s own themed scrollbar. Bumped the package reference to
+1.2.0 and switched `SetHeaderText`'s LandmineUI branch to call it directly. Wish file deleted after
+user confirmed both builds worked, per that workflow's own rule that only the requester closes a
+wish.
+
+Also fixed a self-inflicted regression during this work: after test-building the plain-WinForms
+path with `LandmineUI.local.props` temporarily moved aside, the marker was restored but the project
+wasn't rebuilt, so the running `ScanSpy.exe` was a stale plain-WinForms binary -- reported as
+"ScanSpy no longer uses LandmineUI." Rebuilding with the marker in place fixed it; confirmed via
+`ScanSpy.deps.json` referencing `LandmineUI.WinForms/1.2.0`.
+
+**Verified**: both build paths compile clean with 0 errors. User confirmed live: "It all works
+great now."
+
+---
+
 ## 2026-08-15 -- ScanSpy: graceful disconnect, spectrum plot cleanup, optional LandmineUI window
 
 **Status: done.** Three independent ScanSpy-side fixes/features, none touching the host/bridge

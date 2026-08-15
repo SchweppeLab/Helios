@@ -240,6 +240,47 @@ namespace ScanSpy
 #endif
     }
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+    private const int EM_GETFIRSTVISIBLELINE = 0x00CE;
+    private const int EM_LINESCROLL = 0x00B6;
+
+    // Replacing rtbHeader.Text wholesale on every refresh (~10Hz) resets the scroll position to
+    // the top, so scrolling down to read a field mid-run was pointless -- the very next scan
+    // yanked the view back. The header block has the same line count every refresh (same fixed
+    // set of fields), so restoring by line number exactly undoes that, unlike SelectionStart+
+    // ScrollToCaret which only guarantees the caret is *somewhere* visible.
+    //
+    // SharpTextArea (the LandmineUI equivalent, USE_LANDMINE_UI build) had no scroll accessors at
+    // all as of v1.1.0 -- filed upstream as a wish, granted in v1.2.0 as
+    // SetTextPreservingScroll(string?), a thin wrapper over the same
+    // capture-line/replace-text/restore-line approach used below for the plain RichTextBox.
+    void SetHeaderText(string text)
+    {
+#if USE_LANDMINE_UI
+      rtbHeader.SetTextPreservingScroll(text);
+#else
+      int firstVisibleLine = 0;
+      if (rtbHeader.IsHandleCreated)
+        firstVisibleLine = (int)SendMessage(rtbHeader.Handle, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero);
+
+      rtbHeader.Text = text;
+
+      // Scroll by the delta between where we ended up and where we want to be, not by the
+      // pre-change line number directly -- WM_SETTEXT doesn't reliably reset the view to line 0,
+      // so assuming it did (scrolling forward by the old absolute line number every time) came up
+      // one line short whenever the post-Text-set position wasn't exactly 0, and that shortfall
+      // compounded every refresh into a slow drift back to the top.
+      if (firstVisibleLine > 0 && rtbHeader.IsHandleCreated)
+      {
+        int newFirstVisibleLine = (int)SendMessage(rtbHeader.Handle, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero);
+        int delta = firstVisibleLine - newFirstVisibleLine;
+        if (delta != 0)
+          SendMessage(rtbHeader.Handle, EM_LINESCROLL, IntPtr.Zero, (IntPtr)delta);
+      }
+#endif
+    }
+
     void MessagesArrived(object sender, MessagesArrivedEventArgs e)
     {
       StringBuilder sb = new StringBuilder();
@@ -391,7 +432,7 @@ namespace ScanSpy
             plotSpectrum.Plot.Axes.SetLimitsX(firstMass, lastMass);
           }
 
-          rtbHeader.Text = header;
+          SetHeaderText(header);
           lblScanFilter.Text = scanFilter;
           lblScanInfo.Text = "Scan #" + scanNumber.ToString() + "  RT:" + rt.ToString("#.00") + "  NL:" + basePeakIntensity.ToString("E2");
           refreshSpectrum = true;
@@ -458,16 +499,47 @@ namespace ScanSpy
       h += "Total Ion Current: " + tic + System.Environment.NewLine;
       h += "Base Peak Intensity: " + basePeakIntensity + System.Environment.NewLine;
 
-      filter = massAnalyzer;
-      if (polarity == "Positive") filter += " +";
-      else filter += " -";
-      if (scanData == "Profile") filter += " p";
-      else filter += " c";
-      if (ionizationMode.Contains('N')) filter += " NSI";
-      else filter += " ESI?";
+      // Prefer the authentic Thermo filter string when the connected instrument provides one.
+      // Corona/VMS plays back real .raw files through RawFileReader, which computes this exactly
+      // (Nova's ThermoRawReader sets Spectrum.ScanFilter = RawFile.GetFilterForScanNumber(...).ToString()
+      // -- see Nova\NovaIO\Io\Read\ThermoRawReader.cs -- and HeliosMsScanVMS carries it through
+      // under the raw "Filter" key). Live Exploris/Fusion acquisition via IAPI has no equivalent --
+      // the real-time interface never exposes a filter string, only the individual fields below --
+      // so those connections fall back to a reconstruction from what canonical header fields are
+      // actually available. (The previous reconstruction here always ended in a literal "ESI?"
+      // placeholder because VMS scans never populate "IonizationMode" at all, which is also why it
+      // looked static regardless of scan -- using the real filter text sidesteps that entirely.)
+      if (scan.Header.TryGetValue("Filter", out var rawFilter) && !string.IsNullOrEmpty(rawFilter))
+      {
+        filter = rawFilter;
+      }
+      else
+      {
+        filter = massAnalyzer;
+        if (polarity == "Positive") filter += " +";
+        else if (polarity == "Negative") filter += " -";
+        if (scanData == "Profile") filter += " p";
+        else if (scanData == "Centroid") filter += " c";
+        if (!string.IsNullOrEmpty(ionizationMode)) filter += " " + ionizationMode;
+        string scanModeText = string.IsNullOrEmpty(scanMode) ? "Full" : scanMode;
+        filter += " " + scanModeText + " ms" + MsOrderSuffix(msOrder);
+        if (!string.IsNullOrEmpty(firstMass) && !string.IsNullOrEmpty(lastMass))
+          filter += " [" + firstMass + "-" + lastMass + "]";
+      }
 
       header = h;
       return filter;
+    }
+
+    // Maps Helios's canonical MSOrder header values ("MS"/"1" for MS1, "MS2"/"2" for MS2, "3" for
+    // MS3, etc. -- instrument families spell these differently, see HeliosDictionary) to the
+    // suffix used in real Thermo filter text ("" for MS1, "2" for MS2, "3" for MS3, ...).
+    static string MsOrderSuffix(string msOrder)
+    {
+      if (string.IsNullOrEmpty(msOrder) || msOrder.Equals("MS", StringComparison.OrdinalIgnoreCase)) return "";
+      if (int.TryParse(msOrder, out int n)) return n <= 1 ? "" : n.ToString();
+      if (msOrder.StartsWith("MS", StringComparison.OrdinalIgnoreCase) && msOrder.Length > 2) return msOrder.Substring(2);
+      return "";
     }
 
     // Colors the trace by MS level so a glance at the plot tells you what kind of scan you're

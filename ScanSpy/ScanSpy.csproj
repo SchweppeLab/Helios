@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseLandmineUI)' == 'true'">
-    <PackageReference Include="LandmineUI.WinForms" Version="1.1.0" />
+    <PackageReference Include="LandmineUI.WinForms" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
