@@ -7,6 +7,48 @@ deleting past entries.
 
 ---
 
+## 2026-08-17 -- Dev-branch workflow: combined "everything in one zip" bundle
+
+**Status: verified locally.** After the first live run of `.github/workflows/dev-nuget.yml` (below)
+succeeded and published all three assets correctly, added a fourth: a single combined
+`Helios[.<version>|-dev-latest].zip` with the two NuGet packages under `NuGet/` and the (already
+IAPI-stripped) `Helios.Bridge.Host` build under `Helios.Bridge.Host/`, plus its own `README.txt`
+covering both setup steps -- so grabbing everything needed no longer means finding and downloading
+three separately-named assets. The three component-specific assets stay published too, for anyone
+who only wants one piece (e.g. just the NuGet packages, because they already have a
+`Helios.Bridge.Host` running elsewhere).
+
+Building this combined zip needs both jobs' output on one runner, but `pack_nuget` (ubuntu-latest)
+and `build-bridge-host` (windows-latest) are separate machines -- `pack_nuget` now also uploads its
+`.nupkg`s as workflow artifacts (`actions/upload-artifact`, one for the versioned dated-release set,
+one for the version-free dev-latest set), which `build-bridge-host` downloads
+(`actions/download-artifact`) before assembling both bundles.
+
+Caught one real bug before it could hit CI a second time: the combined-bundle README was first
+written as a PowerShell here-string (`@"..."@`) nested inside a function body, with its closing
+`"@` indented to match. Windows PowerShell 5.1 requires that closing delimiter at column 0 with no
+leading whitespace at all -- indenting it is a parse error. (GitHub's `windows-latest` runners
+default `run:` steps to `pwsh` 7+, which relaxed this rule, so it likely would have worked anyway --
+but not worth relying on that.) Rewrote it as a plain `$readmeLines = @(...)` array joined by
+`Out-File`, which has no delimiter-placement rule to get wrong. The *other* here-string already in
+this workflow (`README-IAPI.txt`, added in the previous entry) was checked byte-for-byte and
+confirmed already correctly formed -- its delimiters share the run-block's baseline indentation
+exactly, so YAML's block-scalar dedent already lands them at column 0.
+
+**Verified:** ran the exact bundle-assembly PowerShell locally against a real `Helios.Bridge.Host`
+build and real packed `.nupkg` files, inspected the resulting zip's entry list (correct
+`NuGet/`/`Helios.Bridge.Host/` layout, both nupkgs present) and extracted `README.txt` (clean output,
+no stray indentation from the array-based approach). The workflow's first live run (NuGet packages +
+Bridge.Host, pre-dating this combined-bundle addition) already succeeded end-to-end on push, publicly
+confirming: Nova's `1.0.0.18` release nupkg resolves to the correct file (verified by downloading the
+actually-published asset and checking `Nova.dll`'s embedded `FileVersion`/`ProductVersion`/
+`AssemblyVersion` all read `1.0.0.18`, matching size/timestamp exactly), and the rest of the pipeline
+(iapi clone, Bridge.Host build, IAPI-file stripping, both releases, the `dev-latest` tag-move)
+functioned as designed. **Not yet verified:** this specific combined-bundle addition hasn't had a
+live CI run yet -- needs another push to `Dev`.
+
+---
+
 ## 2026-08-17 -- Dev-branch build, published as GitHub Releases (no feed): NuGet packages + Bridge.Host
 
 **Status: every piece verified locally (pack, and a full real Helios.Bridge.Host build against live

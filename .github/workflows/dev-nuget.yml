@@ -69,6 +69,22 @@ jobs:
           cp pack-out/Helios.Bridge.Contracts.*.nupkg pack-out-latest/Helios.Bridge.Contracts-dev-latest.nupkg
           cp pack-out/Helios.Client.*.nupkg pack-out-latest/Helios.Client-dev-latest.nupkg
 
+      # Hand-off to build-bridge-host, which assembles the single combined "everything" zip -- it
+      # runs on a separate windows-latest runner, so it can't just read this job's local disk.
+      - name: Upload packed NuGet packages for the combined bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-versioned
+          path: pack-out/*.nupkg
+          retention-days: 7
+
+      - name: Upload version-free NuGet packages for the combined bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-latest
+          path: pack-out-latest/*.nupkg
+          retention-days: 7
+
       - name: Publish dated dev release (history)
         uses: softprops/action-gh-release@v2
         with:
@@ -193,3 +209,73 @@ jobs:
           prerelease: true
           make_latest: "false"
           files: Helios.Bridge.Host-dev-latest.zip
+
+      - name: Download NuGet packages built by pack_nuget
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-versioned
+          path: nuget-versioned
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget-latest
+          path: nuget-latest
+
+      # One archive with everything a tester needs, so a single download is enough: the two NuGet
+      # packages plus the Bridge.Host build, laid out so the top-level README walks straight into
+      # both setup steps. The three component-specific assets above stay too, for anyone who only
+      # wants (say) the NuGet packages because they already have a Bridge.Host running elsewhere.
+      - name: Assemble the combined bundle
+        run: |
+          $outDir = "Bridge/Helios.Bridge.Host/bin/x64/Release/net48"
+          $readmeLines = @(
+            "Helios dev build -- everything in one place",
+            "=============================================",
+            "",
+            "NuGet/",
+            "  Helios.Client*.nupkg              .NET 8 client library",
+            "  Helios.Bridge.Contracts*.nupkg    shared gRPC contract (Helios.Client's dependency)",
+            "",
+            "Helios.Bridge.Host/",
+            "  Helios.Bridge.Host.exe            the bridge host process -- run once with --register,",
+            "                                     or just let HeliosClient.ConnectAsync auto-launch it",
+            "  README-IAPI.txt                   which files to supply yourself for real hardware",
+            "",
+            "Setup:",
+            "  1. dotnet nuget add source <path to this bundle's NuGet folder> -n HeliosDev",
+            "     then reference Helios.Client from your own .NET 8 project as usual.",
+            "  2. Keep Helios.Bridge.Host/ wherever you like. See its own README-IAPI.txt before",
+            "     connecting to real Fusion/Exploris hardware -- it runs fine without that against",
+            "     the built-in Simulated backend or a Corona/VMS connection.",
+            "",
+            "Pre-release, unsupported development build. Full README/HISTORY.md:",
+            "https://github.com/SchweppeLab/Helios/tree/Dev"
+          )
+
+          function New-Bundle($bundleDir, $nugetDir, $zipPath) {
+            New-Item -ItemType Directory -Force -Path "$bundleDir/NuGet" | Out-Null
+            New-Item -ItemType Directory -Force -Path "$bundleDir/Helios.Bridge.Host" | Out-Null
+            Copy-Item "$nugetDir/*.nupkg" "$bundleDir/NuGet/"
+            Copy-Item "$outDir/*" "$bundleDir/Helios.Bridge.Host/" -Recurse
+            $readmeLines | Out-File -FilePath "$bundleDir/README.txt" -Encoding utf8
+            Compress-Archive -Path "$bundleDir/*" -DestinationPath $zipPath -Force
+          }
+
+          New-Bundle "bundle-dated" "nuget-versioned" "Helios.${{ needs.pack_nuget.outputs.version }}.zip"
+          New-Bundle "bundle-latest" "nuget-latest" "Helios-dev-latest.zip"
+
+      - name: Attach combined bundle to the dated dev release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.pack_nuget.outputs.tag }}
+          prerelease: true
+          make_latest: "false"
+          files: Helios.${{ needs.pack_nuget.outputs.version }}.zip
+
+      - name: Attach combined bundle to the rolling dev-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          prerelease: true
+          make_latest: "false"
+          files: Helios-dev-latest.zip
