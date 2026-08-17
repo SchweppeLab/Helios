@@ -1,17 +1,27 @@
 name: Dev NuGet build
 
-# Builds and packs Helios.Client and Helios.Bridge.Contracts as dev NuGet packages on every push to
-# Dev, and publishes them as GitHub Release assets -- no NuGet feed (GitHub Packages or otherwise)
-# is involved, so there's nothing for testers to authenticate against. Two releases are published
-# on every run:
+# Builds dev/test artifacts from the Dev branch on every push and publishes them as GitHub Release
+# assets -- no NuGet feed (GitHub Packages or otherwise) is involved, so there's nothing for
+# testers to authenticate against. Two releases are published on every run:
 #   - a dated release (tag `dev-<run number>-<short sha>`), kept forever, so a specific past dev
 #     build can be pinned to or re-downloaded (e.g. to match what a tester reported a bug against).
 #   - the rolling `dev-latest` release, whose tag and assets are overwritten every run, so the
 #     README can link to one permanent URL that always has the newest build.
 #
-# Only Helios.Client and Helios.Bridge.Contracts are packed. Helios.dll/ScanInjector/ScanSpy are
-# net48 and/or depend on the sibling iapi/Nova repos that aren't available in CI, and aren't
-# NuGet-shaped artifacts to begin with -- see CLAUDE.md's "Two ways to use Helios".
+# Two jobs produce three assets on each release:
+#   - pack_nuget (ubuntu-latest): Helios.Client + Helios.Bridge.Contracts as .nupkg files. Packs
+#     the two .csproj files directly (not Helios.sln), so it never touches the net48/IAPI side of
+#     the build and needs nothing beyond the .NET 8 SDK.
+#   - build-bridge-host (windows-latest, needs pack_nuget for the shared version/tag): Helios.dll
+#     and Helios.Bridge.Host as a zip. Both are net48 and normally need the sibling `iapi` repo
+#     (private HintPaths) and Nova (no public NuGet feed) to build -- this job fetches both fresh
+#     from their own public GitHub homes instead (thermofisherlsms/iapi, MIT; SchweppeLab/Nova's own
+#     released nupkg), so no self-hosted runner or private feed access is needed. Helios can't
+#     redistribute Thermo's IAPI DLLs, so this job strips the specific files Helios.csproj's
+#     HintPaths pull in from the build output before zipping it, and drops in a README telling
+#     testers which files to supply themselves from their own licensed IAPI install. ScanInjector
+#     and ScanSpy aren't built/published here -- they're demo apps, not something a consuming
+#     tester's own application needs.
 
 on:
   push:
@@ -22,8 +32,12 @@ permissions:
   contents: write
 
 jobs:
-  build-and-pack:
+  pack_nuget:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      short_sha: ${{ steps.version.outputs.short_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -63,7 +77,8 @@ jobs:
           body: |
             Automated development build from `Dev` @ ${{ steps.version.outputs.short_sha }}.
             Not a stable release -- the API may change without notice. See `HISTORY.md` on the
-            `Dev` branch for what's in this build.
+            `Dev` branch for what's in this build. The `Helios.Bridge.Host` zip (uploaded by this
+            workflow's second job) lands here too, alongside these NuGet packages.
           prerelease: true
           make_latest: "false"
           files: pack-out/*.nupkg
@@ -91,3 +106,90 @@ jobs:
           prerelease: true
           make_latest: "false"
           files: pack-out-latest/*.nupkg
+
+  build-bridge-host:
+    needs: pack_nuget
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # Sibling of the checkout, matching Helios.csproj's `..\..\iapi\...` HintPaths. Public/MIT;
+      # its lib/ layout matches those HintPaths file-for-file (verified locally before adding this
+      # job) -- this is build-time only, never shipped (see the strip step below).
+      - name: Clone iapi (build-time only, never redistributed)
+        run: git clone --depth 1 https://github.com/thermofisherlsms/iapi ../iapi
+
+      # Nova has no NuGet feed, but ships this exact pre-built nupkg as a GitHub Release asset --
+      # matches the version Helios/packages.config already pins. Nova is SchweppeLab's own
+      # Apache-2.0 code, unlike IAPI, so it's fine to end up in the shipped zip.
+      - name: Fetch Nova into the local packages layout
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/SchweppeLab/Nova/releases/download/v1.0.0.18/Nova-1_0_0_18-nupkg.zip" -OutFile nova-bundle.zip
+          Expand-Archive -Path nova-bundle.zip -DestinationPath nova-bundle -Force
+          New-Item -ItemType Directory -Force -Path "Helios/packages/Nova.1.0.0.18" | Out-Null
+          Expand-Archive -Path "nova-bundle/Nova.1.0.0.18.nupkg" -DestinationPath "Helios/packages/Nova.1.0.0.18" -Force
+
+      - name: Build Helios.Bridge.Host
+        run: dotnet build Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64
+
+      # Helios can't redistribute Thermo's IAPI DLLs. This is the exact set Helios.csproj's
+      # HintPaths pull into the build output (confirmed against a real local build) -- Helios.dll
+      # and Nova.dll themselves are SchweppeLab's own and stay.
+      - name: Strip IAPI DLLs from the build output
+        run: |
+          $outDir = "Bridge/Helios.Bridge.Host/bin/x64/Release/net48"
+          $iapiFiles = @(
+            "API-2.0.dll","API-2.0.xml",
+            "Fusion.API-2.0.dll",
+            "Spectrum-1.0.dll","Spectrum-1.0.xml",
+            "Thermo.API.Exploris.NetStd-1.0.dll","Thermo.API.Exploris.NetStd-1.0.xml",
+            "Thermo.API.NetStd-1.0.dll","Thermo.API.NetStd-1.0.xml",
+            "Thermo.API.Spectrum.NetStd-1.0.dll","Thermo.API.Spectrum.NetStd-1.0.xml",
+            "Thermo.TNG.Factory.dll","Thermo.TNG.Factory.xml"
+          )
+          foreach ($f in $iapiFiles) {
+            Remove-Item -Path (Join-Path $outDir $f) -ErrorAction SilentlyContinue
+          }
+          @"
+          This build of Helios.Bridge.Host does not include Thermo Fisher Scientific's IAPI DLLs --
+          Helios can't redistribute them. To run against a real Fusion/Exploris instrument, copy
+          these files from your own licensed IAPI installation into this same folder, next to
+          Helios.Bridge.Host.exe:
+
+            API-2.0.dll
+            Fusion.API-2.0.dll
+            Spectrum-1.0.dll
+            Thermo.API.Exploris.NetStd-1.0.dll
+            Thermo.API.NetStd-1.0.dll
+            Thermo.API.Spectrum.NetStd-1.0.dll
+            Thermo.TNG.Factory.dll
+
+          Without them, Helios.Bridge.Host still runs fine against the built-in Simulated backend
+          (see App.config's InstrumentFamily key) or a Corona/VMS connection -- neither needs IAPI.
+          "@ | Out-File -FilePath (Join-Path $outDir "README-IAPI.txt") -Encoding utf8
+
+      - name: Zip the build output
+        run: |
+          $outDir = "Bridge/Helios.Bridge.Host/bin/x64/Release/net48"
+          Compress-Archive -Path "$outDir/*" -DestinationPath "Helios.Bridge.Host.${{ needs.pack_nuget.outputs.version }}.zip" -Force
+          Compress-Archive -Path "$outDir/*" -DestinationPath "Helios.Bridge.Host-dev-latest.zip" -Force
+
+      - name: Attach to the dated dev release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.pack_nuget.outputs.tag }}
+          prerelease: true
+          make_latest: "false"
+          files: Helios.Bridge.Host.${{ needs.pack_nuget.outputs.version }}.zip
+
+      - name: Attach to the rolling dev-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          prerelease: true
+          make_latest: "false"
+          files: Helios.Bridge.Host-dev-latest.zip

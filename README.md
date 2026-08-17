@@ -4,14 +4,18 @@ A unified API for real-time MS data analysis and instrument control. Helios curr
 for both Exploris and Tribrid instrument platforms into a single interface. Applications developed with Helios are capable of connecting to both Exploris and Tribrid
 instruments from a single code base — and, as of the bridge described below, from either .NET Framework 4.8 or .NET 8.
 
-📦 **Want to try in-progress features?** Development builds of the `Helios.Client`/`Helios.Bridge.Contracts` NuGet packages are published automatically from the
-`Dev` branch — no NuGet account or feed setup needed, just download and go:
-- [Latest dev build](https://github.com/SchweppeLab/Helios/releases/tag/dev-latest) — always the most recent successful build (`Helios.Client-dev-latest.nupkg` /
-  `Helios.Bridge.Contracts-dev-latest.nupkg`).
+📦 **Want to try in-progress features?** Development builds are published automatically from the `Dev` branch — no NuGet account, feed setup, or building this
+repo yourself needed, just download and go:
+- [Latest dev build](https://github.com/SchweppeLab/Helios/releases/tag/dev-latest) — always the most recent successful build: `Helios.Client-dev-latest.nupkg` /
+  `Helios.Bridge.Contracts-dev-latest.nupkg` (the NuGet packages for the bridge's .NET 8 client side) and `Helios.Bridge.Host-dev-latest.zip` (the net48 bridge
+  host you actually run — see "Over the bridge" below).
 - [All dev builds](https://github.com/SchweppeLab/Helios/releases) — every past build, individually tagged, if you need to pin to or re-download a specific one.
 
 Download both `.nupkg` files into one local folder and add it as a NuGet source (`dotnet nuget add source <folder> -n HeliosDev`) so `Helios.Client`'s dependency
-on `Helios.Bridge.Contracts` resolves locally. These are pre-release, unsupported builds — expect the API to shift without notice.
+on `Helios.Bridge.Contracts` resolves locally. Unzip `Helios.Bridge.Host-dev-latest.zip` wherever you like and run `Helios.Bridge.Host.exe --register` once (see
+"Locating and managing Helios.Bridge.Host" below) — **it does not include Thermo Fisher's IAPI DLLs, which Helios can't redistribute**; the zip's own
+`README-IAPI.txt` lists exactly which files to copy in from your own licensed IAPI install to talk to real Fusion/Exploris hardware. Without them, it still runs
+fine against the built-in simulator or a Corona/VMS connection. These are pre-release, unsupported builds — expect the API to shift without notice.
 
 ## Two ways to use Helios
 

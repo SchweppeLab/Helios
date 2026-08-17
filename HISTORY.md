@@ -7,9 +7,11 @@ deleting past entries.
 
 ---
 
-## 2026-08-17 -- Dev-branch NuGet packages, published as GitHub Releases (no feed)
+## 2026-08-17 -- Dev-branch build, published as GitHub Releases (no feed): NuGet packages + Bridge.Host
 
-**Status: pack verified locally; workflow not yet run in CI (needs a real push to `Dev` to fire).**
+**Status: every piece verified locally (pack, and a full real Helios.Bridge.Host build against live
+iapi/Nova); the GitHub Actions workflow itself not yet run in CI (needs a real push to `Dev` to fire).**
+
 `Helios.Client` already had NuGet pack metadata staged (`PackageId`/`Description`/license file, unused
 by any build step); `Helios.Bridge.Contracts` (netstandard2.0, referenced by `Helios.Client` via
 `ProjectReference`) got the matching metadata added, mirroring `Helios.nuspec`'s values, so it packs
@@ -18,24 +20,48 @@ as a proper dependency rather than needing to be vendored/merged in.
 Chose GitHub Releases over GitHub Packages for distribution: GitHub Packages' NuGet registry requires
 an authenticated PAT for every download, even on a public repo, which is unnecessary friction for
 external testers on a project that doesn't need private distribution. `.github/workflows/dev-nuget.yml`
-packs both projects on every push to a new `Dev` branch (`0.1.0-dev.<run number>`, since neither
-package has ever been published before -- unrelated to `Helios.dll`'s own `v1.x` tag scheme) and
-publishes two GitHub Releases per run, both marked pre-release: a dated one (`dev-<run>-<sha>`, kept
-forever, for pinning to a specific past build) and a rolling `dev-latest` one, whose git tag and
-release assets both get force-moved/overwritten each run so it always points at the newest build.
-`dev-latest`'s asset filenames are version-free (`Helios.Client-dev-latest.nupkg`) specifically so its
-download URLs never change between builds. README links to both from the top of the page.
+publishes two GitHub Releases on every push to a new `Dev` branch, both marked pre-release: a dated one
+(`dev-<run number>-<short sha>`, kept forever, for pinning to a specific past build) and a rolling
+`dev-latest` one, whose git tag and release assets both get force-moved/overwritten each run so it
+always points at the newest build. `dev-latest`'s asset filenames are version-free
+(`Helios.Client-dev-latest.nupkg`) specifically so its download URLs never change between builds.
+README links to both from the top of the page.
 
-Only `Helios.Client`/`Helios.Bridge.Contracts` are packed -- `Helios.dll`/`ScanInjector`/`ScanSpy` are
-net48 and/or depend on the sibling `iapi`/Nova repos unavailable in CI, and aren't NuGet-shaped
-artifacts regardless. The workflow packs those two `.csproj` files directly (not `Helios.sln`), so it
-never touches the net48/IAPI side of the build and needs nothing beyond the .NET 8 SDK.
+**Initially this only covered `Helios.Client`/`Helios.Bridge.Contracts`** (packed at
+`0.1.0-dev.<run number>` -- unrelated to `Helios.dll`'s own `v1.x` tag scheme, since neither package
+had ever been published before), packed directly from those two `.csproj` files rather than
+`Helios.sln`, needing nothing beyond the .NET 8 SDK. Flagged as an incomplete answer to "can testers
+get everything they need from one place": `Helios.Bridge.Host` -- the process that actually has to run
+for `Helios.Client` to do anything -- wasn't built or published anywhere, and `Helios.Bridge.Host.csproj`
+references `Helios.csproj`, which needs the sibling `iapi` repo (private `HintPath`s) and Nova (no
+public NuGet feed) to build, neither ordinarily available in CI.
 
-**Verified:** `dotnet pack` on both projects locally with an explicit `-p:PackageVersion` override,
-confirming `Helios.Client`'s generated `.nuspec` dependency on `Helios.Bridge.Contracts` resolves to
-the matching override version automatically (global MSBuild properties flow into `ProjectReference`
-builds). **Not yet verified:** the GitHub Actions workflow itself (release creation, the `dev-latest`
-tag-move step, asset overwrite behavior) -- needs `Dev` pushed to a remote to actually run.
+**Closed that gap without a self-hosted runner or IAPI redistribution**, once both blockers turned out
+to be avoidable: `thermofisherlsms/iapi` is itself a public, MIT-licensed GitHub repo whose `lib/`
+layout matches every `HintPath` in `Helios.csproj` file-for-file (confirmed against the real repo tree,
+not assumed), and Nova -- a separate, SchweppeLab-owned Apache-2.0 library, not part of IAPI -- ships
+its exact pinned version (`1.0.0.18`) as a pre-built nupkg on its own GitHub Releases (confirmed by
+downloading and unzipping it: `lib/net48/Nova.dll`, matching the manual-placement layout this file's
+"fresh-clone gotcha" section already documented). A second job (`build-bridge-host`, `windows-latest`,
+net48 needs a real Windows/MSBuild toolchain) clones `iapi` as a build-time-only sibling and fetches
+Nova the same way, builds `Helios.Bridge.Host.csproj`, then strips the specific Thermo IAPI DLLs
+`Helios.csproj`'s `HintPath`s pull into the output (`Helios.csproj` itself is untouched -- flipping its
+`Private`/CopyLocal behavior at the source would also change `ScanInjector`'s existing in-process build,
+out of scope per this repo's bug-fixing policy) before zipping it, dropping in a `README-IAPI.txt`
+listing exactly which files testers must supply from their own licensed install. `Helios.dll` and
+`Nova.dll` themselves stay in the zip -- only Thermo's own binaries are excluded. `ScanInjector`/
+`ScanSpy` remain unpublished (demo apps, not something a consuming application needs).
+
+**Verified:** `dotnet pack` on both NuGet projects locally with an explicit `-p:PackageVersion`
+override, confirming `Helios.Client`'s generated dependency on `Helios.Bridge.Contracts` resolves to
+the matching version automatically. Separately, a full real `dotnet build` of
+`Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64` against this machine's
+existing local `iapi`/Nova setup succeeded clean (0 warnings, 0 errors), and the IAPI-file-stripping
+PowerShell logic was tested against that real output -- confirmed all 13 Thermo files (7 DLLs + 6 `.xml`
+docs) removed, `Helios.dll`/`Nova.dll`/everything else intact. **Not yet verified:** the GitHub Actions
+workflow itself end-to-end (release creation, the `dev-latest` tag-move step, asset overwrite behavior,
+and whether `windows-latest`'s toolchain behaves identically to this local machine's) -- needs `Dev`
+pushed to a remote to actually run.
 
 ---
 
