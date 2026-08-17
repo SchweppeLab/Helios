@@ -7,6 +7,38 @@ deleting past entries.
 
 ---
 
+## 2026-08-17 -- Dev-branch NuGet packages, published as GitHub Releases (no feed)
+
+**Status: pack verified locally; workflow not yet run in CI (needs a real push to `Dev` to fire).**
+`Helios.Client` already had NuGet pack metadata staged (`PackageId`/`Description`/license file, unused
+by any build step); `Helios.Bridge.Contracts` (netstandard2.0, referenced by `Helios.Client` via
+`ProjectReference`) got the matching metadata added, mirroring `Helios.nuspec`'s values, so it packs
+as a proper dependency rather than needing to be vendored/merged in.
+
+Chose GitHub Releases over GitHub Packages for distribution: GitHub Packages' NuGet registry requires
+an authenticated PAT for every download, even on a public repo, which is unnecessary friction for
+external testers on a project that doesn't need private distribution. `.github/workflows/dev-nuget.yml`
+packs both projects on every push to a new `Dev` branch (`0.1.0-dev.<run number>`, since neither
+package has ever been published before -- unrelated to `Helios.dll`'s own `v1.x` tag scheme) and
+publishes two GitHub Releases per run, both marked pre-release: a dated one (`dev-<run>-<sha>`, kept
+forever, for pinning to a specific past build) and a rolling `dev-latest` one, whose git tag and
+release assets both get force-moved/overwritten each run so it always points at the newest build.
+`dev-latest`'s asset filenames are version-free (`Helios.Client-dev-latest.nupkg`) specifically so its
+download URLs never change between builds. README links to both from the top of the page.
+
+Only `Helios.Client`/`Helios.Bridge.Contracts` are packed -- `Helios.dll`/`ScanInjector`/`ScanSpy` are
+net48 and/or depend on the sibling `iapi`/Nova repos unavailable in CI, and aren't NuGet-shaped
+artifacts regardless. The workflow packs those two `.csproj` files directly (not `Helios.sln`), so it
+never touches the net48/IAPI side of the build and needs nothing beyond the .NET 8 SDK.
+
+**Verified:** `dotnet pack` on both projects locally with an explicit `-p:PackageVersion` override,
+confirming `Helios.Client`'s generated `.nuspec` dependency on `Helios.Bridge.Contracts` resolves to
+the matching override version automatically (global MSBuild properties flow into `ProjectReference`
+builds). **Not yet verified:** the GitHub Actions workflow itself (release creation, the `dev-latest`
+tag-move step, asset overwrite behavior) -- needs `Dev` pushed to a remote to actually run.
+
+---
+
 ## 2026-08-15 -- ScanSpy: status LEDs replace plain colored-square Buttons
 
 **Status: done.** The five connection/listener status indicators

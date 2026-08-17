@@ -6,6 +6,26 @@
     <AssemblyName>Helios.Bridge.Contracts</AssemblyName>
   </PropertyGroup>
 
+  <!--
+    NuGet metadata only, packing isn't wired into any build/CI step (no GeneratePackageOnBuild);
+    CI invokes `dotnet pack` explicitly (see .github/workflows/dev-nuget.yml). Helios.Client
+    references this project, so it's packed alongside it as a package dependency. Mirrors
+    Helios.Client.csproj's metadata pattern and Helios.nuspec's values; keep the three in sync if
+    any changes.
+  -->
+  <PropertyGroup>
+    <PackageId>Helios.Bridge.Contracts</PackageId>
+    <Authors>Michael Hoopmann, University of Washington</Authors>
+    <Description>gRPC/protobuf contract shared between Helios.Bridge.Host and Helios.Client, Helios's .NET 8 bridge to Thermo Fisher IAPI-based real-time mass spectrometer control and data analysis. Not typically referenced directly; pulled in automatically as a Helios.Client dependency.</Description>
+    <PackageProjectUrl>https://github.com/SchweppeLab/Helios</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageTags>mass spectrometry spectrometer IAPI Thermo Fisher Scientific real time instrument control</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.28.3" />
     <PackageReference Include="Grpc.Core.Api" Version="2.63.0" />

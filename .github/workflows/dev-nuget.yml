@@ -1,0 +1,93 @@
+name: Dev NuGet build
+
+# Builds and packs Helios.Client and Helios.Bridge.Contracts as dev NuGet packages on every push to
+# Dev, and publishes them as GitHub Release assets -- no NuGet feed (GitHub Packages or otherwise)
+# is involved, so there's nothing for testers to authenticate against. Two releases are published
+# on every run:
+#   - a dated release (tag `dev-<run number>-<short sha>`), kept forever, so a specific past dev
+#     build can be pinned to or re-downloaded (e.g. to match what a tester reported a bug against).
+#   - the rolling `dev-latest` release, whose tag and assets are overwritten every run, so the
+#     README can link to one permanent URL that always has the newest build.
+#
+# Only Helios.Client and Helios.Bridge.Contracts are packed. Helios.dll/ScanInjector/ScanSpy are
+# net48 and/or depend on the sibling iapi/Nova repos that aren't available in CI, and aren't
+# NuGet-shaped artifacts to begin with -- see CLAUDE.md's "Two ways to use Helios".
+
+on:
+  push:
+    branches: [Dev]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Compute dev package version
+        id: version
+        run: |
+          short_sha=$(git rev-parse --short HEAD)
+          echo "version=0.1.0-dev.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "tag=dev-${{ github.run_number }}-${short_sha}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
+
+      # Bridge.Contracts first: Helios.Client references it via ProjectReference, and the
+      # PackageVersion override below applies to both, so Client's generated dependency on
+      # Contracts resolves to the matching version automatically.
+      - name: Pack Helios.Bridge.Contracts and Helios.Client
+        run: |
+          dotnet pack Bridge/Helios.Bridge.Contracts/Helios.Bridge.Contracts.csproj \
+            -c Release -o pack-out -p:PackageVersion=${{ steps.version.outputs.version }}
+          dotnet pack Bridge/Helios.Client/Helios.Client.csproj \
+            -c Release -o pack-out -p:PackageVersion=${{ steps.version.outputs.version }}
+
+      - name: Duplicate packages under version-free filenames for the rolling release
+        run: |
+          mkdir -p pack-out-latest
+          cp pack-out/Helios.Bridge.Contracts.*.nupkg pack-out-latest/Helios.Bridge.Contracts-dev-latest.nupkg
+          cp pack-out/Helios.Client.*.nupkg pack-out-latest/Helios.Client-dev-latest.nupkg
+
+      - name: Publish dated dev release (history)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Dev build ${{ steps.version.outputs.version }}"
+          body: |
+            Automated development build from `Dev` @ ${{ steps.version.outputs.short_sha }}.
+            Not a stable release -- the API may change without notice. See `HISTORY.md` on the
+            `Dev` branch for what's in this build.
+          prerelease: true
+          make_latest: "false"
+          files: pack-out/*.nupkg
+
+      # softprops/action-gh-release updates an existing release/re-uploads matching-named assets
+      # for a tag it's already seen, but it does not move a pre-existing git tag to a new commit --
+      # without this, dev-latest's *tag* would keep pointing at the very first build forever even
+      # though its release assets stay fresh. Force-move it ourselves before publishing.
+      - name: Move the dev-latest tag to this commit
+        run: |
+          git tag -f dev-latest
+          git push origin dev-latest --force
+
+      - name: Publish rolling dev-latest release (always-fresh link)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          name: "Latest dev build"
+          body: |
+            Always the most recent successful build from `Dev` (currently
+            ${{ steps.version.outputs.version }}, @ ${{ steps.version.outputs.short_sha }}).
+            Assets here are overwritten on every push -- see the
+            [Releases page](https://github.com/SchweppeLab/Helios/releases) to pin a specific past
+            build instead.
+          prerelease: true
+          make_latest: "false"
+          files: pack-out-latest/*.nupkg
