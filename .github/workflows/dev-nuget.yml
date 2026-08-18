@@ -8,20 +8,28 @@ name: Dev NuGet build
 #   - the rolling `dev-latest` release, whose tag and assets are overwritten every run, so the
 #     README can link to one permanent URL that always has the newest build.
 #
-# Two jobs produce three assets on each release:
-#   - pack_nuget (ubuntu-latest): Helios.Client + Helios.Bridge.Contracts as .nupkg files. Packs
-#     the two .csproj files directly (not Helios.sln), so it never touches the net48/IAPI side of
-#     the build and needs nothing beyond the .NET 8 SDK.
-#   - build-bridge-host (windows-latest, needs pack_nuget for the shared version/tag): Helios.dll
-#     and Helios.Bridge.Host as a zip. Both are net48 and normally need the sibling `iapi` repo
-#     (private HintPaths) and Nova (no public NuGet feed) to build -- this job fetches both fresh
-#     from their own public GitHub homes instead (thermofisherlsms/iapi, MIT; SchweppeLab/Nova's own
-#     released nupkg), so no self-hosted runner or private feed access is needed. Helios can't
-#     redistribute Thermo's IAPI DLLs, so this job strips the specific files Helios.csproj's
-#     HintPaths pull in from the build output before zipping it, and drops in a README telling
-#     testers which files to supply themselves from their own licensed IAPI install. ScanInjector
-#     and ScanSpy aren't built/published here -- they're demo apps, not something a consuming
-#     tester's own application needs.
+# Two jobs produce five assets on each release: three individual packages, the Bridge.Host zip, and
+# one combined "everything" bundle for anyone who'd rather have a single download.
+#   - pack_nuget (ubuntu-latest): Helios.Client + Helios.Bridge.Contracts as .nupkg files (the .NET 8
+#     bridge client). Packs the two .csproj files directly (not Helios.sln), so it never touches the
+#     net48/IAPI side of the build and needs nothing beyond the .NET 8 SDK.
+#   - build-bridge-host (windows-latest, needs pack_nuget for the shared version/tag): builds the
+#     net48 side -- Helios.Bridge.Host (zipped) for the bridge path, and the original Helios package
+#     (.nupkg, via the classic nuget.exe CLI against Helios.csproj/Helios.nuspec -- old-style
+#     project, no dotnet pack support) for legacy in-process consumers who link Helios.dll directly.
+#     Both need the sibling `iapi` repo (private HintPaths) and Nova (no public NuGet feed) to build
+#     -- this job fetches both fresh from their own public GitHub homes instead
+#     (thermofisherlsms/iapi, MIT; SchweppeLab/Nova's own released nupkg), so no self-hosted runner
+#     or private feed access is needed. Helios can't redistribute Thermo's IAPI DLLs, so this job
+#     strips the specific files Helios.csproj's HintPaths pull into Helios.Bridge.Host's build output
+#     before zipping it (nuget.exe's own convention-based packing already excludes them from the
+#     Helios package without any stripping needed -- verified locally), and drops in a README telling
+#     testers which files to supply themselves from their own licensed IAPI install; the original
+#     Helios package needs the same files added to a consumer's own project references. This job also
+#     assembles the combined bundle from its own output plus pack_nuget's (handed across via workflow
+#     artifacts, since the two jobs run on separate runners). ScanInjector and ScanSpy aren't
+#     built/published here -- they're demo apps, not something a consuming tester's own application
+#     needs.
 
 on:
   push:
@@ -93,8 +101,9 @@ jobs:
           body: |
             Automated development build from `Dev` @ ${{ steps.version.outputs.short_sha }}.
             Not a stable release -- the API may change without notice. See `HISTORY.md` on the
-            `Dev` branch for what's in this build. The `Helios.Bridge.Host` zip (uploaded by this
-            workflow's second job) lands here too, alongside these NuGet packages.
+            `Dev` branch for what's in this build. This workflow's second job adds the original
+            Helios package, the Helios.Bridge.Host zip, and a combined bundle with everything in one
+            download, alongside these NuGet packages.
           prerelease: true
           make_latest: "false"
           files: pack-out/*.nupkg
@@ -151,6 +160,46 @@ jobs:
 
       - name: Build Helios.Bridge.Host
         run: dotnet build Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64
+
+      # The original in-process Helios package (Helios.dll itself), for legacy net48 consumers that
+      # link Helios directly rather than going through the bridge. Helios.csproj is old-style (no
+      # dotnet pack support), so this uses the classic nuget.exe CLI against its pre-existing
+      # Helios.nuspec instead -- verified locally that this correctly grabs only Helios.dll/
+      # Helios.xml from the build output, ignoring the IAPI/Nova DLLs CopyLocal'd into that same bin
+      # folder (nuget.exe's convention-based packing only bundles a project's own primary output).
+      - name: Fetch the classic nuget.exe CLI
+        run: Invoke-WebRequest -Uri "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile nuget.exe
+
+      # Reads Helios's version from AssemblyInfo.cs rather than hardcoding it here, so this stays
+      # correct whenever Helios's own version is bumped, with no workflow edit needed to match.
+      - name: Pack the original Helios package
+        run: |
+          $assemblyInfo = Get-Content "Helios/Properties/AssemblyInfo.cs" -Raw
+          if ($assemblyInfo -notmatch 'AssemblyVersion\("([^"]+)"\)') {
+            throw "Could not find AssemblyVersion in Helios/Properties/AssemblyInfo.cs"
+          }
+          $heliosVersion = "$($matches[1])-dev.${{ github.run_number }}"
+
+          .\nuget.exe pack Helios/Helios.csproj -OutputDirectory helios-pack-out -Properties "Configuration=Release;Platform=x64" -Version $heliosVersion
+
+          New-Item -ItemType Directory -Force -Path helios-pack-out-latest | Out-Null
+          Copy-Item "helios-pack-out/Helios.$heliosVersion.nupkg" "helios-pack-out-latest/Helios-dev-latest.nupkg"
+
+      - name: Attach original Helios package to the dated dev release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.pack_nuget.outputs.tag }}
+          prerelease: true
+          make_latest: "false"
+          files: helios-pack-out/*.nupkg
+
+      - name: Attach original Helios package to the rolling dev-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          prerelease: true
+          make_latest: "false"
+          files: helios-pack-out-latest/*.nupkg
 
       # Helios can't redistribute Thermo's IAPI DLLs. This is the exact set Helios.csproj's
       # HintPaths pull into the build output (confirmed against a real local build) -- Helios.dll
@@ -221,10 +270,18 @@ jobs:
           name: nuget-latest
           path: nuget-latest
 
-      # One archive with everything a tester needs, so a single download is enough: the two NuGet
+      # Same treatment as the NuGet packages above: fold the original Helios package into the same
+      # source folders the combined bundle reads from, so New-Bundle below picks it up without
+      # needing its own separate copy logic.
+      - name: Add the original Helios package into the bundle inputs
+        run: |
+          Copy-Item helios-pack-out/*.nupkg nuget-versioned/
+          Copy-Item helios-pack-out-latest/*.nupkg nuget-latest/
+
+      # One archive with everything a tester needs, so a single download is enough: all three NuGet
       # packages plus the Bridge.Host build, laid out so the top-level README walks straight into
-      # both setup steps. The three component-specific assets above stay too, for anyone who only
-      # wants (say) the NuGet packages because they already have a Bridge.Host running elsewhere.
+      # both setup steps. The individual assets above stay too, for anyone who only wants one piece
+      # (e.g. just Helios.Client, because they already have a Bridge.Host running elsewhere).
       - name: Assemble the combined bundle
         run: |
           $outDir = "Bridge/Helios.Bridge.Host/bin/x64/Release/net48"
@@ -233,8 +290,12 @@ jobs:
             "=============================================",
             "",
             "NuGet/",
-            "  Helios.Client*.nupkg              .NET 8 client library",
+            "  Helios.Client*.nupkg              .NET 8 client library, talks to Helios.Bridge.Host",
             "  Helios.Bridge.Contracts*.nupkg    shared gRPC contract (Helios.Client's dependency)",
+            "  Helios*.nupkg                     original net48 in-process library -- link Helios.dll",
+            "                                     directly instead of going through the bridge; needs",
+            "                                     the same IAPI DLLs as Helios.Bridge.Host, added to",
+            "                                     your own project's references",
             "",
             "Helios.Bridge.Host/",
             "  Helios.Bridge.Host.exe            the bridge host process -- run once with --register,",
@@ -243,10 +304,13 @@ jobs:
             "",
             "Setup:",
             "  1. dotnet nuget add source <path to this bundle's NuGet folder> -n HeliosDev",
-            "     then reference Helios.Client from your own .NET 8 project as usual.",
+            "     then reference Helios.Client (bridge) or Helios (in-process) from your own project",
+            "     as usual. Only pull in one of the two -- they're alternative ways to use Helios, not",
+            "     a matched pair.",
             "  2. Keep Helios.Bridge.Host/ wherever you like. See its own README-IAPI.txt before",
             "     connecting to real Fusion/Exploris hardware -- it runs fine without that against",
-            "     the built-in Simulated backend or a Corona/VMS connection.",
+            "     the built-in Simulated backend or a Corona/VMS connection. The same IAPI files are",
+            "     needed if you're using the Helios*.nupkg in-process package instead.",
             "",
             "Pre-release, unsupported development build. Full README/HISTORY.md:",
             "https://github.com/SchweppeLab/Helios/tree/Dev"

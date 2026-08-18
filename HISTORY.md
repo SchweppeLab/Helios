@@ -7,6 +7,49 @@ deleting past entries.
 
 ---
 
+## 2026-08-17 -- Dev-branch workflow: the original Helios package too
+
+**Status: pack verified locally against a real build; live CI run not yet done.** Added a third
+package to the dev release: the original in-process Helios library (`Helios.dll`), for legacy net48
+consumers who link Helios directly instead of going through the bridge, and for anyone who wants to
+build their own net48 app that way. Packed inside `build-bridge-host` (which already builds
+`Helios.dll` as a side effect of building `Helios.Bridge.Host`, and already has `iapi`/Nova fetched),
+via the classic `nuget.exe` CLI against `Helios.csproj`/its pre-existing `Helios.nuspec` --
+`Helios.csproj` is old-style (`ToolsVersion="15.0"`, confirmed by checking its header directly), so
+`dotnet pack` doesn't apply here the way it does for `Helios.Client`/`Helios.Bridge.Contracts`.
+
+**Fixed a real staleness bug in `Helios.nuspec` while wiring this up** (asked first, per this repo's
+bug-fixing policy, since it's pre-existing content -- got a yes): its `<dependencies>` block hardcoded
+`Nova >= 1.0.0.11`, stale against `packages.config`'s `1.0.0.18` sitting right next to it. Harmless in
+practice (the open range still resolves against a `1.0.0.18` local feed) but a real inconsistency,
+never caught before because nothing had ever actually packed from this file until now. Synced to
+`1.0.0.18` and reverified the pack picks it up correctly.
+
+**Versioning, agreed in discussion before implementing:** unlike `Helios.Client`/
+`Helios.Bridge.Contracts` (never published before, clean slate at `0.1.0-dev.*`), the original Helios
+package already has a real version lineage -- `AssemblyInfo.cs` currently says `1.0.0.16` (matching
+the `v1.0.0.16` git tag). The dev package uses that same base version plus a `-dev.<run number>`
+suffix (`1.0.0.16-dev.<run>`), read out of `AssemblyInfo.cs` at pack time rather than hardcoded in the
+workflow, so it stays correct whenever Helios's own version is bumped, and never collides with a bare,
+un-suffixed version a real future release might use. Correcting the record here: an earlier
+in-conversation summary of this plan said `1.0.0.18` as "Helios's current version" -- that was wrong,
+an unverified assumption (conflated with Nova's version, which really is `1.0.0.18`), caught only once
+actually reading `AssemblyInfo.cs` directly while implementing this. Long-term plan (once `Dev` merges
+to a real release): all three packages unify onto `2.0.0`-based SemVer, version-locked together.
+
+**Verified:** `nuget.exe pack Helios/Helios.csproj -Properties Configuration=Release;Platform=x64
+-Version <override>` run locally against a real build, twice (before and after the nuspec fix) --
+confirmed the resulting package contains only `lib/net48/Helios.dll` + `Helios.xml` + `LICENSE.txt`,
+correctly ignoring the IAPI/Nova DLLs CopyLocal'd into that same `bin` output folder (nuget.exe's
+convention-based packing only bundles a project's own primary output, not everything sitting in its
+bin directory) -- so no stripping step is needed here the way `Helios.Bridge.Host`'s zip needs one.
+Also confirmed `-Version` override and the `AssemblyVersion` regex extraction both work as intended.
+**Not yet verified:** whether `nuget.exe`'s MSBuild auto-detection behaves the same on
+`windows-latest`'s bundled Visual Studio as it did against this local machine's -- needs a live CI run
+to confirm, same as every other not-yet-verified item in this file's recent entries.
+
+---
+
 ## 2026-08-17 -- Dev-branch workflow: combined "everything in one zip" bundle
 
 **Status: verified locally.** After the first live run of `.github/workflows/dev-nuget.yml` (below)

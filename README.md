@@ -6,18 +6,20 @@ instruments from a single code base — and, as of the bridge described below, f
 
 📦 **Want to try in-progress features?** Development builds are published automatically from the `Dev` branch — no NuGet account, feed setup, or building this
 repo yourself needed, just download and go:
-- **[Latest dev build: `Helios-dev-latest.zip`](https://github.com/SchweppeLab/Helios/releases/tag/dev-latest)** — one download with everything: the
-  `Helios.Client`/`Helios.Bridge.Contracts` NuGet packages (the bridge's .NET 8 client side) plus `Helios.Bridge.Host` (the net48 bridge host you actually run —
-  see "Over the bridge" below), laid out with its own `README.txt` walking through setup. The same release also has each piece as a separate download
-  (`Helios.Client-dev-latest.nupkg`, `Helios.Bridge.Contracts-dev-latest.nupkg`, `Helios.Bridge.Host-dev-latest.zip`), if you only need one piece — e.g. just the
-  NuGet packages, because you already have a `Helios.Bridge.Host` running elsewhere.
+- **[Latest dev build: `Helios-dev-latest.zip`](https://github.com/SchweppeLab/Helios/releases/tag/dev-latest)** — one download with everything: NuGet packages
+  for both ways to use Helios (`Helios.Client`/`Helios.Bridge.Contracts` for the bridge's .NET 8 client side, `Helios` itself for linking in-process from your own
+  net48 app — see "Two ways to use Helios" below) plus `Helios.Bridge.Host` (the net48 bridge host you actually run), laid out with its own `README.txt` walking
+  through setup. The same release also has each piece as a separate download (`Helios.Client-dev-latest.nupkg`, `Helios.Bridge.Contracts-dev-latest.nupkg`,
+  `Helios-dev-latest.nupkg`, `Helios.Bridge.Host-dev-latest.zip`), if you only need one piece — e.g. just the bridge's NuGet packages, because you already have a
+  `Helios.Bridge.Host` running elsewhere.
 - [All dev builds](https://github.com/SchweppeLab/Helios/releases) — every past build, individually tagged, if you need to pin to or re-download a specific one.
 
-However you get the pieces: add the `NuGet/` folder as a NuGet source (`dotnet nuget add source <folder> -n HeliosDev`) so `Helios.Client`'s dependency on
-`Helios.Bridge.Contracts` resolves locally, and unzip/keep `Helios.Bridge.Host/` wherever you like, running `Helios.Bridge.Host.exe --register` once (see
-"Locating and managing Helios.Bridge.Host" below) — **it does not include Thermo Fisher's IAPI DLLs, which Helios can't redistribute**; its own
-`README-IAPI.txt` lists exactly which files to copy in from your own licensed IAPI install to talk to real Fusion/Exploris hardware. Without them, it still runs
-fine against the built-in simulator or a Corona/VMS connection. These are pre-release, unsupported builds — expect the API to shift without notice.
+However you get the pieces: add the `NuGet/` folder as a NuGet source (`dotnet nuget add source <folder> -n HeliosDev`) so dependencies resolve locally (only
+pull in `Helios.Client` *or* `Helios` — they're alternative ways to use Helios, not a matched pair), and unzip/keep `Helios.Bridge.Host/` wherever you like,
+running `Helios.Bridge.Host.exe --register` once (see "Locating and managing Helios.Bridge.Host" below) — **none of this includes Thermo Fisher's IAPI DLLs,
+which Helios can't redistribute**; `Helios.Bridge.Host/README-IAPI.txt` lists exactly which files to copy in from your own licensed IAPI install (the same files,
+added to your own project's references, if you're using the `Helios` in-process package instead). Without them, the bridge host still runs fine against the
+built-in simulator or a Corona/VMS connection. These are pre-release, unsupported builds — expect the API to shift without notice.
 
 ## Two ways to use Helios
 
