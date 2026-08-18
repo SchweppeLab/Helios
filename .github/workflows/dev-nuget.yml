@@ -151,12 +151,23 @@ jobs:
       # Nova has no NuGet feed, but ships this exact pre-built nupkg as a GitHub Release asset --
       # matches the version Helios/packages.config already pins. Nova is SchweppeLab's own
       # Apache-2.0 code, unlike IAPI, so it's fine to end up in the shipped zip.
+      #
+      # Keeps the raw Nova.1.0.0.18.nupkg file itself inside the packages/Nova.1.0.0.18/ folder, not
+      # just its extracted contents -- nuget.exe pack's packages.config-driven dependency resolution
+      # (used below, for the original Helios package) needs that exact file to satisfy the Nova
+      # dependency it declares, and fails with NU5012 ("Unable to find 'Nova.1.0.0.18.nupkg'") without
+      # it. Found live: this only worked locally by accident, because this machine's global NuGet
+      # cache and a machine-level NuGet.Config both happen to already have Nova cached/configured from
+      # unrelated past work -- neither exists on a fresh CI runner. Reproduced and confirmed the fix
+      # in a fully isolated local test (NUGET_PACKAGES redirected to an empty folder, NuGet.Config
+      # sources cleared) before landing this.
       - name: Fetch Nova into the local packages layout
         run: |
           Invoke-WebRequest -Uri "https://github.com/SchweppeLab/Nova/releases/download/v1.0.0.18/Nova-1_0_0_18-nupkg.zip" -OutFile nova-bundle.zip
           Expand-Archive -Path nova-bundle.zip -DestinationPath nova-bundle -Force
           New-Item -ItemType Directory -Force -Path "Helios/packages/Nova.1.0.0.18" | Out-Null
           Expand-Archive -Path "nova-bundle/Nova.1.0.0.18.nupkg" -DestinationPath "Helios/packages/Nova.1.0.0.18" -Force
+          Copy-Item "nova-bundle/Nova.1.0.0.18.nupkg" "Helios/packages/Nova.1.0.0.18/Nova.1.0.0.18.nupkg"
 
       - name: Build Helios.Bridge.Host
         run: dotnet build Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64
@@ -181,6 +192,9 @@ jobs:
           $heliosVersion = "$($matches[1])-dev.${{ github.run_number }}"
 
           .\nuget.exe pack Helios/Helios.csproj -OutputDirectory helios-pack-out -Properties "Configuration=Release;Platform=x64" -Version $heliosVersion
+          if ($LASTEXITCODE -ne 0) {
+            throw "nuget.exe pack failed with exit code $LASTEXITCODE"
+          }
 
           New-Item -ItemType Directory -Force -Path helios-pack-out-latest | Out-Null
           Copy-Item "helios-pack-out/Helios.$heliosVersion.nupkg" "helios-pack-out-latest/Helios-dev-latest.nupkg"

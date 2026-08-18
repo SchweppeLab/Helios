@@ -7,6 +7,53 @@ deleting past entries.
 
 ---
 
+## 2026-08-18 -- Dev-branch workflow: fixed the original Helios package's first real CI failure
+
+**Status: root cause found and fixed, verified via a properly isolated local reproduction; not yet
+confirmed by an actual CI run.** The first live run of the previous entry's "original Helios package"
+addition failed: `Pack the original Helios package` errored with `NU5012: Unable to find
+'Nova.1.0.0.18.nupkg'. Make sure the project has been built.`, cascading into a confusing secondary
+`Copy-Item` failure on the next line (the script had no exit-code check, so it kept going after
+`nuget.exe` failed). The other 12 annotations on that run were pre-existing compiler warnings already
+present in `Helios/`'s own code (XML doc gaps, unused VMS-only events, one unused exception variable)
+-- unrelated to this change, confirmed by checking the job's step list directly: `Build
+Helios.Bridge.Host` (the step that actually compiles that code) succeeded; `Pack the original Helios
+package` was the one that failed, with everything after it cascade-skipped.
+
+**Root cause: `nuget.exe pack`'s `packages.config`-driven dependency resolution needs the actual
+`Nova.1.0.0.18.nupkg` file sitting inside `Helios/packages/Nova.1.0.0.18/`, not just that package's
+extracted contents** (which is all the "Fetch Nova" step had ever provided -- `Expand-Archive` unpacks
+a nupkg's *contents* into a folder, it doesn't also leave the original archive file sitting there).
+This had never been caught locally because this dev machine's global NuGet cache
+(`~/.nuget/packages/nova/*`, populated by years of unrelated work on other projects) and a
+machine-level `NuGet.Config` (a `"Schweppe Lab"` source pointing at a local feed) both independently
+let `nuget.exe pack` resolve Nova anyway, silently masking the gap -- a fresh CI runner has neither.
+Worse, the very first successful local pack test (run before this was understood) caused `nuget.exe`
+to write a resolved copy of `Nova.1.0.0.18.nupkg` into that same local `packages/` folder as a side
+effect, which then made every subsequent "isolated" local test pass too, for the wrong reason (cheating
+off that leftover file, not off the actual fix) -- caught only by explicitly deleting that file and
+re-testing with both the global cache (`NUGET_PACKAGES` env var redirected to an empty folder) and
+config sources (`-ConfigFile` pointed at a `<clear/>`-only config) neutralized at once, which properly
+reproduced `NU5012` locally for the first time. Re-adding just the raw `.nupkg` file in that same fully
+isolated environment then resolved it, confirming the real fix rather than another false positive.
+
+**Fix:** `Fetch Nova into the local packages layout` now also does a plain `Copy-Item` of the raw
+`Nova.1.0.0.18.nupkg` into `Helios/packages/Nova.1.0.0.18/Nova.1.0.0.18.nupkg` after extracting its
+contents. Also added an explicit `$LASTEXITCODE` check right after the `nuget.exe pack` call, so any
+future failure there surfaces as its own clear error instead of cascading into an unrelated-looking
+`Copy-Item` failure on the next line.
+
+**Verified:** reproduced `NU5012` for real in a fully isolated local environment (global packages
+cache and configured sources both neutralized), confirmed the fix resolves it in that same
+environment, confirmed `Expand-Archive`'s existing (unmodified) extraction line already succeeds on
+the real CI runner regardless of a `.nupkg`-extension quirk that only affects this local machine's
+Windows PowerShell 5.1 test tooling (GitHub's `windows-latest` runners default `run:` steps to `pwsh`
+7+, which doesn't have that restriction -- and this exact step already succeeded in the prior live CI
+run before this fix, independent confirmation it works there). **Not yet verified:** an actual CI run
+of this fix -- needs another push to `Dev`.
+
+---
+
 ## 2026-08-17 -- Dev-branch workflow: the original Helios package too
 
 **Status: pack verified locally against a real build; live CI run not yet done.** Added a third
