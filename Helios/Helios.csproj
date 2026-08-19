@@ -58,9 +58,12 @@
       <HintPath>..\..\iapi\lib\tribrid\TribridSeries4pt3\Fusion.API-2.0.dll</HintPath>
       <Aliases>fusion</Aliases>
     </Reference>
-    <Reference Include="Nova, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Nova.1.0.0.18\lib\net48\Nova.dll</HintPath>
+    <!-- Temporary: pinned to a Nova Dev-branch dev build (netstandard2.0), not a stable release.
+         Swap to a real Nova release once one ships. -->
+    <Reference Include="Nova, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Nova.1.1.0-dev.8\lib\netstandard2.0\Nova.dll</HintPath>
     </Reference>
+    <Reference Include="netstandard" />
     <Reference Include="Spectrum-1.0">
       <HintPath>..\..\iapi\lib\Spectrum-1.0.dll</HintPath>
     </Reference>

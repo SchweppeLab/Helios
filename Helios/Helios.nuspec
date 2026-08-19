@@ -16,7 +16,7 @@
 
     <dependencies>
       <group targetFramework="net48">
-        <dependency id="Nova" version="1.0.0.18" />
+        <dependency id="Nova" version="1.1.0-dev.8" />
 	  </group>
     </dependencies>
 

@@ -7,6 +7,31 @@ deleting past entries.
 
 ---
 
+## 2026-08-19 -- Temporary move to a Nova dev build (`1.1.0-dev.8`)
+
+**Temporary.** Nova's `Dev` branch has moved its core package (the `Data/`+`IPC/Pipes` code Helios
+actually links) from a .NET Framework 4.8-only build to `netstandard2.0` -- no `net48` build of
+Nova exists there anymore. Pinned Helios's `Dev` branch to that dev build (`1.1.0-dev.8`) ahead of
+Nova's next real stable release, so Helios doesn't sit on the now-unmaintained `1.0.0.18` in the
+meantime. Expect this pin to be replaced once Nova ships a real release -- not meant to stick
+around.
+
+Changed: `packages.config` and `Helios.csproj`'s `Nova` reference (version + `HintPath`, now
+pointing at `lib/netstandard2.0/` instead of `lib/net48/`; also added an explicit
+`<Reference Include="netstandard" />`, since the old-style `packages.config`+`HintPath` setup here
+doesn't go through a real `nuget install` and so doesn't automatically pick up the netstandard
+compat facade the way a `PackageReference`-based restore would), `Helios.nuspec`'s Nova dependency
+pin, and the `Dev` workflow's "Fetch Nova into the local packages layout" step (now pulls
+`Nova.1.1.0-dev.8.nupkg` directly from Nova's `dev-latest` release rather than a tagged release --
+pinned to today's specific build, not a moving target, since Nova's `dev-latest` assets carry
+per-run versioned filenames).
+
+Verified locally: `Helios.sln` builds clean (`Release|x64`) -- `Helios.dll` itself and everything
+that depends on it (`Helios.Bridge.Host`, `Helios.Client`, `ScanSpy`, `Helios.Client.Demo`) compiled
+against the new Nova build with no new warnings or errors. `ScanInjector` failed to restore, but on
+a pre-existing, unrelated NuGet RuntimeIdentifier issue (a ScottPlot/SkiaSharp native-asset
+restore problem) -- not touched by, or related to, this change.
+
 ## 2026-08-18 -- Dev-branch workflow: fixed the original Helios package's first real CI failure
 
 **Status: root cause found and fixed, verified via a properly isolated local reproduction; not yet
