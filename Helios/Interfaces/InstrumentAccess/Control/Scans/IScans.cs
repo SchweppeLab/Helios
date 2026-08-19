@@ -353,22 +353,14 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     }
 
 
-    protected virtual void OnCanAcceptNextCustomScan(EventArgs e)
+    public virtual void OnCanAcceptNextCustomScan(EventArgs e)
     {
-      EventHandler<EventArgs> handler = CanAcceptNextCustomScan;
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      CanAcceptNextCustomScan?.Invoke(this, e);
     }
 
     protected virtual void OnPossibleParametersChanged(EventArgs e)
     {
-      EventHandler<EventArgs> handler = PossibleParametersChanged;
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      PossibleParametersChanged?.Invoke(this, e);
     }
 
     private byte[] Serialize(ICustomScan customScan)

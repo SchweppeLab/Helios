@@ -1,11 +1,11 @@
 ﻿extern alias exploris;
 extern alias fusion;
-
 using System;
 using System.Linq;
-using Nova.IPC.Pipes;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
+using Helios.Interfaces.InstrumentAccess.Control.Scans;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
+using Nova.IPC.Pipes;
 
 namespace Helios.Interfaces.InstrumentAccess
 {
@@ -360,6 +360,9 @@ namespace Helios.Interfaces.InstrumentAccess
           break;
         case '4':
           ((HeliosMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScanEx(message.MsgData);
+          break;
+        case '5':
+          ((HeliosScansVMS)instAcc.Control.GetScans(false)).OnCanAcceptNextCustomScan(new EventArgs());
           break;
         default:
           Console.WriteLine("Server sent unrecognized message code: {0}", message.MsgCode);
