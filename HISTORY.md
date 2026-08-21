@@ -7,6 +7,55 @@ deleting past entries.
 
 ---
 
+## 2026-08-21 -- Fixed idle-disconnect: gRPC keepalive-ping policy mismatch
+
+**Status: both fixes committed locally and build clean; live idle-survival verification (Corona +
+bridge + a client, idle 10+ minutes) still needs to be run against a real Corona session, which
+this environment doesn't have.** Diagnosed and fixed the bug where a Booster/ScanSpy connection to
+Corona through the Helios bridge would drop after roughly 1.5-2 minutes of idleness (Corona
+connected but not streaming), with Corona then logging its client as disconnected. Full diagnosis
+and approved fix plan captured beforehand in `D:\Software\Claude\Notes\Helios-Idle-Disconnect-Fix-Plan.md`.
+
+**Root cause:** `HeliosClient.cs`'s `SocketsHttpHandler` sends an HTTP/2 keepalive ping every 30s
+whenever a stream is open and idle (`KeepAlivePingDelay`) -- and a connected client always has
+`StreamServiceEvents`/`StreamMsScans` open. `Helios.Bridge.Host/Program.cs` constructed its
+`Grpc.Core.Server` with no `ChannelOptions`, so C-core's default ping-abuse guard applied: pings
+faster than 5 minutes apart with no data in between accrue "ping strikes," and after 2 strikes
+(~90-120s of idle pinging) the server sent `GOAWAY` (`too_many_pings`), killing an otherwise-healthy
+TCP connection. The dead transport then surfaced as an unhandled `RpcException(Unavailable)` inside
+`PumpServiceEventsAsync`/`PumpScansAsync`, which only ever caught cancellation -- so both pumps died
+silently, `Connected` stayed `true` forever, and the only visible symptom was scans/events just
+stopping. Separately, `ConnectionWatchdog` (correctly keyed on call lifetime, not data flow) then
+saw the client's call end, counted down to zero connections, and shut the host down after
+`IdleShutdownSeconds` -- closing the Nova pipe to Corona, which is what actually produced Corona's
+"client disconnected" log. Named pipes, Corona's `VMSServer`/`MStreamer`, and the Helios VMS backend
+were all confirmed idle-timeout-free -- none of them were the cause.
+
+**Fix, two commits:**
+- `Program.cs`: added `ChannelOptions` to the `Server` construction --
+  `grpc.http2.min_ping_interval_without_data_ms = 20000` (legalizes the client's 30s cadence with a
+  10s margin) and `grpc.keepalive_permit_without_calls = 1`. `max_ping_strikes` left at its default
+  (2) -- with the floor in place it can no longer trigger for a well-behaved client, and stays a
+  guard against a pathological one. Client-side keepalive settings and
+  `PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan` left untouched, as is
+  `ConnectionWatchdog`/`IdleShutdownSeconds` (that mechanism was correct all along -- a victim of
+  the ping kill, not a cause).
+- `HeliosClient.cs`/`MsScan.cs`: real transport death is now observable instead of silent.
+  `PumpServiceEventsAsync` sets `Connected = false` and raises `ConnectionChanged` on any terminal
+  error other than the existing cancellation cases; `PumpScansAsync` at least logs its failure via
+  `Debug.WriteLine` (consistent with `HeliosClient.FireAndForget`'s existing pattern) instead of
+  becoming an unobserved task exception. Deliberately no auto-reconnect -- that policy is left to
+  the consuming app (Booster already subscribes to `ConnectionChanged` and needs no changes).
+
+**Verified:** `Helios.Bridge.Host.csproj` and `Helios.Client.csproj` each build clean (0 errors,
+only pre-existing XML-doc warnings) after their respective changes. **Not yet verified:** the actual
+idle-survival scenario (Corona + bridge + a client left idle 10+ minutes) and the watchdog/crash-path
+checks from the plan's verification section -- all require a live Corona session, which this
+environment doesn't have; left for the user to confirm on the instrument-control PC. Commits are
+local only, not pushed.
+
+---
+
 ## 2026-08-19 -- Temporary move to a Nova dev build (`1.1.0-dev.8`)
 
 **Temporary.** Nova's `Dev` branch has moved its core package (the `Data/`+`IPC/Pipes` code Helios
