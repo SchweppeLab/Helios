@@ -228,6 +228,14 @@ namespace Helios.Client
         // awaited by DisposeAsync(), so leaving it uncaught here propagates into whatever awaits
         // DisposeAsync() (e.g. an async void UI event handler), crashing the app.
       }
+      catch (Exception)
+      {
+        // An unexpected terminal error (e.g. RpcException(Unavailable) from a dead transport) --
+        // this is the only place a lost connection becomes observable, since a dead transport
+        // otherwise just makes scans and events stop arriving with Connected still true forever.
+        Connected = false;
+        ConnectionChanged?.Invoke(this, EventArgs.Empty);
+      }
     }
 
     public IMsScanContainer GetMsScanContainer(int msDetectorSet)
