@@ -53,7 +53,16 @@ namespace Helios.Bridge.Host
       // same instrument-control PC. Skipping the TLS handshake removes real latency from the
       // hottest path (scan streaming); see Helios.Client for the matching plaintext-H2C switch
       // that has to be set on the .NET 8 side for this to work.
-      var server = new Server
+      var server = new Server(new[]
+      {
+        // Idle connections must live indefinitely (HeliosClient.KeepAlivePingDelay keeps a stream
+        // open with no data flowing for as long as the client stays connected). The .NET client
+        // sends an HTTP/2 keepalive ping every 30s while idle; C-core's default floor for pings
+        // without data is 5 minutes, so those pings would otherwise accrue "ping strikes" and the
+        // server would GOAWAY (too_many_pings), killing a perfectly healthy idle connection.
+        new ChannelOption("grpc.http2.min_ping_interval_without_data_ms", 20000),
+        new ChannelOption("grpc.keepalive_permit_without_calls", 1),
+      })
       {
         Services =
         {
