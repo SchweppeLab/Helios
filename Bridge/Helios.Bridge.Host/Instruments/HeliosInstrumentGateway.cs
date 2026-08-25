@@ -526,18 +526,30 @@ namespace Helios.Bridge.Host.Instruments
       "Master Scan Number", "Monoisotopic M/Z", "Scan Description",
     };
 
+    // A canonical id can resolve to a "pure name" entry with a null value (see the CopyInto
+    // comment below) -- skipped rather than assigned, since MapField (unlike Dictionary) throws
+    // on a null value instead of just storing it.
     private static void ResolveCanonicalTerms(MapField<string, string> target, string[] canonicalIds, TryGet tryGet)
     {
       foreach (var id in canonicalIds)
       {
-        if (tryGet(id, out var value)) target[id] = value;
+        if (tryGet(id, out var value) && value is not null) target[id] = value;
       }
     }
 
-    // scan.Header is already a plain, already-materialized dictionary-like source -- straight copy.
+    // scan.Header is already a plain, already-materialized dictionary-like source -- straight copy,
+    // except a null value (IMsScan.Header's own doc: "a pure name has a value of null") is skipped
+    // rather than assigned -- MapField, unlike Dictionary, throws ArgumentNullException on a null
+    // value instead of just storing it. Confirmed live on real Exploris hardware: Tribrid/Fusion
+    // scans never seem to carry a null-valued pure name in practice, Exploris scans do -- see
+    // HISTORY.md's 2026-08-25 entry. If skipping ever turns out to lose information a caller
+    // needed, map to "" instead of skipping -- but skipping was the deliberate first choice here.
     private static void CopyInto(MapField<string, string> target, IEnumerable<KeyValuePair<string, string>> source)
     {
-      foreach (var kv in source) target[kv.Key] = kv.Value;
+      foreach (var kv in source)
+      {
+        if (kv.Value is not null) target[kv.Key] = kv.Value;
+      }
     }
 
     // scan.Trailer/StatusLog/TuneData are IInformationSourceAccess instead -- a live accessor, not
@@ -548,12 +560,21 @@ namespace Helios.Bridge.Host.Instruments
     // Corona's own pipe-message dispatch chain (ReceiveScan -> MsScanArrived -> this method), which
     // kills that dispatch thread -- explains why no scan data arrived AND why
     // AcquisitionStreamClosing/the next StreamOpening never fired either, not just this one scan.
+    //
+    // TryGetValue can also return true with a null value for a real, connected Exploris instrument
+    // (confirmed live -- see HISTORY.md's 2026-08-25 entry): some Trailer/StatusLog/TuneData item
+    // is present by name before its value is populated. MapField throws ArgumentNullException on a
+    // null value where Dictionary would just store it, and that exception was getting caught and
+    // swallowed by CallbackGuard on literally every scan, so no scan data ever reached ScanSpy
+    // against real Exploris hardware even though AcquisitionStreamOpening/StateChanged (a separate
+    // event chain) worked fine. Skipping the null value is the deliberate first fix; if that ever
+    // turns out to lose information a caller needed, map to "" instead of skipping.
     private static void CopyInto(MapField<string, string> target, IInformationSourceAccess source)
     {
       if (source is null || !source.Available) return;
       foreach (var name in source.ItemNames)
       {
-        if (source.TryGetValue(name, out var value)) target[name] = value;
+        if (source.TryGetValue(name, out var value) && value is not null) target[name] = value;
       }
     }
   }

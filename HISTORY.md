@@ -7,6 +7,43 @@ deleting past entries.
 
 ---
 
+## 2026-08-25 -- Fixed real Exploris hardware never delivering scan events through the bridge
+
+**Status: fixed, build clean; live-verified against real Exploris hardware by the user (Tribrid and
+Corona already worked; this was Exploris-only).** User reported connecting to Exploris through the
+bridge fine -- `AcquisitionStreamOpening` and other acquisition events arrived as expected -- but no
+`MsScanArrived` events ever reached `ScanSpy`, on that instrument only.
+
+**Root cause:** `HeliosInstrumentGateway.ToProto`'s two `CopyInto` helpers and
+`ResolveCanonicalTerms` (all three map a scan's `Header`/`Trailer`/`StatusLog`/`TuneData` into the
+outgoing `Contracts.MsScanData`'s `MapField<string, string>` fields) all assumed `Dictionary`-style
+null-value semantics: `IMsScan.Header`'s own doc comment says "a pure name has a value of null," and
+`IInformationSourceAccess.TryGetValue` can likewise return `true` with a `null` out value. `MapField`
+(protobuf, unlike `Dictionary`) throws `ArgumentNullException` the moment a null value is assigned.
+On this Exploris instrument, one of `Trailer`/`StatusLog`/`TuneData` carries exactly such a
+pure-name/no-value-yet entry on literally every scan; `CallbackGuard` (see the 2026-08-13 VMS
+entries) caught and swallowed that exception on every single one, so no scan protobuf message was
+ever completed or sent -- while `AcquisitionStreamOpening`/`StateChanged` (a separate,
+independently-wired event chain in `HeliosAcquisitionControlAdapter`) kept working fine, which is
+what made this look Exploris-scan-specific rather than a general connection failure. Tribrid/Fusion
+and Corona/VMS apparently never emit a null-valued entry from these sources in practice, so this
+same latent bug never fired for either.
+
+**Fix:** all three call sites (`CopyInto(MapField, IEnumerable<KeyValuePair<string,string>>)` for
+`Header`; `CopyInto(MapField, IInformationSourceAccess)` for `Trailer`/`StatusLog`/`TuneData`; and
+`ResolveCanonicalTerms` for the canonical-term resolution pass) now skip a null value instead of
+assigning it, matching the "pure name" semantics the source interfaces already document. Deliberate
+first choice over mapping to `""` -- if skipping ever turns out to lose information a caller
+actually needed, the code comments at all three sites point back to mapping to `""` instead.
+
+**Diagnosis method worth repeating:** the fix came from reading `Helios.Bridge.Host`'s own log
+(`%LocalAppData%\SchweppeLab\Helios\Helios.Bridge.Host.<port>.log` for an auto-launched host) for the
+`CallbackGuard` swallow message -- `CallbackGuard` protects the connection from a bug in one mapping,
+but that same protection makes a *deterministic* per-scan failure invisible to the client with no
+crash and no visible error, so the log is the only place the real exception and stack trace surface.
+
+---
+
 ## 2026-08-21 -- Fixed idle-disconnect: gRPC keepalive-ping policy mismatch
 
 **Status: both fixes committed locally and build clean; live idle-survival verification (Corona +
