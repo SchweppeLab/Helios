@@ -44,6 +44,7 @@
       this.connectionIndicator = new System.Windows.Forms.Button();
       this.buttonConnect = new System.Windows.Forms.Button();
       this.groupBox2 = new System.Windows.Forms.GroupBox();
+      this.hasIRMPD = new System.Windows.Forms.CheckBox();
       this.hasIRTMT = new System.Windows.Forms.CheckBox();
       this.hasMS3 = new System.Windows.Forms.CheckBox();
       this.spsAddTarget = new System.Windows.Forms.Button();
@@ -81,7 +82,6 @@
       this.labelScanFilter = new System.Windows.Forms.Label();
       this.labelScanInfo = new System.Windows.Forms.Label();
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-      this.hasIRMPD = new System.Windows.Forms.CheckBox();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
       this.splitContainer1.Panel2.SuspendLayout();
@@ -110,6 +110,7 @@
       this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
       this.splitContainer1.IsSplitterFixed = true;
       this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+      this.splitContainer1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.splitContainer1.Name = "splitContainer1";
       this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
       // 
@@ -122,8 +123,9 @@
       this.splitContainer1.Panel2.BackColor = System.Drawing.SystemColors.Control;
       this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
       this.splitContainer1.Panel2.Controls.Add(this.statusStrip1);
-      this.splitContainer1.Size = new System.Drawing.Size(979, 549);
+      this.splitContainer1.Size = new System.Drawing.Size(1468, 845);
       this.splitContainer1.SplitterDistance = 304;
+      this.splitContainer1.SplitterWidth = 6;
       this.splitContainer1.TabIndex = 0;
       // 
       // splitContainer2
@@ -132,6 +134,7 @@
       this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
       this.splitContainer2.IsSplitterFixed = true;
       this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+      this.splitContainer2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.splitContainer2.Name = "splitContainer2";
       // 
       // splitContainer2.Panel1
@@ -142,8 +145,9 @@
       // splitContainer2.Panel2
       // 
       this.splitContainer2.Panel2.Controls.Add(this.groupBox2);
-      this.splitContainer2.Size = new System.Drawing.Size(979, 304);
+      this.splitContainer2.Size = new System.Drawing.Size(1468, 304);
       this.splitContainer2.SplitterDistance = 220;
+      this.splitContainer2.SplitterWidth = 6;
       this.splitContainer2.TabIndex = 0;
       // 
       // groupBox3
@@ -155,9 +159,11 @@
       this.groupBox3.Controls.Add(this.buttonListen);
       this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
       this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.groupBox3.Location = new System.Drawing.Point(0, 64);
+      this.groupBox3.Location = new System.Drawing.Point(0, 98);
+      this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.groupBox3.Name = "groupBox3";
-      this.groupBox3.Size = new System.Drawing.Size(220, 64);
+      this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.groupBox3.Size = new System.Drawing.Size(220, 98);
       this.groupBox3.TabIndex = 2;
       this.groupBox3.TabStop = false;
       this.groupBox3.Text = "Activity";
@@ -165,44 +171,49 @@
       // label5
       // 
       this.label5.AutoSize = true;
-      this.label5.Location = new System.Drawing.Point(128, 42);
+      this.label5.Location = new System.Drawing.Point(192, 65);
+      this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label5.Name = "label5";
-      this.label5.Size = new System.Drawing.Size(26, 17);
+      this.label5.Size = new System.Drawing.Size(39, 28);
       this.label5.TabIndex = 8;
       this.label5.Text = "Off";
       // 
       // label3
       // 
       this.label3.AutoSize = true;
-      this.label3.Location = new System.Drawing.Point(128, 25);
+      this.label3.Location = new System.Drawing.Point(192, 38);
+      this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label3.Name = "label3";
-      this.label3.Size = new System.Drawing.Size(42, 17);
+      this.label3.Size = new System.Drawing.Size(66, 28);
       this.label3.TabIndex = 6;
       this.label3.Text = "Active";
       // 
       // listenIndicatorOff
       // 
       this.listenIndicatorOff.BackColor = System.Drawing.Color.Red;
-      this.listenIndicatorOff.Location = new System.Drawing.Point(112, 42);
+      this.listenIndicatorOff.Location = new System.Drawing.Point(168, 65);
+      this.listenIndicatorOff.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.listenIndicatorOff.Name = "listenIndicatorOff";
-      this.listenIndicatorOff.Size = new System.Drawing.Size(16, 16);
+      this.listenIndicatorOff.Size = new System.Drawing.Size(24, 25);
       this.listenIndicatorOff.TabIndex = 4;
       this.listenIndicatorOff.UseVisualStyleBackColor = false;
       // 
       // listenIndicatorOn
       // 
       this.listenIndicatorOn.BackColor = System.Drawing.Color.Gray;
-      this.listenIndicatorOn.Location = new System.Drawing.Point(112, 26);
+      this.listenIndicatorOn.Location = new System.Drawing.Point(168, 40);
+      this.listenIndicatorOn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.listenIndicatorOn.Name = "listenIndicatorOn";
-      this.listenIndicatorOn.Size = new System.Drawing.Size(16, 16);
+      this.listenIndicatorOn.Size = new System.Drawing.Size(24, 25);
       this.listenIndicatorOn.TabIndex = 2;
       this.listenIndicatorOn.UseVisualStyleBackColor = false;
       // 
       // buttonListen
       // 
-      this.buttonListen.Location = new System.Drawing.Point(3, 26);
+      this.buttonListen.Location = new System.Drawing.Point(4, 40);
+      this.buttonListen.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.buttonListen.Name = "buttonListen";
-      this.buttonListen.Size = new System.Drawing.Size(96, 32);
+      this.buttonListen.Size = new System.Drawing.Size(144, 49);
       this.buttonListen.TabIndex = 0;
       this.buttonListen.Text = "Activate";
       this.buttonListen.UseVisualStyleBackColor = true;
@@ -218,8 +229,10 @@
       this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
       this.groupBox1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.groupBox1.Location = new System.Drawing.Point(0, 0);
+      this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(220, 64);
+      this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.groupBox1.Size = new System.Drawing.Size(220, 98);
       this.groupBox1.TabIndex = 1;
       this.groupBox1.TabStop = false;
       this.groupBox1.Text = "Instrument Status";
@@ -227,44 +240,49 @@
       // label2
       // 
       this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(128, 43);
+      this.label2.Location = new System.Drawing.Point(192, 66);
+      this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label2.Name = "label2";
-      this.label2.Size = new System.Drawing.Size(86, 17);
+      this.label2.Size = new System.Drawing.Size(130, 28);
       this.label2.TabIndex = 4;
       this.label2.Text = "Disconnected";
       // 
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(128, 27);
+      this.label1.Location = new System.Drawing.Point(192, 42);
+      this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(70, 17);
+      this.label1.Size = new System.Drawing.Size(106, 28);
       this.label1.TabIndex = 3;
       this.label1.Text = "Connected";
       // 
       // disconnectionIndicator
       // 
       this.disconnectionIndicator.BackColor = System.Drawing.Color.Red;
-      this.disconnectionIndicator.Location = new System.Drawing.Point(112, 42);
+      this.disconnectionIndicator.Location = new System.Drawing.Point(168, 65);
+      this.disconnectionIndicator.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.disconnectionIndicator.Name = "disconnectionIndicator";
-      this.disconnectionIndicator.Size = new System.Drawing.Size(16, 16);
+      this.disconnectionIndicator.Size = new System.Drawing.Size(24, 25);
       this.disconnectionIndicator.TabIndex = 2;
       this.disconnectionIndicator.UseVisualStyleBackColor = false;
       // 
       // connectionIndicator
       // 
       this.connectionIndicator.BackColor = System.Drawing.Color.Gray;
-      this.connectionIndicator.Location = new System.Drawing.Point(112, 26);
+      this.connectionIndicator.Location = new System.Drawing.Point(168, 40);
+      this.connectionIndicator.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.connectionIndicator.Name = "connectionIndicator";
-      this.connectionIndicator.Size = new System.Drawing.Size(16, 16);
+      this.connectionIndicator.Size = new System.Drawing.Size(24, 25);
       this.connectionIndicator.TabIndex = 1;
       this.connectionIndicator.UseVisualStyleBackColor = false;
       // 
       // buttonConnect
       // 
-      this.buttonConnect.Location = new System.Drawing.Point(3, 26);
+      this.buttonConnect.Location = new System.Drawing.Point(4, 40);
+      this.buttonConnect.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.buttonConnect.Name = "buttonConnect";
-      this.buttonConnect.Size = new System.Drawing.Size(96, 32);
+      this.buttonConnect.Size = new System.Drawing.Size(144, 49);
       this.buttonConnect.TabIndex = 0;
       this.buttonConnect.Text = "Connect";
       this.buttonConnect.UseVisualStyleBackColor = true;
@@ -303,18 +321,32 @@
       this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
       this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.groupBox2.Location = new System.Drawing.Point(0, 0);
+      this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.groupBox2.Name = "groupBox2";
-      this.groupBox2.Size = new System.Drawing.Size(755, 304);
+      this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.groupBox2.Size = new System.Drawing.Size(1242, 304);
       this.groupBox2.TabIndex = 1;
       this.groupBox2.TabStop = false;
       this.groupBox2.Text = "Custom Scan Settings";
       // 
+      // hasIRMPD
+      // 
+      this.hasIRMPD.AutoSize = true;
+      this.hasIRMPD.Location = new System.Drawing.Point(636, 149);
+      this.hasIRMPD.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.hasIRMPD.Name = "hasIRMPD";
+      this.hasIRMPD.Size = new System.Drawing.Size(98, 32);
+      this.hasIRMPD.TabIndex = 29;
+      this.hasIRMPD.Text = "IRMPD";
+      this.hasIRMPD.UseVisualStyleBackColor = true;
+      // 
       // hasIRTMT
       // 
       this.hasIRTMT.AutoSize = true;
-      this.hasIRTMT.Location = new System.Drawing.Point(424, 121);
+      this.hasIRTMT.Location = new System.Drawing.Point(636, 186);
+      this.hasIRTMT.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.hasIRTMT.Name = "hasIRTMT";
-      this.hasIRTMT.Size = new System.Drawing.Size(102, 21);
+      this.hasIRTMT.Size = new System.Drawing.Size(149, 32);
       this.hasIRTMT.TabIndex = 28;
       this.hasIRTMT.Text = "IRTMT Mode";
       this.hasIRTMT.UseVisualStyleBackColor = true;
@@ -322,9 +354,10 @@
       // hasMS3
       // 
       this.hasMS3.AutoSize = true;
-      this.hasMS3.Location = new System.Drawing.Point(362, 121);
+      this.hasMS3.Location = new System.Drawing.Point(543, 186);
+      this.hasMS3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.hasMS3.Name = "hasMS3";
-      this.hasMS3.Size = new System.Drawing.Size(53, 21);
+      this.hasMS3.Size = new System.Drawing.Size(78, 32);
       this.hasMS3.TabIndex = 27;
       this.hasMS3.Text = "MS3";
       this.hasMS3.UseVisualStyleBackColor = true;
@@ -333,9 +366,10 @@
       // 
       this.spsAddTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("spsAddTarget.BackgroundImage")));
       this.spsAddTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-      this.spsAddTarget.Location = new System.Drawing.Point(517, 148);
+      this.spsAddTarget.Location = new System.Drawing.Point(776, 228);
+      this.spsAddTarget.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.spsAddTarget.Name = "spsAddTarget";
-      this.spsAddTarget.Size = new System.Drawing.Size(28, 28);
+      this.spsAddTarget.Size = new System.Drawing.Size(42, 43);
       this.spsAddTarget.TabIndex = 26;
       this.spsAddTarget.UseVisualStyleBackColor = true;
       this.spsAddTarget.Click += new System.EventHandler(this.spsAddTarget_Click);
@@ -343,15 +377,17 @@
       // spsTargets
       // 
       this.spsTargets.FormattingEnabled = true;
-      this.spsTargets.ItemHeight = 17;
-      this.spsTargets.Location = new System.Drawing.Point(362, 148);
+      this.spsTargets.ItemHeight = 28;
+      this.spsTargets.Location = new System.Drawing.Point(543, 228);
+      this.spsTargets.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.spsTargets.Name = "spsTargets";
-      this.spsTargets.Size = new System.Drawing.Size(149, 89);
+      this.spsTargets.Size = new System.Drawing.Size(222, 116);
       this.spsTargets.TabIndex = 25;
       // 
       // comIT
       // 
-      this.comIT.Location = new System.Drawing.Point(261, 87);
+      this.comIT.Location = new System.Drawing.Point(392, 134);
+      this.comIT.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comIT.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -363,7 +399,7 @@
             0,
             0});
       this.comIT.Name = "comIT";
-      this.comIT.Size = new System.Drawing.Size(64, 25);
+      this.comIT.Size = new System.Drawing.Size(96, 33);
       this.comIT.TabIndex = 24;
       this.comIT.Tag = "in milliseconds";
       this.comIT.Value = new decimal(new int[] {
@@ -379,7 +415,8 @@
             0,
             0,
             0});
-      this.comAGC.Location = new System.Drawing.Point(94, 86);
+      this.comAGC.Location = new System.Drawing.Point(141, 132);
+      this.comAGC.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comAGC.Maximum = new decimal(new int[] {
             10000000,
             0,
@@ -391,7 +428,7 @@
             0,
             0});
       this.comAGC.Name = "comAGC";
-      this.comAGC.Size = new System.Drawing.Size(80, 25);
+      this.comAGC.Size = new System.Drawing.Size(120, 33);
       this.comAGC.TabIndex = 23;
       this.comAGC.Value = new decimal(new int[] {
             100000,
@@ -402,26 +439,29 @@
       // comRes
       // 
       this.comRes.FormattingEnabled = true;
-      this.comRes.Location = new System.Drawing.Point(261, 24);
+      this.comRes.Location = new System.Drawing.Point(392, 37);
+      this.comRes.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comRes.Name = "comRes";
-      this.comRes.Size = new System.Drawing.Size(80, 25);
+      this.comRes.Size = new System.Drawing.Size(118, 36);
       this.comRes.TabIndex = 22;
       // 
       // comAnalyzer
       // 
       this.comAnalyzer.FormattingEnabled = true;
-      this.comAnalyzer.Location = new System.Drawing.Point(94, 24);
+      this.comAnalyzer.Location = new System.Drawing.Point(141, 37);
+      this.comAnalyzer.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comAnalyzer.Name = "comAnalyzer";
-      this.comAnalyzer.Size = new System.Drawing.Size(80, 25);
+      this.comAnalyzer.Size = new System.Drawing.Size(118, 36);
       this.comAnalyzer.TabIndex = 21;
       this.comAnalyzer.Text = "Orbitrap";
       this.comAnalyzer.SelectedValueChanged += new System.EventHandler(this.comAnalyzer_SelectedValueChanged);
       // 
       // buttonCustomScan
       // 
-      this.buttonCustomScan.Location = new System.Drawing.Point(9, 260);
+      this.buttonCustomScan.Location = new System.Drawing.Point(14, 400);
+      this.buttonCustomScan.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.buttonCustomScan.Name = "buttonCustomScan";
-      this.buttonCustomScan.Size = new System.Drawing.Size(125, 34);
+      this.buttonCustomScan.Size = new System.Drawing.Size(188, 52);
       this.buttonCustomScan.TabIndex = 20;
       this.buttonCustomScan.Text = "Request Scan";
       this.buttonCustomScan.UseVisualStyleBackColor = true;
@@ -430,36 +470,40 @@
       // label14
       // 
       this.label14.AutoSize = true;
-      this.label14.Location = new System.Drawing.Point(186, 89);
+      this.label14.Location = new System.Drawing.Point(279, 137);
+      this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label14.Name = "label14";
-      this.label14.Size = new System.Drawing.Size(73, 17);
+      this.label14.Size = new System.Drawing.Size(110, 28);
       this.label14.TabIndex = 19;
       this.label14.Text = "Inject Time:";
       // 
       // label13
       // 
       this.label13.AutoSize = true;
-      this.label13.Location = new System.Drawing.Point(6, 89);
+      this.label13.Location = new System.Drawing.Point(9, 137);
+      this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label13.Name = "label13";
-      this.label13.Size = new System.Drawing.Size(36, 17);
+      this.label13.Size = new System.Drawing.Size(55, 28);
       this.label13.TabIndex = 18;
       this.label13.Text = "AGC:";
       // 
       // label12
       // 
       this.label12.AutoSize = true;
-      this.label12.Location = new System.Drawing.Point(186, 27);
+      this.label12.Location = new System.Drawing.Point(279, 42);
+      this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label12.Name = "label12";
-      this.label12.Size = new System.Drawing.Size(72, 17);
+      this.label12.Size = new System.Drawing.Size(108, 28);
       this.label12.TabIndex = 17;
       this.label12.Text = "Resolution:";
       // 
       // label11
       // 
       this.label11.AutoSize = true;
-      this.label11.Location = new System.Drawing.Point(6, 27);
+      this.label11.Location = new System.Drawing.Point(9, 42);
+      this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label11.Name = "label11";
-      this.label11.Size = new System.Drawing.Size(60, 17);
+      this.label11.Size = new System.Drawing.Size(91, 28);
       this.label11.TabIndex = 16;
       this.label11.Text = "Analyzer:";
       // 
@@ -467,9 +511,10 @@
       // 
       this.comClearTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("comClearTarget.BackgroundImage")));
       this.comClearTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-      this.comClearTarget.Location = new System.Drawing.Point(249, 216);
+      this.comClearTarget.Location = new System.Drawing.Point(374, 332);
+      this.comClearTarget.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comClearTarget.Name = "comClearTarget";
-      this.comClearTarget.Size = new System.Drawing.Size(28, 28);
+      this.comClearTarget.Size = new System.Drawing.Size(42, 43);
       this.comClearTarget.TabIndex = 15;
       this.comClearTarget.UseVisualStyleBackColor = true;
       this.comClearTarget.Click += new System.EventHandler(this.comClearTarget_Click);
@@ -478,9 +523,10 @@
       // 
       this.comRemoveTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("comRemoveTarget.BackgroundImage")));
       this.comRemoveTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-      this.comRemoveTarget.Location = new System.Drawing.Point(249, 182);
+      this.comRemoveTarget.Location = new System.Drawing.Point(374, 280);
+      this.comRemoveTarget.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comRemoveTarget.Name = "comRemoveTarget";
-      this.comRemoveTarget.Size = new System.Drawing.Size(28, 28);
+      this.comRemoveTarget.Size = new System.Drawing.Size(42, 43);
       this.comRemoveTarget.TabIndex = 14;
       this.comRemoveTarget.UseVisualStyleBackColor = true;
       this.comRemoveTarget.Click += new System.EventHandler(this.comRemoveTarget_Click);
@@ -489,9 +535,10 @@
       // 
       this.comAddTarget.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("comAddTarget.BackgroundImage")));
       this.comAddTarget.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-      this.comAddTarget.Location = new System.Drawing.Point(249, 148);
+      this.comAddTarget.Location = new System.Drawing.Point(374, 228);
+      this.comAddTarget.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comAddTarget.Name = "comAddTarget";
-      this.comAddTarget.Size = new System.Drawing.Size(28, 28);
+      this.comAddTarget.Size = new System.Drawing.Size(42, 43);
       this.comAddTarget.TabIndex = 13;
       this.comAddTarget.UseVisualStyleBackColor = true;
       this.comAddTarget.Click += new System.EventHandler(this.comAddTarget_Click);
@@ -499,33 +546,37 @@
       // comTargets
       // 
       this.comTargets.FormattingEnabled = true;
-      this.comTargets.ItemHeight = 17;
-      this.comTargets.Location = new System.Drawing.Point(94, 148);
+      this.comTargets.ItemHeight = 28;
+      this.comTargets.Location = new System.Drawing.Point(141, 228);
+      this.comTargets.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comTargets.Name = "comTargets";
-      this.comTargets.Size = new System.Drawing.Size(149, 89);
+      this.comTargets.Size = new System.Drawing.Size(222, 116);
       this.comTargets.TabIndex = 12;
       // 
       // label10
       // 
       this.label10.AutoSize = true;
-      this.label10.Location = new System.Drawing.Point(5, 148);
+      this.label10.Location = new System.Drawing.Point(8, 228);
+      this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label10.Name = "label10";
-      this.label10.Size = new System.Drawing.Size(90, 34);
+      this.label10.Size = new System.Drawing.Size(135, 56);
       this.label10.TabIndex = 11;
       this.label10.Text = "Target m/z:\r\n(MSx allowed)";
       // 
       // label9
       // 
       this.label9.AutoSize = true;
-      this.label9.Location = new System.Drawing.Point(164, 121);
+      this.label9.Location = new System.Drawing.Point(246, 186);
+      this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label9.Name = "label9";
-      this.label9.Size = new System.Drawing.Size(13, 17);
+      this.label9.Size = new System.Drawing.Size(20, 28);
       this.label9.TabIndex = 10;
       this.label9.Text = "-";
       // 
       // comMassHigh
       // 
-      this.comMassHigh.Location = new System.Drawing.Point(179, 117);
+      this.comMassHigh.Location = new System.Drawing.Point(268, 180);
+      this.comMassHigh.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comMassHigh.Maximum = new decimal(new int[] {
             2000,
             0,
@@ -537,7 +588,7 @@
             0,
             0});
       this.comMassHigh.Name = "comMassHigh";
-      this.comMassHigh.Size = new System.Drawing.Size(64, 25);
+      this.comMassHigh.Size = new System.Drawing.Size(96, 33);
       this.comMassHigh.TabIndex = 9;
       this.comMassHigh.Value = new decimal(new int[] {
             2000,
@@ -547,7 +598,8 @@
       // 
       // comMassLow
       // 
-      this.comMassLow.Location = new System.Drawing.Point(94, 117);
+      this.comMassLow.Location = new System.Drawing.Point(141, 180);
+      this.comMassLow.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comMassLow.Maximum = new decimal(new int[] {
             2000,
             0,
@@ -559,7 +611,7 @@
             0,
             0});
       this.comMassLow.Name = "comMassLow";
-      this.comMassLow.Size = new System.Drawing.Size(64, 25);
+      this.comMassLow.Size = new System.Drawing.Size(96, 33);
       this.comMassLow.TabIndex = 8;
       this.comMassLow.Value = new decimal(new int[] {
             50,
@@ -570,22 +622,24 @@
       // label8
       // 
       this.label8.AutoSize = true;
-      this.label8.Location = new System.Drawing.Point(6, 121);
+      this.label8.Location = new System.Drawing.Point(9, 186);
+      this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label8.Name = "label8";
-      this.label8.Size = new System.Drawing.Size(83, 17);
+      this.label8.Size = new System.Drawing.Size(120, 28);
       this.label8.TabIndex = 7;
       this.label8.Text = "Mass Range:";
       // 
       // comNCE
       // 
-      this.comNCE.Location = new System.Drawing.Point(261, 55);
+      this.comNCE.Location = new System.Drawing.Point(392, 85);
+      this.comNCE.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comNCE.Maximum = new decimal(new int[] {
             200,
             0,
             0,
             0});
       this.comNCE.Name = "comNCE";
-      this.comNCE.Size = new System.Drawing.Size(64, 25);
+      this.comNCE.Size = new System.Drawing.Size(96, 33);
       this.comNCE.TabIndex = 6;
       this.comNCE.Value = new decimal(new int[] {
             30,
@@ -596,18 +650,20 @@
       // label7
       // 
       this.label7.AutoSize = true;
-      this.label7.Location = new System.Drawing.Point(186, 58);
+      this.label7.Location = new System.Drawing.Point(279, 89);
+      this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label7.Name = "label7";
-      this.label7.Size = new System.Drawing.Size(36, 17);
+      this.label7.Size = new System.Drawing.Size(53, 28);
       this.label7.TabIndex = 5;
       this.label7.Text = "NCE:";
       // 
       // label6
       // 
       this.label6.AutoSize = true;
-      this.label6.Location = new System.Drawing.Point(6, 58);
+      this.label6.Location = new System.Drawing.Point(9, 89);
+      this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label6.Name = "label6";
-      this.label6.Size = new System.Drawing.Size(69, 17);
+      this.label6.Size = new System.Drawing.Size(103, 28);
       this.label6.TabIndex = 4;
       this.label6.Text = "Scan Type:";
       // 
@@ -617,9 +673,10 @@
       this.comScanType.Items.AddRange(new object[] {
             "MS1",
             "MS2"});
-      this.comScanType.Location = new System.Drawing.Point(94, 55);
+      this.comScanType.Location = new System.Drawing.Point(141, 85);
+      this.comScanType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comScanType.Name = "comScanType";
-      this.comScanType.Size = new System.Drawing.Size(80, 25);
+      this.comScanType.Size = new System.Drawing.Size(118, 36);
       this.comScanType.TabIndex = 3;
       this.comScanType.Tag = "Limited to MS1/MS2 for the purposes of this tutorial software.";
       this.comScanType.Text = "MS2";
@@ -630,9 +687,10 @@
       this.panel1.Controls.Add(this.comScanCollection);
       this.panel1.Controls.Add(this.label4);
       this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-      this.panel1.Location = new System.Drawing.Point(552, 21);
+      this.panel1.Location = new System.Drawing.Point(938, 31);
+      this.panel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.panel1.Name = "panel1";
-      this.panel1.Size = new System.Drawing.Size(200, 280);
+      this.panel1.Size = new System.Drawing.Size(300, 268);
       this.panel1.TabIndex = 2;
       // 
       // comScanCollection
@@ -640,10 +698,11 @@
       this.comScanCollection.Dock = System.Windows.Forms.DockStyle.Fill;
       this.comScanCollection.Font = new System.Drawing.Font("Cascadia Code", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.comScanCollection.FormattingEnabled = true;
-      this.comScanCollection.ItemHeight = 17;
-      this.comScanCollection.Location = new System.Drawing.Point(0, 17);
+      this.comScanCollection.ItemHeight = 27;
+      this.comScanCollection.Location = new System.Drawing.Point(0, 28);
+      this.comScanCollection.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.comScanCollection.Name = "comScanCollection";
-      this.comScanCollection.Size = new System.Drawing.Size(200, 263);
+      this.comScanCollection.Size = new System.Drawing.Size(300, 240);
       this.comScanCollection.TabIndex = 0;
       this.comScanCollection.SelectedIndexChanged += new System.EventHandler(this.comScanCollection_SelectedIndexChanged);
       // 
@@ -652,8 +711,9 @@
       this.label4.AutoSize = true;
       this.label4.Dock = System.Windows.Forms.DockStyle.Top;
       this.label4.Location = new System.Drawing.Point(0, 0);
+      this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label4.Name = "label4";
-      this.label4.Size = new System.Drawing.Size(102, 17);
+      this.label4.Size = new System.Drawing.Size(152, 28);
       this.label4.TabIndex = 1;
       this.label4.Text = "Collected Scans:";
       // 
@@ -664,9 +724,10 @@
       this.tabControl1.Controls.Add(this.tabPage1);
       this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
       this.tabControl1.Location = new System.Drawing.Point(0, 0);
+      this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(979, 219);
+      this.tabControl1.Size = new System.Drawing.Size(1468, 513);
       this.tabControl1.TabIndex = 1;
       // 
       // tabPage2
@@ -674,18 +735,20 @@
       this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
       this.tabPage2.Controls.Add(this.rtbLog);
       this.tabPage2.Location = new System.Drawing.Point(4, 4);
+      this.tabPage2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.tabPage2.Name = "tabPage2";
-      this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage2.Size = new System.Drawing.Size(971, 193);
+      this.tabPage2.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.tabPage2.Size = new System.Drawing.Size(1460, 480);
       this.tabPage2.TabIndex = 1;
       this.tabPage2.Text = "Message Log";
       // 
       // rtbLog
       // 
       this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.rtbLog.Location = new System.Drawing.Point(3, 3);
+      this.rtbLog.Location = new System.Drawing.Point(4, 5);
+      this.rtbLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.rtbLog.Name = "rtbLog";
-      this.rtbLog.Size = new System.Drawing.Size(965, 187);
+      this.rtbLog.Size = new System.Drawing.Size(1452, 470);
       this.rtbLog.TabIndex = 0;
       this.rtbLog.Text = "";
       // 
@@ -696,9 +759,10 @@
       this.tabPage1.Controls.Add(this.labelScanFilter);
       this.tabPage1.Controls.Add(this.labelScanInfo);
       this.tabPage1.Location = new System.Drawing.Point(4, 4);
+      this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.tabPage1.Name = "tabPage1";
-      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage1.Size = new System.Drawing.Size(971, 193);
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.tabPage1.Size = new System.Drawing.Size(1460, 304);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "Spectrum";
       // 
@@ -706,18 +770,20 @@
       // 
       this.plotSpectrum.DisplayScale = 0F;
       this.plotSpectrum.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.plotSpectrum.Location = new System.Drawing.Point(3, 29);
+      this.plotSpectrum.Location = new System.Drawing.Point(4, 45);
+      this.plotSpectrum.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.plotSpectrum.Name = "plotSpectrum";
-      this.plotSpectrum.Size = new System.Drawing.Size(965, 161);
+      this.plotSpectrum.Size = new System.Drawing.Size(1452, 254);
       this.plotSpectrum.TabIndex = 0;
       // 
       // labelScanFilter
       // 
       this.labelScanFilter.AutoSize = true;
       this.labelScanFilter.Dock = System.Windows.Forms.DockStyle.Top;
-      this.labelScanFilter.Location = new System.Drawing.Point(3, 16);
+      this.labelScanFilter.Location = new System.Drawing.Point(4, 25);
+      this.labelScanFilter.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.labelScanFilter.Name = "labelScanFilter";
-      this.labelScanFilter.Size = new System.Drawing.Size(41, 13);
+      this.labelScanFilter.Size = new System.Drawing.Size(60, 20);
       this.labelScanFilter.TabIndex = 2;
       this.labelScanFilter.Text = "label15";
       // 
@@ -725,38 +791,31 @@
       // 
       this.labelScanInfo.AutoSize = true;
       this.labelScanInfo.Dock = System.Windows.Forms.DockStyle.Top;
-      this.labelScanInfo.Location = new System.Drawing.Point(3, 3);
+      this.labelScanInfo.Location = new System.Drawing.Point(4, 5);
+      this.labelScanInfo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.labelScanInfo.Name = "labelScanInfo";
-      this.labelScanInfo.Size = new System.Drawing.Size(41, 13);
+      this.labelScanInfo.Size = new System.Drawing.Size(60, 20);
       this.labelScanInfo.TabIndex = 1;
       this.labelScanInfo.Text = "label15";
       // 
       // statusStrip1
       // 
       this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
-      this.statusStrip1.Location = new System.Drawing.Point(0, 219);
+      this.statusStrip1.Location = new System.Drawing.Point(0, 513);
       this.statusStrip1.Name = "statusStrip1";
-      this.statusStrip1.Size = new System.Drawing.Size(979, 22);
+      this.statusStrip1.Padding = new System.Windows.Forms.Padding(2, 0, 21, 0);
+      this.statusStrip1.Size = new System.Drawing.Size(1468, 22);
       this.statusStrip1.TabIndex = 2;
       this.statusStrip1.Text = "statusStrip1";
       // 
-      // hasIRMPD
-      // 
-      this.hasIRMPD.AutoSize = true;
-      this.hasIRMPD.Location = new System.Drawing.Point(424, 97);
-      this.hasIRMPD.Name = "hasIRMPD";
-      this.hasIRMPD.Size = new System.Drawing.Size(66, 21);
-      this.hasIRMPD.TabIndex = 29;
-      this.hasIRMPD.Text = "IRMPD";
-      this.hasIRMPD.UseVisualStyleBackColor = true;
-      // 
       // ScanInjector
       // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+      this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(979, 549);
+      this.ClientSize = new System.Drawing.Size(1468, 845);
       this.Controls.Add(this.splitContainer1);
-      this.MinimumSize = new System.Drawing.Size(995, 543);
+      this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.MinimumSize = new System.Drawing.Size(1482, 805);
       this.Name = "ScanInjector";
       this.Text = "ScanInjector";
       this.splitContainer1.Panel1.ResumeLayout(false);

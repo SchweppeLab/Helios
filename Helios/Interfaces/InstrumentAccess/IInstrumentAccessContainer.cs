@@ -1,6 +1,7 @@
 ﻿extern alias exploris;
 extern alias fusion;
 using System;
+using System.IO;
 using System.Linq;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.Control.Scans;

@@ -323,7 +323,7 @@ namespace Helios.Interfaces.InstrumentAccess.MsScanContainer
       HeliosInformationSourceAccess trailer = new HeliosInformationSourceAccess();
       //Example of how to add trailer information from scratch using the nifty UInformationSourceAccess class.
       //trailer.Add("Access ID", "UIAPIzoink");
-      trailer.Add("Scan Description", m.ScanFilter.ToString());
+      trailer.Add("Scan Description", m.ScanDescription.ToString());
       trailer.Add("Master Index", m.MasterIndex.ToString());
       trailer.Add("Master Scan Number", m.PrecursorMasterScanNumber.ToString());
       trailer.Add("FAIMS Voltage On", m.FaimsState.ToString());

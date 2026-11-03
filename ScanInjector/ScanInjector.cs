@@ -99,7 +99,7 @@ namespace ScanInjector
         msAcquisition.AcquisitionStreamClosing += AcquisitionStreamClosing;
 
         msScans = msControl.GetScans(false);
-        //msScans.CanAcceptNextCustomScan += CanAcceptNextCustomScan;
+        msScans.CanAcceptNextCustomScan += OnCanAcceptNextCustomScan;
         msScans.PossibleParametersChanged += OnPossibleParametersChanged;
 
         buttonListen.Text = "Deactivate";
@@ -142,7 +142,7 @@ namespace ScanInjector
     {
       if (scanInjectorActive)
       {
-        //msScans.CanAcceptNextCustomScan -= CanAcceptNextCustomScan;
+        msScans.CanAcceptNextCustomScan -= OnCanAcceptNextCustomScan;
         msScans.PossibleParametersChanged -= OnPossibleParametersChanged;
         msScans = null;
 
@@ -209,6 +209,11 @@ namespace ScanInjector
         comScanCollection.Items.Add(scanNumber.ToString());
         comScanCollection.SelectedItem = comScanCollection.Items[comScanCollection.Items.Count - 1];
       }
+    }
+
+    void OnCanAcceptNextCustomScan(object sender, EventArgs e)
+    {
+      Log("Can Accept Next Custom scan");
     }
 
     void OnPossibleParametersChanged(object sender, EventArgs e)
