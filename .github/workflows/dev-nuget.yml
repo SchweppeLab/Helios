@@ -177,32 +177,23 @@ jobs:
       - name: Clone iapi (build-time only, never redistributed)
         run: git clone --depth 1 https://github.com/thermofisherlsms/iapi ../iapi
 
-      # TEMPORARY: pinned to a Nova Dev-branch dev build, not a stable release -- Nova's core
-      # package moved to netstandard2.0 there (no net48 build exists anymore), and Helios is
-      # riding that ahead of a real Nova release. Swap this whole step back to a tagged Nova
-      # release once one ships.
+      # Nova has no public NuGet feed; this pulls the version Helios.csproj/packages.config pin
+      # from Nova's GitHub Releases. Always fetch from a fixed release tag (v<version>, or a dated
+      # dev-<run>-<sha> one when Helios Dev rides a Nova dev build), never from Nova's rolling
+      # dev-latest release: its assets are replaced on every Nova Dev push, so a pin there breaks
+      # as soon as Nova moves on.
       #
-      # Nova's own dev-latest release keeps per-run *versioned* asset filenames (not fixed
-      # version-free ones), so this pins directly to today's known-good build rather than
-      # whatever dev-latest happens to be at CI run time -- that would silently drift whenever
-      # Nova's Dev branch moves forward again.
-      #
-      # Keeps the raw Nova.1.1.0-dev.8.nupkg file itself inside the packages/Nova.1.1.0-dev.8/
-      # folder, not just its extracted contents -- nuget.exe pack's packages.config-driven
-      # dependency resolution (used below, for the original Helios package) needs that exact file
-      # to satisfy the Nova dependency it declares, and fails with NU5012 ("Unable to find
-      # 'Nova.1.1.0-dev.8.nupkg'") without it. Found live with the previous pinned version: this
-      # only worked locally by accident, because this machine's global NuGet cache and a
-      # machine-level NuGet.Config both happen to already have Nova cached/configured from
-      # unrelated past work -- neither exists on a fresh CI runner. Reproduced and confirmed the
-      # fix in a fully isolated local test (NUGET_PACKAGES redirected to an empty folder,
-      # NuGet.Config sources cleared) before landing this.
+      # Keeps the raw .nupkg inside packages/Nova.<version>/ next to its extracted contents --
+      # nuget.exe pack's packages.config-driven dependency resolution (used below, for the original
+      # Helios package) needs that exact file and fails with NU5012 ("Unable to find
+      # 'Nova.<version>.nupkg'") without it. A local pack can pass without it when the machine's
+      # global NuGet cache or NuGet.Config already has Nova; a fresh runner has neither.
       - name: Fetch Nova into the local packages layout
         run: |
-          Invoke-WebRequest -Uri "https://github.com/SchweppeLab/Nova/releases/download/dev-latest/Nova.1.1.0-dev.8.nupkg" -OutFile "Nova.1.1.0-dev.8.nupkg"
-          New-Item -ItemType Directory -Force -Path "Helios/packages/Nova.1.1.0-dev.8" | Out-Null
-          Expand-Archive -Path "Nova.1.1.0-dev.8.nupkg" -DestinationPath "Helios/packages/Nova.1.1.0-dev.8" -Force
-          Copy-Item "Nova.1.1.0-dev.8.nupkg" "Helios/packages/Nova.1.1.0-dev.8/Nova.1.1.0-dev.8.nupkg"
+          Invoke-WebRequest -Uri "https://github.com/SchweppeLab/Nova/releases/download/v1.1.0/Nova.1.1.0.nupkg" -OutFile "Nova.1.1.0.nupkg"
+          New-Item -ItemType Directory -Force -Path "Helios/packages/Nova.1.1.0" | Out-Null
+          Expand-Archive -Path "Nova.1.1.0.nupkg" -DestinationPath "Helios/packages/Nova.1.1.0" -Force
+          Copy-Item "Nova.1.1.0.nupkg" "Helios/packages/Nova.1.1.0/Nova.1.1.0.nupkg"
 
       - name: Build Helios.Bridge.Host
         run: dotnet build Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64 -p:Version=${{ needs.pack_nuget.outputs.version }}
