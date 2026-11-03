@@ -6,6 +6,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>ScanSpy</RootNamespace>
     <AssemblyName>ScanSpy</AssemblyName>
+    <!-- Must match Bridge/Directory.Build.props's Version; the dev-nuget workflow checks. -->
+    <Version>1.1.0</Version>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>

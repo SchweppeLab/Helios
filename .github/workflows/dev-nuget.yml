@@ -3,10 +3,15 @@ name: Dev NuGet build
 # Builds dev/test artifacts from the Dev branch on every push and publishes them as GitHub Release
 # assets -- no NuGet feed (GitHub Packages or otherwise) is involved, so there's nothing for
 # testers to authenticate against. Two releases are published on every run:
-#   - a dated release (tag `dev-<run number>-<short sha>`), kept forever, so a specific past dev
-#     build can be pinned to or re-downloaded (e.g. to match what a tester reported a bug against).
+#   - a dated release (tag `v<version>-dev.<run number>`, on the commit that was built), kept
+#     forever, so a specific past dev build can be pinned to or re-downloaded (e.g. to match what a
+#     tester reported a bug against).
 #   - the rolling `dev-latest` release, whose tag and assets are overwritten every run, so the
 #     README can link to one permanent URL that always has the newest build.
+#
+# Every package and zip from one run carries the same version, `<Helios version>-dev.<run number>`.
+# The Helios version lives in four files (old-style projects take it from AssemblyInfo.cs,
+# SDK-style ones from MSBuild); pack_nuget fails the run if they disagree.
 #
 # Two jobs produce five assets on each release: three individual packages, the Bridge.Host zip, and
 # one combined "everything" bundle for anyone who'd rather have a single download.
@@ -56,20 +61,40 @@ jobs:
       - name: Compute dev package version
         id: version
         run: |
-          short_sha=$(git rev-parse --short HEAD)
-          echo "version=0.1.0-dev.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
-          echo "tag=dev-${{ github.run_number }}-${short_sha}" >> "$GITHUB_OUTPUT"
-          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
+          assembly_version() { sed -nE 's/^\[assembly: AssemblyVersion\("([^"]+)"\)\].*/\1/p' "$1" | head -n 1; }
+          msbuild_version() { sed -nE 's/.*<Version>([^<]+)<\/Version>.*/\1/p' "$1" | head -n 1; }
+
+          base=$(assembly_version Helios/Properties/AssemblyInfo.cs)
+          if [ -z "$base" ]; then
+            echo "::error::No AssemblyVersion in Helios/Properties/AssemblyInfo.cs"
+            exit 1
+          fi
+          mismatch=0
+          for pair in \
+            "ScanInjector/Properties/AssemblyInfo.cs=$(assembly_version ScanInjector/Properties/AssemblyInfo.cs)" \
+            "Bridge/Directory.Build.props=$(msbuild_version Bridge/Directory.Build.props)" \
+            "ScanSpy/ScanSpy.csproj=$(msbuild_version ScanSpy/ScanSpy.csproj)"; do
+            if [ "${pair#*=}" != "$base" ]; then
+              echo "::error::${pair%%=*} has version '${pair#*=}'; Helios/Properties/AssemblyInfo.cs has '$base'"
+              mismatch=1
+            fi
+          done
+          [ "$mismatch" -eq 0 ] || exit 1
+
+          version="${base}-dev.${{ github.run_number }}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       # Bridge.Contracts first: Helios.Client references it via ProjectReference, and the
-      # PackageVersion override below applies to both, so Client's generated dependency on
-      # Contracts resolves to the matching version automatically.
+      # Version override below applies to both, so Client's generated dependency on Contracts
+      # resolves to the matching version automatically.
       - name: Pack Helios.Bridge.Contracts and Helios.Client
         run: |
           dotnet pack Bridge/Helios.Bridge.Contracts/Helios.Bridge.Contracts.csproj \
-            -c Release -o pack-out -p:PackageVersion=${{ steps.version.outputs.version }}
+            -c Release -o pack-out -p:Version=${{ steps.version.outputs.version }}
           dotnet pack Bridge/Helios.Client/Helios.Client.csproj \
-            -c Release -o pack-out -p:PackageVersion=${{ steps.version.outputs.version }}
+            -c Release -o pack-out -p:Version=${{ steps.version.outputs.version }}
 
       - name: Duplicate packages under version-free filenames for the rolling release
         run: |
@@ -93,10 +118,13 @@ jobs:
           path: pack-out-latest/*.nupkg
           retention-days: 7
 
+      # target_commitish matters here: this step creates the tag, and without it GitHub creates the
+      # tag on the default branch (main) instead of the Dev commit this run built.
       - name: Publish dated dev release (history)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           name: "Dev build ${{ steps.version.outputs.version }}"
           body: |
             Automated development build from `Dev` @ ${{ steps.version.outputs.short_sha }}.
@@ -121,6 +149,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: dev-latest
+          target_commitish: ${{ github.sha }}
           name: "Latest dev build"
           body: |
             Always the most recent successful build from `Dev` (currently
@@ -176,7 +205,7 @@ jobs:
           Copy-Item "Nova.1.1.0-dev.8.nupkg" "Helios/packages/Nova.1.1.0-dev.8/Nova.1.1.0-dev.8.nupkg"
 
       - name: Build Helios.Bridge.Host
-        run: dotnet build Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64
+        run: dotnet build Bridge/Helios.Bridge.Host/Helios.Bridge.Host.csproj -c Release -p:Platform=x64 -p:Version=${{ needs.pack_nuget.outputs.version }}
 
       # The original in-process Helios package (Helios.dll itself), for legacy net48 consumers that
       # link Helios directly rather than going through the bridge. Helios.csproj is old-style (no
@@ -187,15 +216,9 @@ jobs:
       - name: Fetch the classic nuget.exe CLI
         run: Invoke-WebRequest -Uri "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile nuget.exe
 
-      # Reads Helios's version from AssemblyInfo.cs rather than hardcoding it here, so this stays
-      # correct whenever Helios's own version is bumped, with no workflow edit needed to match.
       - name: Pack the original Helios package
         run: |
-          $assemblyInfo = Get-Content "Helios/Properties/AssemblyInfo.cs" -Raw
-          if ($assemblyInfo -notmatch 'AssemblyVersion\("([^"]+)"\)') {
-            throw "Could not find AssemblyVersion in Helios/Properties/AssemblyInfo.cs"
-          }
-          $heliosVersion = "$($matches[1])-dev.${{ github.run_number }}"
+          $heliosVersion = "${{ needs.pack_nuget.outputs.version }}"
 
           .\nuget.exe pack Helios/Helios.csproj -OutputDirectory helios-pack-out -Properties "Configuration=Release;Platform=x64" -Version $heliosVersion
           if ($LASTEXITCODE -ne 0) {

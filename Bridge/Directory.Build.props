@@ -6,6 +6,15 @@
     level above this folder, so none of those old-style net48 projects ever see this file or
     its Nullable/ImplicitUsings/LangVersion settings, which target the SDK-style projects here.
   -->
+  <!--
+    Helios version for the SDK-style projects. Must match Helios/Properties/AssemblyInfo.cs,
+    ScanInjector/Properties/AssemblyInfo.cs, and ScanSpy/ScanSpy.csproj; the dev-nuget workflow
+    fails the build if any of them disagree.
+  -->
+  <PropertyGroup>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
