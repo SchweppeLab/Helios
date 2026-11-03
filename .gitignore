@@ -25,3 +25,10 @@ packages/
 # Both are specific to whoever's clone enables them and must never be committed.
 NuGet.Config
 ScanSpy/LandmineUI.local.props
+
+# Local-only development notes (Claude Code guidance, the working log, Claude Code settings).
+# Kept in each developer's own clone and never committed.
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+/HISTORY.md

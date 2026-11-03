@@ -114,8 +114,8 @@ namespace Helios.Bridge.Host.Instruments
     // race never surfaced against either of them. Get(1) called before ServiceConnectionChanged
     // actually reports ServiceConnected == true throws (or hands back an unusable
     // IInstrumentAccess) on real hardware; the original in-process pattern always waited for
-    // exactly this before calling Get(1) (see CLAUDE.md: Create() -> ServiceConnectionChanged ->
-    // Get(1)) -- this mirrors that instead of assuming StartOnlineAccess() completes synchronously.
+    // exactly this before calling Get(1) (Create() -> ServiceConnectionChanged -> Get(1)) -- this
+    // mirrors that instead of assuming StartOnlineAccess() completes synchronously.
     private static readonly TimeSpan ServiceConnectTimeout = TimeSpan.FromSeconds(15);
 
     public async Task ConnectAsync(CancellationToken cancellationToken)
@@ -365,8 +365,7 @@ namespace Helios.Bridge.Host.Instruments
   // message in Services/ScanStreamServiceImpl -- a second full pass over the highest-frequency data
   // in the system, on top of the cost already paid once here. Deliberately traded that clean
   // layering away for this one hot path (see MsScanEventArgs in Models.cs) once the centroid-flag
-  // exception storm below was fixed and real Fusion throughput was still a stated concern; see
-  // HISTORY.md's Core8Speed entry.
+  // exception storm below was fixed and real Fusion throughput was still a stated concern.
   internal sealed class HeliosMsScanChannelAdapter : IMsScanChannel
   {
     private readonly IMsScanContainer _container;
@@ -409,8 +408,8 @@ namespace Helios.Bridge.Host.Instruments
     // .NET exception, which is dramatically more expensive than a normal property read or even a
     // cross-process marshal (stack capture/unwind). At real centroid counts (thousands per scan)
     // and real scan rates, this alone was enough to throttle this method below real-time -- found
-    // as the dominant contributor to Helios.Bridge.Host falling behind a live Fusion instrument
-    // (see HISTORY.md). One instrument family per process for this process's whole lifetime (see
+    // as the dominant contributor to Helios.Bridge.Host falling behind a live Fusion instrument.
+    // One instrument family per process for this process's whole lifetime (see
     // Program.cs's CreateGateway), so probing once and caching the result -- rather than per-peak,
     // per-scan, or per-adapter -- is both correct and enough: after the very first peak of the
     // very first scan proves these are unsupported, every later peak skips the try/catch (and the
@@ -541,9 +540,9 @@ namespace Helios.Bridge.Host.Instruments
     // except a null value (IMsScan.Header's own doc: "a pure name has a value of null") is skipped
     // rather than assigned -- MapField, unlike Dictionary, throws ArgumentNullException on a null
     // value instead of just storing it. Confirmed live on real Exploris hardware: Tribrid/Fusion
-    // scans never seem to carry a null-valued pure name in practice, Exploris scans do -- see
-    // HISTORY.md's 2026-08-25 entry. If skipping ever turns out to lose information a caller
-    // needed, map to "" instead of skipping -- but skipping was the deliberate first choice here.
+    // scans never seem to carry a null-valued pure name in practice, Exploris scans do. If
+    // skipping ever turns out to lose information a caller needed, map to "" instead of skipping
+    // -- but skipping was the deliberate first choice here.
     private static void CopyInto(MapField<string, string> target, IEnumerable<KeyValuePair<string, string>> source)
     {
       foreach (var kv in source)
@@ -562,7 +561,7 @@ namespace Helios.Bridge.Host.Instruments
     // AcquisitionStreamClosing/the next StreamOpening never fired either, not just this one scan.
     //
     // TryGetValue can also return true with a null value for a real, connected Exploris instrument
-    // (confirmed live -- see HISTORY.md's 2026-08-25 entry): some Trailer/StatusLog/TuneData item
+    // (confirmed live): some Trailer/StatusLog/TuneData item
     // is present by name before its value is populated. MapField throws ArgumentNullException on a
     // null value where Dictionary would just store it, and that exception was getting caught and
     // swallowed by CallbackGuard on literally every scan, so no scan data ever reached ScanSpy
