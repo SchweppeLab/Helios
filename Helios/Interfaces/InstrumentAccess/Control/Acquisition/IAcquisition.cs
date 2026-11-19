@@ -339,7 +339,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
   /// <summary>
   /// Acquisition control of the Corona (VMS) backend. State comes from Corona's state reports
   /// (pipe message '6'); mode changes, acquisition starts and cancels go to Corona as pipe
-  /// messages 'M', 'S' and 'C'. Payloads are "Key=Value" lines. See README, "Corona pipe protocol".
+  /// messages 'M', 'S' and 'C'. Payloads are "Key=Value" lines. See docs/corona-pipe-protocol.md.
   /// </summary>
   internal class HeliosAcquisitionVMS : IAcquisition
   {

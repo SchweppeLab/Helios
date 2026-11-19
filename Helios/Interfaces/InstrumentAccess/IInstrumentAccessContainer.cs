@@ -260,8 +260,8 @@ namespace Helios.Interfaces.InstrumentAccess
 
   /// <summary>
   /// Corona (VMS) backend: a Nova pipe client to the "Corona" pipe server. ServiceConnected is
-  /// the pipe link; instrument state comes from Corona's state reports. See README, "Corona pipe
-  /// protocol".
+  /// the pipe link; instrument state comes from Corona's state reports. See
+  /// docs/corona-pipe-protocol.md.
   /// </summary>
   internal class HeliosInstrumentAccessContainerVMS : IInstrumentAccessContainer
   {
