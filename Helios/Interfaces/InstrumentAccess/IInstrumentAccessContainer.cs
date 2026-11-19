@@ -3,6 +3,7 @@ extern alias fusion;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.Control.Scans;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
@@ -257,12 +258,19 @@ namespace Helios.Interfaces.InstrumentAccess
       }
   }
 
+  /// <summary>
+  /// Corona (VMS) backend: a Nova pipe client to the "Corona" pipe server. ServiceConnected is
+  /// the pipe link; instrument state comes from Corona's state reports. See README, "Corona pipe
+  /// protocol".
+  /// </summary>
   internal class HeliosInstrumentAccessContainerVMS : IInstrumentAccessContainer
   {
 
     private HeliosInstrumentAccessVMS instAcc = null;
     private bool check = false;
     PipesClient pipeClient = null;
+    private Thread linkWatcher = null;
+    private volatile bool stopped = false;
 
     private event EventHandler<EventArgs> SendScan;
 
@@ -288,6 +296,8 @@ namespace Helios.Interfaces.InstrumentAccess
       return check;
     }
 
+    private HeliosAcquisitionVMS Acquisition => (HeliosAcquisitionVMS)instAcc.Control.Acquisition;
+
     public void Dispose()
     {
       Dispose(true);
@@ -298,10 +308,37 @@ namespace Helios.Interfaces.InstrumentAccess
     {
       if (disposing)
       {
+        stopped = true;
         pipeClient?.Stop();
         //cont.Dispose();
       }
       // free native resources if there are any.
+    }
+
+    /// <summary>
+    /// Follows the pipe link. Nova's client signals each connect and disconnect through
+    /// WaitForConnection and WaitForDisconnection; with a timeout this long they return only on
+    /// the signal. Nova reconnects on its own after a drop, so the loop runs for the container's
+    /// lifetime.
+    /// </summary>
+    private void WatchLink()
+    {
+      while (!stopped)
+      {
+        pipeClient.WaitForConnection(int.MaxValue);
+        if (stopped) return;
+        SetServiceConnected(true);
+        pipeClient.WaitForDisconnection(int.MaxValue);
+        SetServiceConnected(false);
+      }
+    }
+
+    private void SetServiceConnected(bool connected)
+    {
+      ServiceConnected = connected;
+      // State first, so a handler of the event reads the state that goes with the link.
+      Acquisition.SetServiceLink(connected);
+      OnServiceConnectionChanged(EventArgs.Empty);
     }
 
     public string InstrumentType()
@@ -324,14 +361,16 @@ namespace Helios.Interfaces.InstrumentAccess
       ServiceConnectionChanged?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Starts the pipe client. ServiceConnected turns true, with ServiceConnectionChanged, once
+    /// the pipe to Corona is connected. Further calls have no effect.
+    /// </summary>
     public void StartOnlineAccess()
     {
-      //pipeClient = new PipesClient("VirtualMS");
-      //pipeClient.ServerMessage += OnServerMessage;
-      //pipeClient.Error += OnError;
-      pipeClient.Start(); //check this for failure? or just listen indefinitely until a server appears?
-      ServiceConnected = true;
-      OnServiceConnectionChanged(new EventArgs());
+      if (pipeClient == null || linkWatcher != null) return;
+      pipeClient.Start();
+      linkWatcher = new Thread(WatchLink) { IsBackground = true, Name = "Helios VMS pipe link" };
+      linkWatcher.Start();
     }
 
     public IInstrumentAccess Get(int index)
@@ -350,20 +389,23 @@ namespace Helios.Interfaces.InstrumentAccess
           ((HeliosMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScan(message.MsgData);
           break;
         case '2':
-          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.Running);
+          Acquisition.SetLegacyState(InstrumentState.Running);
           AcquisitionOpeningEventArgs e = new VMSAcquisitionOpeningEventArgs();
           e.StartingInformation.Add("RawFile",message.DecodeString());
-          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamOpening(e);
+          Acquisition.OnAcquisitionStreamOpening(e);
           break;
         case '3':
-          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).OnAcquisitionStreamClosing(new EventArgs());
-          ((HeliosAcquisitionVMS)instAcc.Control.Acquisition).SetState(InstrumentState.ReadyForRun);
+          Acquisition.OnAcquisitionStreamClosing(new EventArgs());
+          Acquisition.SetLegacyState(InstrumentState.ReadyForRun);
           break;
         case '4':
           ((HeliosMsScanContainerVMS)instAcc.GetMsScanContainer(0)).ReceiveScanEx(message.MsgData);
           break;
         case '5':
           ((HeliosScansVMS)instAcc.Control.GetScans(false)).OnCanAcceptNextCustomScan(new EventArgs());
+          break;
+        case '6':
+          Acquisition.ApplyStateReport(message.DecodeString());
           break;
         default:
           Console.WriteLine("Server sent unrecognized message code: {0}", message.MsgCode);

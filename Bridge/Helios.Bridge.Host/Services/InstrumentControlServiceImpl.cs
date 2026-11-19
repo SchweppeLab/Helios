@@ -48,15 +48,24 @@ namespace Helios.Bridge.Host.Services
         SingleWriter = false,
       });
 
-      void OnStateChanged(object? s, AcquisitionStateChangedEventArgs e) =>
-        channel.Writer.TryWrite(new AcquisitionStateEvent
+      // One gate around the subscription, the initial snapshot and every forwarded change: the
+      // first event a client receives is the state at subscription time, and a change that fires
+      // while subscribing is neither lost nor written ahead of an older snapshot.
+      var gate = new object();
+
+      static AcquisitionStateEvent ToEvent(AcquisitionStateSnapshot state) => new()
+      {
+        StateChanged = new StateChangedEvent
         {
-          StateChanged = new StateChangedEvent
-          {
-            SystemMode = EnumConversions.ToProto(e.State.Mode),
-            SystemState = EnumConversions.ToProto(e.State.State),
-          },
-        });
+          SystemMode = EnumConversions.ToProto(state.Mode),
+          SystemState = EnumConversions.ToProto(state.State),
+        },
+      };
+
+      void OnStateChanged(object? s, AcquisitionStateChangedEventArgs e)
+      {
+        lock (gate) channel.Writer.TryWrite(ToEvent(e.State));
+      }
 
       void OnStreamOpening(object? s, AcquisitionStreamOpeningEventArgs e)
       {
@@ -68,9 +77,13 @@ namespace Helios.Bridge.Host.Services
       void OnStreamClosing(object? s, EventArgs e) =>
         channel.Writer.TryWrite(new AcquisitionStateEvent { StreamClosing = new AcquisitionStreamClosingEvent() });
 
-      _gateway.Acquisition.StateChanged += OnStateChanged;
-      _gateway.Acquisition.AcquisitionStreamOpening += OnStreamOpening;
-      _gateway.Acquisition.AcquisitionStreamClosing += OnStreamClosing;
+      lock (gate)
+      {
+        _gateway.Acquisition.StateChanged += OnStateChanged;
+        _gateway.Acquisition.AcquisitionStreamOpening += OnStreamOpening;
+        _gateway.Acquisition.AcquisitionStreamClosing += OnStreamClosing;
+        channel.Writer.TryWrite(ToEvent(_gateway.Acquisition.State));
+      }
 
       try
       {

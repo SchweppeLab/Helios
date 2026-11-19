@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition.Modes;
 using Helios.Interfaces.InstrumentAccess.Control.Acquisition.Workflow;
+using Nova.IPC.Pipes;
 using Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition;
 
 namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
@@ -130,9 +132,10 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IHeliosState State { get; }
-    public bool CanPause { get; }
-    public bool CanResume { get; }
+    // Read from IAPI on every get: IAPI keeps these current, a copy taken at construction would not be.
+    public IHeliosState State => new HeliosStateExploris(acquisition.State);
+    public bool CanPause => acquisition.CanPause;
+    public bool CanResume => acquisition.CanResume;
 
     public HeliosAcquisitionExploris(exploris.Thermo.Interfaces.ExplorisAccess_V1.Control.IExplorisControl c)
     {
@@ -140,10 +143,6 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
       acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingExploris;
       acquisition.AcquisitionStreamOpening += AcquisitionStreamOpeningExploris;
       acquisition.StateChanged += OnStateChanged;
-
-      State = new HeliosStateExploris(acquisition.State);
-      CanPause = acquisition.CanPause;
-      CanResume = acquisition.CanResume;
     }
 
         void AcquisitionStreamClosingExploris(object sender, EventArgs e)
@@ -234,20 +233,18 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IHeliosState State { get; }
-    public bool CanPause { get; }
-    public bool CanResume { get; }
+    // Read from IAPI on every get: IAPI keeps these current, a copy taken at construction would not be.
+    public IHeliosState State => new HeliosStateFusion(acquisition.State);
+    public bool CanPause => acquisition.CanPause;
+    public bool CanResume => acquisition.CanResume;
 
-        
+
     public HeliosAcquisitionFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c)
     {
       acquisition = c.Acquisition;
       acquisition.AcquisitionStreamClosing += AcquisitionStreamClosingFusion;
       acquisition.AcquisitionStreamOpening += AcquisitionStreamOpeningFusion;
       acquisition.StateChanged += StateChangedFusion;
-      State = new HeliosStateFusion(acquisition.State);
-      CanPause = acquisition.CanPause;
-      CanResume = acquisition.CanResume;
     }
 
         void AcquisitionStreamClosingFusion(object sender, EventArgs e)
@@ -339,19 +336,119 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
         }
     }
 
+  /// <summary>
+  /// Acquisition control of the Corona (VMS) backend. State comes from Corona's state reports
+  /// (pipe message '6'); mode changes, acquisition starts and cancels go to Corona as pipe
+  /// messages 'M', 'S' and 'C'. Payloads are "Key=Value" lines. See README, "Corona pipe protocol".
+  /// </summary>
   internal class HeliosAcquisitionVMS : IAcquisition
   {
     public event EventHandler<StateChangedEventArgs> StateChanged;
     public event EventHandler AcquisitionStreamClosing;
     public event EventHandler<AcquisitionOpeningEventArgs> AcquisitionStreamOpening;
 
-    public IHeliosState State { get; } = new HeliosStateVMS();
-    public bool CanPause { get; } = true;
-    public bool CanResume { get; } = true;
+    private readonly object stateLock = new object();
+    private readonly HeliosStateVMS current = new HeliosStateVMS();
+    private bool canPause = true;
+    private bool canResume = true;
+    // Set by the first state report. Until then the stream messages set Running/ReadyForRun,
+    // which keeps Corona builds that do not report state working as before.
+    private bool reported = false;
+    private readonly PipesClient pipesClient;
+
+    public HeliosAcquisitionVMS(PipesClient pc = null)
+    {
+      pipesClient = pc;
+    }
+
+    /// <summary>A copy of the state at the time of the call.</summary>
+    public IHeliosState State { get { lock (stateLock) return new HeliosStateVMS(current); } }
+    public bool CanPause { get { lock (stateLock) return canPause; } }
+    public bool CanResume { get { lock (stateLock) return canResume; } }
+
+    /// <summary>
+    /// Applies a state report from Corona. Keys: Mode (SystemMode name), State (InstrumentState
+    /// name), CanPause, CanResume. Missing keys leave their field unchanged.
+    /// </summary>
+    internal void ApplyStateReport(string payload)
+    {
+      SystemMode? mode = null;
+      InstrumentState? state = null;
+      bool? pause = null;
+      bool? resume = null;
+      foreach (KeyValuePair<string, string> kvp in ParseLines(payload))
+      {
+        switch (kvp.Key)
+        {
+          case "Mode": if (Enum.TryParse(kvp.Value, true, out SystemMode m)) mode = m; break;
+          case "State": if (Enum.TryParse(kvp.Value, true, out InstrumentState s)) state = s; break;
+          case "CanPause": if (bool.TryParse(kvp.Value, out bool p)) pause = p; break;
+          case "CanResume": if (bool.TryParse(kvp.Value, out bool r)) resume = r; break;
+        }
+      }
+      if (mode == null && state == null)
+      {
+        Console.WriteLine("Corona state report without a readable Mode or State: {0}", payload);
+        return;
+      }
+      HeliosStateVMS snapshot;
+      lock (stateLock)
+      {
+        reported = true;
+        if (mode.HasValue) current.SystemMode = mode.Value;
+        if (state.HasValue) current.SystemState = state.Value;
+        if (pause.HasValue) canPause = pause.Value;
+        if (resume.HasValue) canResume = resume.Value;
+        snapshot = new HeliosStateVMS(current);
+      }
+      OnStateChanged(new VMSStateChangedEventArgs(snapshot));
+    }
+
+    /// <summary>
+    /// State inferred from the stream-opening and stream-closing messages. Ignored once Corona
+    /// has reported state itself.
+    /// </summary>
+    internal void SetLegacyState(InstrumentState state)
+    {
+      HeliosStateVMS snapshot;
+      lock (stateLock)
+      {
+        if (reported || current.SystemState == state) return;
+        current.SystemState = state;
+        snapshot = new HeliosStateVMS(current);
+      }
+      OnStateChanged(new VMSStateChangedEventArgs(snapshot));
+    }
+
+    /// <summary>
+    /// The pipe to Corona connected or dropped. A drop is Disconnected/ServerFailed, as the IAPI
+    /// reports a lost service link. A connect before any state report is On/ReadyForRun; a
+    /// reporting Corona sends its state right after the connect.
+    /// </summary>
+    internal void SetServiceLink(bool connected)
+    {
+      HeliosStateVMS snapshot;
+      lock (stateLock)
+      {
+        if (connected)
+        {
+          if (reported) return;
+          current.SystemMode = SystemMode.On;
+          current.SystemState = InstrumentState.ReadyForRun;
+        }
+        else
+        {
+          current.SystemMode = SystemMode.Disconnected;
+          current.SystemState = InstrumentState.ServerFailed;
+        }
+        snapshot = new HeliosStateVMS(current);
+      }
+      OnStateChanged(new VMSStateChangedEventArgs(snapshot));
+    }
 
     public void CancelAcquisition()
     {
-      //do nothing
+      Send('C', "");
     }
 
     public IAcquisitionLimitedByCount CreateAcquisitionLimitedByCount(int count)
@@ -401,18 +498,60 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
 
     public void SetMode(IHeliosMode newMode)
     {
-
-    }
-
-    public void SetState(InstrumentState state)
-    {
-      ((HeliosStateVMS)State).SetSystemState(state);
-      OnStateChanged(new VMSStateChangedEventArgs(State));
+      string mode = newMode is IHeliosOnMode ? "On" : newMode is IHeliosOffMode ? "Off" : null;
+      if (mode == null) throw new FormatException("Unknown mode type; use CreateOnMode or CreateOffMode.");
+      Send('M', "Mode=" + mode);
     }
 
     public void StartAcquisition(IAcquisitionWorkflow workflow)
     {
-      //do nothing
+      if (workflow == null) throw new ArgumentNullException(nameof(workflow));
+      Send('S', SerializeWorkflow(workflow));
+    }
+
+    private static string SerializeWorkflow(IAcquisitionWorkflow w)
+    {
+      StringBuilder sb = new StringBuilder();
+      CultureInfo inv = CultureInfo.InvariantCulture;
+      IAcquisitionLimitedByCount byCount = w as IAcquisitionLimitedByCount;
+      IAcquisitionLimitedByTime byTime = w as IAcquisitionLimitedByTime;
+      IAcquisitionMethodRun method = w as IAcquisitionMethodRun;
+      string kind = byCount != null ? "LimitedByCount" : byTime != null ? "LimitedByTime" : method != null ? "MethodRun" : "Permanent";
+      sb.Append("Kind=").Append(kind).Append('\n');
+      sb.Append("RawFileName=").Append(w.RawFileName).Append('\n');
+      sb.Append("SampleName=").Append(w.SampleName).Append('\n');
+      sb.Append("Comment=").Append(w.Comment).Append('\n');
+      sb.Append("Continuation=").Append(w.Continuation).Append('\n');
+      sb.Append("SingleProcessingDelay=").Append(w.SingleProcessingDelay.ToString(inv)).Append('\n');
+      sb.Append("WaitForContactClosure=").Append(w.WaitForContactClosure).Append('\n');
+      if (byCount != null) sb.Append("NumberOfScans=").Append(byCount.NumberOfScans.ToString(inv)).Append('\n');
+      if (byTime != null) sb.Append("Duration=").Append(byTime.Duration.ToString("c", inv)).Append('\n');
+      if (method != null)
+      {
+        sb.Append("MethodName=").Append(method.MethodName).Append('\n');
+        if (method.Duration.HasValue) sb.Append("Duration=").Append(method.Duration.Value.ToString("c", inv)).Append('\n');
+      }
+      return sb.ToString();
+    }
+
+    private void Send(char code, string payload)
+    {
+      if (pipesClient == null) return;
+      PipeMessage pm = new PipeMessage();
+      pm.EncodeString(payload);
+      pm.MsgCode = code; // after EncodeString, which resets the code to '0'
+      pipesClient.Send(pm);
+    }
+
+    /// <summary>Splits "Key=Value" lines; a line without '=' is skipped.</summary>
+    internal static IEnumerable<KeyValuePair<string, string>> ParseLines(string payload)
+    {
+      foreach (string line in (payload ?? "").Split('\n'))
+      {
+        int eq = line.IndexOf('=');
+        if (eq <= 0) continue;
+        yield return new KeyValuePair<string, string>(line.Substring(0, eq).Trim(), line.Substring(eq + 1).Trim());
+      }
     }
 
   }

@@ -4,6 +4,7 @@ extern alias exploris;
 using System;
 using Helios.Interfaces.InstrumentAccess.AnalogTraceContainer;
 using Helios.Interfaces.InstrumentAccess.Control;
+using Helios.Interfaces.InstrumentAccess.Control.Acquisition;
 using Helios.Interfaces.InstrumentAccess.MsScanContainer;
 using Nova.IPC.Pipes;
 
@@ -73,7 +74,8 @@ namespace Helios.Interfaces.InstrumentAccess
     class HeliosInstrumentAccessExploris : IInstrumentAccess
     {
         exploris.Thermo.Interfaces.ExplorisAccess_V1.IExplorisInstrumentAccess instAcc;
-        public bool Connected { get; }
+        // Read from IAPI on every get; a copy taken at construction would not follow ConnectionChanged.
+        public bool Connected => instAcc.Connected;
         public IControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
@@ -91,7 +93,6 @@ namespace Helios.Interfaces.InstrumentAccess
       instAcc.ConnectionChanged += ConnectionChangedExploris;
       //instAcc.ContactClosureChanged += ContactClosureChangedFusion; //not implemented in Exploris
       //Control = InstControlFactory.Get(instAcc);
-      Connected = instAcc.Connected;
 
       Control = new HeliosControlExploris(instAcc);
       CountAnalogChannels = instAcc.CountAnalogChannels;
@@ -157,7 +158,8 @@ namespace Helios.Interfaces.InstrumentAccess
   class HeliosInstrumentAccessFusion : IInstrumentAccess
   {
     fusion.Thermo.Interfaces.FusionAccess_V1.IFusionInstrumentAccess instAcc;
-    public bool Connected { get; }
+    // Read from IAPI on every get; a copy taken at construction would not follow ConnectionChanged.
+    public bool Connected => instAcc.Connected;
     public IControl Control { get; }
         public int CountAnalogChannels { get; }
         public int CountMsDetectors { get; }
@@ -175,7 +177,6 @@ namespace Helios.Interfaces.InstrumentAccess
             instAcc.ConnectionChanged += ConnectionChangedFusion;
             instAcc.ContactClosureChanged += ContactClosureChangedFusion;
             //Control = InstControlFactory.Get(instAcc);
-            Connected = instAcc.Connected;
             Control = new HeliosControlFusion(instAcc);
             CountAnalogChannels = instAcc.CountAnalogChannels;
             CountMsDetectors = instAcc.CountMsDetectors;
@@ -249,8 +250,12 @@ namespace Helios.Interfaces.InstrumentAccess
   {
     public HeliosAnalogTraceContainerVMS AnalogTraceContainer { get; }
     public HeliosMsScanContainerVMS MsScanCont { get; }
-    public bool Connected { get; }
-    public IControl Control { get; } = new HeliosControlVMS();
+    /// <summary>
+    /// False while the mode is Disconnected: no pipe to Corona, or Corona reports the instrument
+    /// as not connected.
+    /// </summary>
+    public bool Connected => Control.Acquisition.State.SystemMode != SystemMode.Disconnected;
+    public IControl Control { get; }
     public int CountAnalogChannels { get; }
     public int CountMsDetectors { get; }
     public string[] DetectorClasses { get; }
@@ -261,21 +266,30 @@ namespace Helios.Interfaces.InstrumentAccess
     public event EventHandler<ContactClosureEventArgs> ContactClosureChanged;
 
     private readonly PipesClient pipeClient = null;
+    private bool lastConnected = false;
 
     public HeliosInstrumentAccessVMS(PipesClient pc = null)
     {
       pipeClient = pc;
 
       AnalogTraceContainer = new HeliosAnalogTraceContainerVMS();
-      Connected = true;
       Control = new HeliosControlVMS(pipeClient);
+      Control.Acquisition.StateChanged += OnAcquisitionStateChanged;
       MsScanCont = new HeliosMsScanContainerVMS();
       CountAnalogChannels = 1;
       CountMsDetectors = 1;
       DetectorClasses = new string[1] { "dunno" };
       InstrumentId = 1;
       InstrumentName = "Corona VirtualMS";
-      
+
+    }
+
+    private void OnAcquisitionStateChanged(object sender, StateChangedEventArgs e)
+    {
+      bool connected = e.State.SystemMode != SystemMode.Disconnected;
+      if (connected == lastConnected) return;
+      lastConnected = connected;
+      ConnectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public IAnalogTraceContainer GetAnalogTraceContainer(int msDetectorSet)

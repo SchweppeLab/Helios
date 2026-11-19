@@ -55,17 +55,11 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
   internal class VMSStateChangedEventArgs : StateChangedEventArgs
   {
     /// <summary>
-    /// Create a new UIAPI.Interfaces.InstrumentAccess.Control.Acquisition.SCEventArgs from a
-    /// Fusion Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs.
+    /// Carries a copy of the VMS state at the time of the change.
     /// </summary>
-    /// <param name="e">Fusion IAPI Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs</param>
-    public VMSStateChangedEventArgs()
-    {
-      State = new HeliosStateVMS();
-    }
     public VMSStateChangedEventArgs(IHeliosState s)
     {
-      State = s;
+      State = new HeliosStateVMS(s);
     }
   }
 }

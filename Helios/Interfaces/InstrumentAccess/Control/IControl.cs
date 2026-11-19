@@ -82,7 +82,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control
 
   internal class HeliosControlVMS : IControl
   {
-    public IAcquisition Acquisition { get; } = new HeliosAcquisitionVMS();
+    public IAcquisition Acquisition { get; }
     public IInstrumentValues InstrumentValues { get; } = new HeliosInstrumentValues();
     public ISyringePumpControl SyringePumpControl { get; } = null;
 
@@ -92,6 +92,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control
     public HeliosControlVMS(PipesClient pc = null)
     {
       pipesClient = pc;
+      Acquisition = new HeliosAcquisitionVMS(pc);
       scans = new HeliosScansVMS(pc);
     }
 

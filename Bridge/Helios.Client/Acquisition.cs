@@ -11,9 +11,8 @@ namespace Helios.Client
     private readonly Contracts.InstrumentControlService.InstrumentControlServiceClient _control;
     private readonly CancellationToken _lifetime;
 
-    // Seeded with a Disconnected/NotConnected snapshot until the first StreamAcquisitionState
-    // event arrives -- there's no "GetState" RPC, state is push-only, matching how Helios's own
-    // IAcquisition.State only ever reflects the last StateChanged callback IAPI delivered.
+    // Seeded with Disconnected/NotConnected until the first StreamAcquisitionState event, which
+    // the host sends on subscription with the instrument's current state; later events are changes.
     private AcquisitionStateSnapshot _state = new() { Mode = SystemMode.Disconnected, State = InstrumentState.NotConnected };
 
     public GrpcAcquisition(Contracts.InstrumentControlService.InstrumentControlServiceClient control, CancellationToken lifetime)

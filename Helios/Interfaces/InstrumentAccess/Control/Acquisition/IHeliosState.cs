@@ -62,19 +62,24 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
     }
   }
 
+  /// <summary>
+  /// State of the Corona (VMS) backend. Before the pipe connects there is no link to the
+  /// service, which the IAPI reports as Disconnected/ServerFailed.
+  /// </summary>
   internal class HeliosStateVMS : IHeliosState
   {
     public InstrumentState SystemState { get; set; }
-    public SystemMode SystemMode { get; }
+    public SystemMode SystemMode { get; set; }
     public HeliosStateVMS()
     {
-      SystemState = InstrumentState.ReadyForRun;
+      SystemState = InstrumentState.ServerFailed;
       SystemMode = SystemMode.Disconnected;
     }
 
-    public void SetSystemState(InstrumentState state)
+    public HeliosStateVMS(IHeliosState s)
     {
-      SystemState = state;
+      SystemState = s.SystemState;
+      SystemMode = s.SystemMode;
     }
   }
 }
