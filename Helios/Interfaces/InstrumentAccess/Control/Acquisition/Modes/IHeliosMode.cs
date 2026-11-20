@@ -56,30 +56,4 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition.Modes
     }
 
   }
-
-  internal class ExplorisMode : exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Modes.IMode
-  {
-    public IDictionary<string, string> AdditionalValues { get; }
-    public string[] ValueNames { get; }
-    public ExplorisMode(IHeliosMode m)
-    {
-      AdditionalValues = new Dictionary<string, string>();
-      foreach (KeyValuePair<string, string> kvp in m.AdditionalValues) AdditionalValues.Add(kvp);
-      ValueNames = new string[m.ValueNames.Length];
-      for (int i = 0; i < m.ValueNames.Length; i++) ValueNames[i] = m.ValueNames[i];
-    }
-  }
-
-  internal class FusionMode: Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Modes.IMode
-  {
-    public IDictionary<string, string> AdditionalValues { get; }
-    public string[] ValueNames { get; }
-    public FusionMode(IHeliosMode m)
-    {
-      AdditionalValues = new Dictionary<string, string>();
-      foreach (KeyValuePair<string, string> kvp in m.AdditionalValues) AdditionalValues.Add(kvp);
-      ValueNames = new string[m.ValueNames.Length];
-      for (int i = 0; i < m.ValueNames.Length; i++) ValueNames[i] = m.ValueNames[i];
-    }
-  }
 }

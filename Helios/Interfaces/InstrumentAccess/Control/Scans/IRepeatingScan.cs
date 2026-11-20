@@ -54,7 +54,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     {
       RunningNumber = cs.RunningNumber;
       Values = new Dictionary<string, string>();
-      foreach (KeyValuePair<string, string> kvp in Values)
+      foreach (KeyValuePair<string, string> kvp in cs.Values)
       {
         if (kvp.Key.Contains("Helios"))
         {

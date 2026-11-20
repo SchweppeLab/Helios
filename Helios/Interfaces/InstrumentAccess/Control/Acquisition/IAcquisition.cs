@@ -191,9 +191,16 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
       return null; //not supported in Exploris
     }
 
+    // The IAPI reads the requested mode from the object's type (IOnMode, IOffMode), so the object
+    // handed to it must come from its own Create* call.
     public void SetMode(IHeliosMode newMode)
     {
-      acquisition.SetMode(new ExplorisMode(newMode));
+      exploris.Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Modes.IMode mode;
+      if (newMode is IHeliosOnMode) mode = acquisition.CreateOnMode();
+      else if (newMode is IHeliosOffMode) mode = acquisition.CreateOffMode();
+      else throw new FormatException("Unknown mode type; use CreateOnMode or CreateOffMode.");
+      foreach (KeyValuePair<string, string> kvp in newMode.AdditionalValues) mode.AdditionalValues[kvp.Key] = kvp.Value;
+      acquisition.SetMode(mode);
     }
 
     public void StartAcquisition(IAcquisitionWorkflow workflow)
@@ -319,14 +326,48 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition
             }
         }
 
+    // The IAPI reads the requested mode from the object's type (IOnMode, IOffMode), so the object
+    // handed to it must come from its own Create* call.
     public void SetMode(IHeliosMode newMode)
     {
-      acquisition.SetMode(new FusionMode(newMode));
+      Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Modes.IMode mode;
+      if (newMode is IHeliosOnMode) mode = acquisition.CreateOnMode();
+      else if (newMode is IHeliosOffMode) mode = acquisition.CreateOffMode();
+      else throw new FormatException("Unknown mode type; use CreateOnMode or CreateOffMode.");
+      foreach (KeyValuePair<string, string> kvp in newMode.AdditionalValues) mode.AdditionalValues[kvp.Key] = kvp.Value;
+      acquisition.SetMode(mode);
     }
 
+    // The IAPI reads the kind of acquisition from the object's type and expects objects its own
+    // Create* calls return, so build one of the same kind and copy the values in.
     public void StartAcquisition(IAcquisitionWorkflow workflow)
     {
-      acquisition.StartAcquisition(new FusionAcquisitionWorkflow(workflow));
+      Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.IAcquisitionWorkflow f;
+      if (workflow is IAcquisitionMethodRun m)
+      {
+        Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.IAcquisitionMethodRun fm = acquisition.CreateMethodAcquisition(m.MethodName);
+        fm.Duration = m.Duration;
+        f = fm;
+      }
+      else if (workflow is IAcquisitionLimitedByCount c)
+      {
+        f = acquisition.CreateAcquisitionLimitedByCount(c.NumberOfScans);
+      }
+      else if (workflow is IAcquisitionLimitedByTime t)
+      {
+        f = acquisition.CreateAcquisitionLimitedByDuration(t.Duration);
+      }
+      else
+      {
+        f = acquisition.CreatePermanentAcquisition();
+      }
+      f.RawFileName = workflow.RawFileName;
+      f.Continuation = (Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.AcquisitionContinuation)workflow.Continuation;
+      f.SampleName = workflow.SampleName;
+      f.Comment = workflow.Comment;
+      f.SingleProcessingDelay = workflow.SingleProcessingDelay;
+      f.WaitForContactClosure = workflow.WaitForContactClosure;
+      acquisition.StartAcquisition(f);
     }
 
     void StateChangedFusion(object sender, Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.StateChangedEventArgs e)

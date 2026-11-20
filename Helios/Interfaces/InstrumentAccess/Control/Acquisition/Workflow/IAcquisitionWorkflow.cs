@@ -56,25 +56,6 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition.Workflow
     bool WaitForContactClosure { get; set; }
   }
 
-  internal class FusionAcquisitionWorkflow : Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.IAcquisitionWorkflow
-  {
-    public string RawFileName { get; set; }
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.AcquisitionContinuation Continuation { get; set; }
-    public string SampleName { get; set; }
-    public string Comment { get; set; }
-    public double SingleProcessingDelay { get; set; }
-    public bool WaitForContactClosure { get; set; }
-    public FusionAcquisitionWorkflow(IAcquisitionWorkflow workflow)
-    {
-      RawFileName = workflow.RawFileName;
-      Continuation = (Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.AcquisitionContinuation)workflow.Continuation;
-      SampleName = workflow.SampleName;
-      Comment = workflow.Comment;
-      SingleProcessingDelay = workflow.SingleProcessingDelay;
-      WaitForContactClosure = workflow.WaitForContactClosure;
-    }
-  }
-
   internal class HeliosAcquisitionWorkflow : IAcquisitionWorkflow
   {
     public string RawFileName { get; set; }

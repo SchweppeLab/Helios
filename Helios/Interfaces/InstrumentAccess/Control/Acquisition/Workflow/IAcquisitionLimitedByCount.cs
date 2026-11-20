@@ -11,27 +11,6 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Acquisition.Workflow
     int NumberOfScans { get; set; }
   }
 
-  internal class FusionAcquisitionLimitedByCount : Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.IAcquisitionLimitedByCount
-  {
-    public int NumberOfScans { get; set; }
-    public string RawFileName { get; set; }
-    public Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.AcquisitionContinuation Continuation { get; set; }
-    public string SampleName { get; set; }
-    public string Comment { get; set; }
-    public double SingleProcessingDelay { get; set; }
-    public bool WaitForContactClosure { get; set; }
-    public FusionAcquisitionLimitedByCount(IAcquisitionLimitedByCount workflow)
-    {
-      NumberOfScans = workflow.NumberOfScans;
-      RawFileName = workflow.RawFileName;
-      Continuation = (Thermo.Interfaces.InstrumentAccess_V1.Control.Acquisition.Workflow.AcquisitionContinuation)workflow.Continuation;
-      SampleName = workflow.SampleName;
-      Comment = workflow.Comment;
-      SingleProcessingDelay = workflow.SingleProcessingDelay;
-      WaitForContactClosure = workflow.WaitForContactClosure;
-    }
-  }
-
   internal class HeliosAcquisitionLimitedByCount : IAcquisitionLimitedByCount
   {
     public int NumberOfScans { get; set; }

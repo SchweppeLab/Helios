@@ -171,7 +171,7 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 
     private bool _disposedValue;
 
-    public IParameterDescription[] PossibleParameters { get; }
+    public IParameterDescription[] PossibleParameters { get; private set; }
     public IParameterDescription[] HeliosPossibleParameters { get; } = new IParameterDescription[HeliosCustomDictionary.HeliosLexicon.Count];
 
     public event EventHandler<EventArgs> CanAcceptNextCustomScan;
@@ -179,13 +179,25 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
     public HeliosScansFusion(fusion.Thermo.Interfaces.FusionAccess_V1.Control.IFusionControl c, bool exclusiveAccess)
     {
       scans = (fusion.Thermo.Interfaces.FusionAccess_V1.Control.Scans.IFusionScans)c.GetScans(exclusiveAccess);
-      
-      PossibleParameters = new IParameterDescription[scans.PossibleParameters.Length];
-      for (int i = 0; i < scans.PossibleParameters.Length; i++)
+
+      // The parameter list can arrive after GetScans returns. Every raw key of a custom or
+      // repeating scan is checked against it, so wait for it as the Exploris wrapper does.
+      ManualResetEvent wait = new ManualResetEvent(false);
+      EventHandler handler = (sender, e) => { wait.Set(); };
+      scans.PossibleParametersChanged += handler;
+      if ((scans.PossibleParameters != null) && (scans.PossibleParameters.Length > 0))
       {
-        PossibleParameters[i] = new HeliosParameterDescription(scans.PossibleParameters[i].Name,scans.PossibleParameters[i].Selection,scans.PossibleParameters[i].DefaultValue,scans.PossibleParameters[i].Help);
-        HeliosCustomDictionary.AddFusionParam(scans.PossibleParameters[i].Name);
+        wait.Set();
       }
+      wait.WaitOne(20000);
+      scans.PossibleParametersChanged -= handler;
+
+      if ((scans.PossibleParameters == null) || (scans.PossibleParameters.Length == 0))
+      {
+        throw new TimeoutException("The instrument did not report its scan parameters within 20 s.");
+      }
+
+      ReadPossibleParameters();
 
       for (int i = 0; i < HeliosCustomDictionary.HeliosLexicon.Count; i++)
       {
@@ -251,7 +263,19 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
 
     void PossibleParametersChangedFusion(object sender, EventArgs e)
     {
+      ReadPossibleParameters();
       OnPossibleParametersChanged(e);
+    }
+
+    private void ReadPossibleParameters()
+    {
+      IParameterDescription[] list = new IParameterDescription[scans.PossibleParameters.Length];
+      for (int i = 0; i < list.Length; i++)
+      {
+        list[i] = new HeliosParameterDescription(scans.PossibleParameters[i].Name, scans.PossibleParameters[i].Selection, scans.PossibleParameters[i].DefaultValue, scans.PossibleParameters[i].Help);
+        HeliosCustomDictionary.AddFusionParam(scans.PossibleParameters[i].Name);
+      }
+      PossibleParameters = list;
     }
 
     protected virtual void OnPossibleParametersChanged(EventArgs e)
@@ -263,9 +287,10 @@ namespace Helios.Interfaces.InstrumentAccess.Control.Scans
       }
     }
 
+    // The Tribrid submit call carries IsPAGCScan and PAGCGroupIndex; the base call does not.
     public bool SetCustomScan(ICustomScan scan)
     {
-      return scans.SetCustomScan(new FusionCustomScan(scan));
+      return scans.SetFusionCustomScan(new FusionCustomScan(scan));
     }
 
     public bool SetRepetitionScan(IRepeatingScan scan)
